@@ -11,33 +11,35 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            /* Darker, bolder background */
+            background: linear-gradient(to bottom right, #1a202c, #2d3748); /* Dark Gray to Dark Blue-Gray */
         }
         /* Custom scrollbar for better aesthetics */
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #4a5568; /* Darker scrollbar track */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #888;
+            background: #a0aec0; /* Lighter scrollbar thumb */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: #cbd5e0; /* Even lighter on hover */
         }
         .member-photo {
             width: 40px;
             height: 40px;
             object-fit: cover;
             border-radius: 50%;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #4a5568; /* Darker border for photo */
         }
         /* Style for the active tab button */
         .tab-active {
-            border-color: #3b82f6; /* blue-500 */
-            color: #2563eb; /* blue-600 */
+            border-color: #6366f1; /* Indigo-500 for active tab */
+            color: #818cf8; /* Indigo-400 for active tab text */
             font-weight: 600;
         }
         /* Animation for message display */
@@ -56,8 +58,8 @@
 
         /* Photo View Modal Styles */
         #photo-view-modal {
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
+            background-color: rgba(0, 0, 0, 0.9); /* Even darker overlay */
+            backdrop-filter: blur(12px); /* More blur */
             transition: opacity 0.3s ease-in-out;
         }
         #photo-view-modal.hidden {
@@ -81,24 +83,24 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col items-center justify-center">
+<body class="min-h-screen p-6 flex flex-col items-center justify-center">
 
     <!-- Message Display -->
     <div id="message-display" class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
 
     <!-- Authentication Section -->
-    <div id="auth-section" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md mb-8 hidden">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center">Gym Manager</h1>
-        <p class="text-gray-600 text-center mb-8 text-lg">Sign in or sign up to access your dashboard.</p>
+    <div id="auth-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md mb-8 hidden border border-gray-700">
+        <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Gym Manager</h1>
+        <p class="text-gray-300 text-center mb-8 text-lg">Sign in or sign up to access your dashboard.</p>
 
         <div class="space-y-5">
             <div>
-                <label for="auth-email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" id="auth-email" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out" placeholder="your@example.com">
+                <label for="auth-email" class="block text-sm font-medium text-gray-300">Email Address</label>
+                <input type="email" id="auth-email" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400" placeholder="your@example.com">
             </div>
             <div>
-                <label for="auth-password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="auth-password" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out" placeholder="••••••••">
+                <label for="auth-password" class="block text-sm font-medium text-gray-300">Password</label>
+                <input type="password" id="auth-password" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400" placeholder="••••••••">
             </div>
 
             <div class="flex flex-col space-y-4 pt-2">
@@ -108,7 +110,7 @@
                 <button id="signup-button" class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
                     Sign Up
                 </button>
-                <div class="text-center text-gray-500 text-sm">— OR —</div>
+                <div class="text-center text-gray-400 text-sm">— OR —</div>
                 <button id="anonymous-signin-button" class="w-full py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
                     Continue Anonymously
                 </button>
@@ -117,12 +119,12 @@
     </div>
 
     <!-- Main Gym App Section -->
-    <div id="main-app-section" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-5xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out">
+    <div id="main-app-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700">
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-900">Gym Dashboard</h1>
+            <h1 class="text-4xl font-extrabold text-white">Gym Dashboard</h1>
             <!-- Date, Time, Day Display -->
-            <div id="datetime-display" class="text-right text-gray-600 text-sm font-medium">
-                <div id="current-time" class="text-xl font-semibold text-gray-800"></div>
+            <div id="datetime-display" class="text-right text-gray-400 text-sm font-medium">
+                <div id="current-time" class="text-xl font-semibold text-gray-200"></div>
                 <div id="current-date"></div>
                 <div id="current-day"></div>
             </div>
@@ -132,65 +134,65 @@
         </div>
 
         <!-- User ID Display for collaborative environment -->
-        <div id="user-id-display" class="text-sm text-gray-600 mb-6 text-center bg-gray-50 p-3 rounded-lg border border-gray-200">
-            Your User ID: <span id="user-id-value" class="font-mono text-gray-800 font-semibold"></span>
+        <div id="user-id-display" class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600">
+            Your User ID: <span id="user-id-value" class="font-mono text-gray-200 font-semibold"></span>
         </div>
 
         <!-- Tabs for Member Forms -->
-        <div class="flex border-b border-gray-200 mb-8">
-            <button id="tab-manage-member" class="py-3 px-6 text-base font-medium text-center text-gray-700 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300 focus:outline-none transition duration-150 ease-in-out">
+        <div class="flex border-b border-gray-700 mb-8">
+            <button id="tab-manage-member" class="py-3 px-6 text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out">
                 Manage Member Details
             </button>
-            <button id="tab-add-existing" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 focus:outline-none transition duration-150 ease-in-out">
+            <button id="tab-add-existing" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
                 Add Existing Member
             </button>
-            <button id="tab-advance-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 focus:outline-none transition duration-150 ease-in-out">
+            <button id="tab-advance-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
                 Advance Payment
             </button>
         </div>
 
         <!-- Tab Content: Manage Member Details (Existing Form) -->
-        <div id="content-manage-member" class="tab-content bg-gray-50 p-6 rounded-xl shadow-inner hidden">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Manage Member Details</h2>
+        <div id="content-manage-member" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-2xl font-bold text-white mb-6">Manage Member Details</h2>
             <form id="member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="member-id" class="block text-sm font-medium text-gray-700">Member ID</label>
+                    <label for="member-id" class="block text-sm font-medium text-gray-300">Member ID</label>
                     <input
                         type="text"
                         id="member-id"
                         name="memberId"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="Unique Member ID"
                         required
                     />
                 </div>
                 <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Member Name</label>
+                    <label for="name" class="block text-sm font-medium text-gray-300">Member Name</label>
                     <input
                         type="text"
                         id="name"
                         name="name"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="Full Name"
                         required
                     />
                 </div>
                 <div>
-                    <label for="phone-number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <label for="phone-number" class="block text-sm font-medium text-gray-300">Phone Number</label>
                     <input
                         type="tel"
                         id="phone-number"
                         name="phoneNumber"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="e.g., 123-456-7890"
                     />
                 </div>
                 <div>
-                    <label for="membershipType" class="block text-sm font-medium text-gray-700">Membership Type</label>
+                    <label for="membershipType" class="block text-sm font-medium text-gray-300">Membership Type</label>
                     <select
                         id="membershipType"
                         name="membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     >
                         <option value="Monthly">Monthly</option>
@@ -199,43 +201,42 @@
                     </select>
                 </div>
                 <div>
-                    <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
+                    <label for="startDate" class="block text-sm font-medium text-gray-300">Start Date</label>
                     <input
                         type="date"
                         id="startDate"
                         name="startDate"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     />
                 </div>
                 <div>
-                    <label for="dueDate" class="block text-sm font-medium text-gray-700">Calculated Due Date</label>
+                    <label for="dueDate" class="block text-sm font-medium text-gray-300">Calculated Due Date</label>
                     <input
                         type="date"
                         id="dueDate"
                         name="dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
                         readonly
                         required
                     />
                 </div>
                 <div>
-                    <label for="feeAmount" class="block text-sm font-medium text-gray-700">Fee Amount ($)</label>
+                    <label for="feeAmount" class="block text-sm font-medium text-gray-300">Fee Amount ($)</label>
                     <input
                         type="number"
                         id="feeAmount"
                         name="feeAmount"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="e.g., 50.00"
                         step="0.01"
                         required
                     />
                 </div>
-                <!-- Removed Status dropdown from here -->
 
                 <!-- Photo Upload/Capture -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Member Photo</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
                         <input type="file" id="photo-upload" accept="image/*" class="hidden">
                         <button type="button" id="upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
@@ -252,11 +253,12 @@
                         </button>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <img id="photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm cursor-pointer" src="https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo" alt="Photo Preview">
-                        <video id="camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm hidden" autoplay playsinline></video>
+                        <img id="photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
+                        <video id="camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" autoplay playsinline></video>
                         <canvas id="camera-canvas" class="hidden"></canvas>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Note: Photos are uploaded permanently to Firebase Storage. Double-tap to enlarge.</p>
+                    <a id="view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" target="_blank">View Photo Preview</a>
+                    <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
                 </div>
 
                 <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
@@ -270,7 +272,7 @@
                     <button
                         type="button"
                         id="cancel-edit-button"
-                        class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden"
+                        class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden"
                     >
                         Cancel Edit
                     </button>
@@ -279,47 +281,47 @@
         </div>
 
         <!-- Tab Content: Add Existing Member (New Form) -->
-        <div id="content-add-existing" class="tab-content bg-gray-50 p-6 rounded-xl shadow-inner hidden">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Add Existing Member</h2>
+        <div id="content-add-existing" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-2xl font-bold text-white mb-6">Add Existing Member</h2>
             <form id="existing-member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="existing-member-id" class="block text-sm font-medium text-gray-700">Member ID</label>
+                    <label for="existing-member-id" class="block text-sm font-medium text-gray-300">Member ID</label>
                     <input
                         type="text"
                         id="existing-member-id"
                         name="memberId"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="Unique Member ID"
                         required
                     />
                 </div>
                 <div>
-                    <label for="existing-name" class="block text-sm font-medium text-gray-700">Member Name</label>
+                    <label for="existing-name" class="block text-sm font-medium text-gray-300">Member Name</label>
                     <input
                         type="text"
                         id="existing-name"
                         name="name"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="Full Name"
                         required
                     />
                 </div>
                 <div>
-                    <label for="existing-phone-number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <label for="existing-phone-number" class="block text-sm font-medium text-gray-300">Phone Number</label>
                     <input
                         type="tel"
                         id="existing-phone-number"
                         name="phoneNumber"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="e.g., 123-456-7890"
                     />
                 </div>
                 <div>
-                    <label for="existing-membershipType" class="block text-sm font-medium text-gray-700">Membership Type</label>
+                    <label for="existing-membershipType" class="block text-sm font-medium text-gray-300">Membership Type</label>
                     <select
                         id="existing-membershipType"
                         name="membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     >
                         <option value="Monthly">Monthly</option>
@@ -328,33 +330,33 @@
                     </select>
                 </div>
                 <div>
-                    <label for="existing-startDate" class="block text-sm font-medium text-gray-700">Joining Date</label>
+                    <label for="existing-startDate" class="block text-sm font-medium text-gray-300">Joining Date</label>
                     <input
                         type="date"
                         id="existing-startDate"
                         name="startDate"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     />
                 </div>
                 <div>
-                    <label for="calculated-dueDate" class="block text-sm font-medium text-gray-700">Calculated Due Date</label>
+                    <label for="calculated-dueDate" class="block text-sm font-medium text-gray-300">Calculated Due Date</label>
                     <input
                         type="date"
                         id="calculated-dueDate"
                         name="dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
                         readonly
                         required
                     />
                 </div>
                 <div>
-                    <label for="existing-feeAmount" class="block text-sm font-medium text-gray-700">Fee Amount ($)</label>
+                    <label for="existing-feeAmount" class="block text-sm font-medium text-gray-300">Fee Amount ($)</label>
                     <input
                         type="number"
                         id="existing-feeAmount"
                         name="feeAmount"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
                         placeholder="e.g., 50.00"
                         step="0.01"
                         required
@@ -362,7 +364,7 @@
                 </div>
                 <!-- Photo Upload/Capture for Existing Member Tab -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Member Photo</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
                         <input type="file" id="existing-photo-upload" accept="image/*" class="hidden">
                         <button type="button" id="existing-upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
@@ -379,11 +381,12 @@
                         </button>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <img id="existing-photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm cursor-pointer" src="https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo" alt="Photo Preview">
-                        <video id="existing-camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm hidden" autoplay playsinline></video>
+                        <img id="existing-photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
+                        <video id="existing-camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" autoplay playsinline></video>
                         <canvas id="existing-camera-canvas" class="hidden"></canvas>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Note: Photos are uploaded permanently to Firebase Storage. Double-tap to enlarge.</p>
+                    <a id="existing-view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" target="_blank">View Photo Preview</a>
+                    <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
                 </div>
 
                 <div class="md:col-span-2 flex justify-end pt-4">
@@ -398,14 +401,14 @@
         </div>
 
         <!-- Tab Content: Advance Payment -->
-        <div id="content-advance-payment" class="tab-content bg-gray-50 p-6 rounded-xl shadow-inner hidden">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Process Advance Payment</h2>
+        <div id="content-advance-payment" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-2xl font-bold text-white mb-6">Process Advance Payment</h2>
             <form id="advance-payment-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="advance-member-select" class="block text-sm font-medium text-gray-700">Select Member</label>
+                    <label for="advance-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
                     <select
                         id="advance-member-select"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     >
                         <option value="">-- Select a Member --</option>
@@ -413,19 +416,19 @@
                     </select>
                 </div>
                 <div>
-                    <label for="advance-current-dueDate" class="block text-sm font-medium text-gray-700">Current Due Date</label>
+                    <label for="advance-current-dueDate" class="block text-sm font-medium text-gray-300">Current Due Date</label>
                     <input
                         type="date"
                         id="advance-current-dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
                         readonly
                     />
                 </div>
                 <div>
-                    <label for="advance-membershipType" class="block text-sm font-medium text-gray-700">Payment Plan Type</label>
+                    <label for="advance-membershipType" class="block text-sm font-medium text-gray-300">Payment Plan Type</label>
                     <select
                         id="advance-membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     >
                         <option value="Monthly">Monthly</option>
@@ -434,11 +437,11 @@
                     </select>
                 </div>
                 <div>
-                    <label for="advance-new-dueDate" class="block text-sm font-medium text-gray-700">New Due Date (Calculated)</label>
+                    <label for="advance-new-dueDate" class="block text-sm font-medium text-gray-300">New Due Date (Calculated)</label>
                     <input
                         type="date"
                         id="advance-new-dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
                         readonly
                     />
                 </div>
@@ -454,16 +457,16 @@
         </div>
 
         <!-- Search and Filter -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-50 rounded-xl shadow-inner border border-gray-200">
+        <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
             <input
                 type="text"
                 id="search-input"
                 placeholder="Search by Name or Member ID..."
-                class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
             />
             <select
                 id="filter-status"
-                class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                class="p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
             >
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
@@ -474,73 +477,73 @@
         </div>
 
         <!-- Overdue Members List (Moved Up) -->
-        <h2 class="text-2xl font-bold text-red-700 mb-4 mt-8">Overdue Members</h2>
-        <div id="overdue-members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-red-200">
-            <table class="min-w-full divide-y divide-red-200">
-                <thead class="bg-red-50">
+        <h2 class="text-2xl font-bold text-red-500 mb-4 mt-8">Overdue Members</h2>
+        <div id="overdue-members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-red-800">
+            <table class="min-w-full divide-y divide-red-800">
+                <thead class="bg-red-900">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Photo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Member ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Phone Number</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Start Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Due Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Fee</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Days Overdue</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Actions</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Photo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Member ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Phone Number</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Start Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Due Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Fee</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Days Overdue</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="overdue-members-table-body" class="bg-white divide-y divide-red-100">
+                <tbody id="overdue-members-table-body" class="bg-gray-800 divide-y divide-gray-700">
                     <!-- Overdue member rows will be inserted here by JavaScript -->
                 </tbody>
             </table>
-            <p id="no-overdue-members-message" class="text-gray-600 text-center p-6 hidden">No members are currently overdue. Great job!</p>
+            <p id="no-overdue-members-message" class="text-gray-400 text-center p-6 hidden">No members are currently overdue. Great job!</p>
         </div>
 
         <!-- Members List (Moved Down) -->
-        <h2 class="text-2xl font-bold text-gray-800 mb-4 mt-8">Current Members</h2>
-        <div id="members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-gray-200">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-blue-50">
+        <h2 class="text-2xl font-bold text-white mb-4 mt-8">Current Members</h2>
+        <div id="members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-gray-700">
+            <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-indigo-900">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Photo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Member ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Phone Number</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Start Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Due Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Fee</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Days Left</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">Actions</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Photo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Member ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Phone Number</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Start Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Due Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Fee</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Days Left</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="members-table-body" class="bg-white divide-y divide-gray-100">
+                <tbody id="members-table-body" class="bg-gray-800 divide-y divide-gray-700">
                     <!-- Member rows will be inserted here by JavaScript -->
                 </tbody>
             </table>
-            <p id="no-members-message" class="text-gray-600 text-center p-6 hidden">No members found. Add a new member above!</p>
+            <p id="no-members-message" class="text-gray-400 text-center p-6 hidden">No members found. Add a new member above!</p>
         </div>
 
 
         <!-- Credits -->
         <div class="mt-10 text-center text-gray-500 text-sm">
-            Built with ❤️ by <span class="font-semibold text-blue-600">Sushant Singh</span>
+            Built with ❤️ by <span class="font-semibold text-indigo-400">Sushant Singh</span>
         </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
-        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0" id="delete-modal-content">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Confirm Deletion</h3>
-            <p class="text-gray-700 mb-8 text-center">
-                Are you sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-blue-700"></span>"? This action cannot be undone.
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="delete-modal-content">
+            <h3 class="text-2xl font-bold text-white mb-4 text-center">Confirm Deletion</h3>
+            <p class="text-gray-300 mb-8 text-center">
+                Are you sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-indigo-400"></span>"? This action cannot be undone.
             </p>
             <div class="flex justify-center space-x-4">
                 <button
                     id="cancel-delete-button"
-                    class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition duration-150 ease-in-out shadow-md"
+                    class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md"
                 >
                     Cancel
                 </button>
@@ -556,8 +559,8 @@
 
     <!-- Photo View Modal -->
     <div id="photo-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
-        <div id="photo-view-content" class="relative bg-white p-4 rounded-xl shadow-2xl max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0">
-            <button id="close-photo-modal-btn" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">
+        <div id="photo-view-content" class="relative bg-gray-800 p-4 rounded-xl shadow-2xl max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0 border border-gray-700">
+            <button id="close-photo-modal-btn" class="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold focus:outline-none">
                 &times;
             </button>
             <img id="enlarged-photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" src="" alt="Enlarged Member Photo">
@@ -570,14 +573,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        // Removed Firebase Storage imports:
+        // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
 
         // Global variables for Firebase instances
         let app;
         let db;
         let auth;
-        let storage; // Declare storage variable
+        // Removed storage variable:
+        // let storage;
         let currentUserId = null;
         let editingMemberId = null;
         let memberToDelete = null;
@@ -592,11 +597,15 @@
             apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
             authDomain: "alpha-core-fitness-data.firebaseapp.com",
             projectId: "alpha-core-fitness-data",
-            storageBucket: "alpha-core-fitness-data.firebasestorage.app",
+            storageBucket: "alpha-core-fitness-data.firebasestorage.app", // This is no longer directly used for uploads
             messagingSenderId: "311733734225",
             appId: "1:311733734225:web:697ef2dc197ebb2e662170",
             measurementId: "G-C5EKPN2K2J"
         };
+
+        // Cloudinary Configuration - **IMPORTANT: Ensure this matches your Cloudinary setup**
+        const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2'; // Your Cloud Name from the screenshot
+        const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset'; // The name you gave your unsigned upload preset
 
         // Access global appId and initialAuthToken provided by the environment
         const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -683,6 +692,7 @@
         const photoPreview = document.getElementById('photo-preview');
         const cameraFeed = document.getElementById('camera-feed');
         const cameraCanvas = document.getElementById('camera-canvas');
+        const viewPhotoLink = document.getElementById('view-photo-link');
         let cameraStream = null; // To hold the camera stream for main tab
 
         // Photo related DOM elements for Add Existing Member tab
@@ -694,6 +704,7 @@
         const existingPhotoPreview = document.getElementById('existing-photo-preview');
         const existingCameraFeed = document.getElementById('existing-camera-feed');
         const existingCameraCanvas = document.getElementById('existing-camera-canvas');
+        const existingViewPhotoLink = document.getElementById('existing-view-photo-link');
         let existingCameraStream = null; // To hold the camera stream for existing member tab
 
 
@@ -843,10 +854,12 @@
          * @param {HTMLElement} photoElement - The image element to attach listeners to.
          */
         function addPhotoEnlargeListeners(photoElement) {
+            // Double click for desktop to open modal
             photoElement.addEventListener('dblclick', (e) => {
                 openPhotoModal(e.target.src);
             });
 
+            // Double tap for mobile to open modal
             let lastTouchEndTime = 0;
             photoElement.addEventListener('touchend', function(event) {
                 const currentTime = new Date().getTime();
@@ -859,6 +872,54 @@
                 }
                 lastTouchEndTime = currentTime;
             });
+        }
+
+        /**
+         * Uploads an image file or data URL to Cloudinary.
+         * @param {File|string} fileOrDataUrl - The File object or base64 data URL to upload.
+         * @returns {Promise<string|null>} The secure Cloudinary URL, or null if upload fails.
+         */
+        async function uploadImageToCloudinary(fileOrDataUrl) {
+            if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+                showMessage('Cloudinary credentials are not set. Please update CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET in the code.', 'error');
+                return null;
+            }
+
+            const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+            const formData = new FormData();
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.startsWith('data:')) {
+                // It's a base64 data URL
+                formData.append('file', fileOrDataUrl);
+            } else if (fileOrDataUrl instanceof File) {
+                // It's a File object
+                formData.append('file', fileOrDataUrl);
+            } else {
+                showMessage('Invalid file type for Cloudinary upload.', 'error');
+                return null;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Cloudinary upload error:', errorData);
+                    showMessage(`Cloudinary upload failed: ${errorData.error?.message || response.statusText}`, 'error');
+                    return null;
+                }
+
+                const data = await response.json();
+                return data.secure_url; // This is the public URL of the uploaded image
+            } catch (error) {
+                console.error('Network or Cloudinary API error:', error);
+                showMessage('Failed to upload photo to Cloudinary. Check your network and Cloudinary settings.', 'error');
+                return null;
+            }
         }
 
 
@@ -898,64 +959,66 @@
                 noMembersMessage.classList.add('hidden');
                 filteredAndSortedMembers.forEach(member => {
                     const row = membersTableBody.insertRow();
-                    const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-50' : '';
-                    row.className = overdueClass;
+                    const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-900' : 'bg-gray-800'; // Darker overdue row
+                    row.className = `${overdueClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; // Hover effect
 
                     const daysLeftText = getDaysLeft(member.dueDate);
                     const nameClass = member.status === 'Inactive' ? 'line-through-name' : '';
-                    const photoSrc = member.photoURL || "https://placehold.co/40x40/e2e8f0/64748b?text=👤"; // Use actual photo or generic placeholder
+                    const photoSrc = member.photoURL || "https://placehold.co/40x40/4a5568/cbd5e0?text=👤"; // Use actual photo or generic placeholder
 
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
+                            <a href="${photoSrc}" target="_blank" class="block">
+                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="console.error('Failed to load image:', this.src);">
+                            </a>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member.memberId || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${nameClass}">${member.name || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.phoneNumber || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.membershipType || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.startDate || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200 ${nameClass}">${member.name || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.startDate || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             ${member.dueDate || 'N/A'}
                             ${isOverdue(member.dueDate) && member.status !== 'Paid' ? `
-                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-700 text-red-100">
                                     Overdue
                                 </span>` : ''}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${(member.feeAmount || 0).toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             ${daysLeftText === 'Overdue' ? `
-                                <span class="text-red-600 font-semibold">${daysLeftText}</span>
+                                <span class="text-red-500 font-semibold">${daysLeftText}</span>
                             ` : daysLeftText === 'Due Today' ? `
-                                <span class="text-yellow-600 font-semibold">${daysLeftText}</span>
+                                <span class="text-yellow-500 font-semibold">${daysLeftText}</span>
                             ` : daysLeftText}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                            <button data-id="${member.id}" class="edit-btn text-blue-600 hover:text-blue-900" title="Edit Member">
+                            <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200" title="Edit Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
                                 </svg>
                             </button>
                             ${member.status === 'Active' || member.status === 'Overdue' ? `
-                                <button data-id="${member.id}" class="pause-btn text-yellow-600 hover:text-yellow-800" title="Pause Membership">
+                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300" title="Pause Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             ` : `
-                                <button data-id="${member.id}" class="activate-btn text-green-600 hover:text-green-800" title="Activate Membership">
+                                <button data-id="${member.id}" class="activate-btn text-green-500 hover:text-green-300" title="Activate Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             `}
-                            <button data-id="${member.id}" class="delete-btn text-red-600 hover:text-red-900" title="Delete Member">
+                            <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300" title="Delete Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
                                 </svg>
                             </button>
                         </td>
                     `;
-                    // Attach double-tap/click listener to the photo in the row
+                    // Attach double-tap/click listener to the photo in the row (on the <img> inside <a>)
                     const photoElementInRow = row.querySelector('.member-photo');
                     if (photoElementInRow) {
                         addPhotoEnlargeListeners(photoElementInRow);
@@ -974,36 +1037,38 @@
 
 
                         overdueRow.innerHTML = `
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
+                                <a href="${photoSrc}" target="_blank" class="block">
+                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="console.error('Failed to load image:', this.src);">
+                                </a>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member.memberId || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member.name || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.phoneNumber || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.membershipType || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.startDate || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.dueDate || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${(member.feeAmount || 0).toFixed(2)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">${daysOverdue} days</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.name || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.startDate || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.dueDate || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-semibold">${daysOverdue} days</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                                <button data-id="${member.id}" class="edit-btn text-blue-600 hover:text-blue-900" title="Edit Member">
+                                <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200" title="Edit Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
                                     </svg>
                                 </button>
-                                <button data-id="${member.id}" class="pause-btn text-yellow-600 hover:text-yellow-800" title="Pause Membership">
+                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300" title="Pause Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </button>
-                                <button data-id="${member.id}" class="delete-btn text-red-600 hover:text-red-900" title="Delete Member">
+                                <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300" title="Delete Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             </td>
                         `;
-                        // Attach double-tap/click listener to the photo in the row
+                        // Attach double-tap/click listener to the photo in the row (on the <img> inside <a>)
                         const photoElementInOverdueRow = overdueRow.querySelector('.member-photo');
                         if (photoElementInOverdueRow) {
                             addPhotoEnlargeListeners(photoElementInOverdueRow);
@@ -1066,11 +1131,13 @@
             submitButton.textContent = 'Add Member';
             cancelEditButton.classList.add('hidden');
             currentPhotoBase64 = null; // Clear the temporary photo
-            photoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+            photoPreview.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
             clearPhotoBtn.classList.add('hidden');
             switchCameraBtn.classList.add('hidden'); // Hide switch camera button
             photoUploadInput.value = ''; // Clear file input
             stopCamera(cameraFeed, cameraStream); // Stop camera if active for main form
+            viewPhotoLink.classList.add('hidden'); // Hide the photo link
+            viewPhotoLink.href = '#'; // Reset href
         }
 
         /**
@@ -1085,11 +1152,13 @@
             calculatedDueDateInput.value = '';
             existingFeeAmountInput.value = '';
             existingPhotoBase64 = null; // Clear the temporary photo
-            existingPhotoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+            existingPhotoPreview.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
             existingClearPhotoBtn.classList.add('hidden');
             existingSwitchCameraBtn.classList.add('hidden'); // Hide switch camera button
             existingPhotoUploadInput.value = ''; // Clear file input
             stopCamera(existingCameraFeed, existingCameraStream); // Stop camera if active for existing form
+            existingViewPhotoLink.classList.add('hidden'); // Hide the photo link
+            existingViewPhotoLink.href = '#'; // Reset href
         }
 
         /**
@@ -1127,10 +1196,15 @@
                 photoPreview.src = member.photoURL;
                 currentPhotoBase64 = member.photoURL; // Treat existing URL as current "base64" for simpler logic
                 clearPhotoBtn.classList.remove('hidden');
+                viewPhotoLink.href = member.photoURL;
+                viewPhotoLink.textContent = 'View Permanent Photo';
+                viewPhotoLink.classList.remove('hidden');
             } else {
-                photoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+                photoPreview.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
                 currentPhotoBase64 = null;
                 clearPhotoBtn.classList.add('hidden');
+                viewPhotoLink.classList.add('hidden');
+                viewPhotoLink.href = '#';
             }
             photoUploadInput.value = ''; // Clear file input
             stopCamera(cameraFeed, cameraStream); // Stop camera if active
@@ -1178,37 +1252,25 @@
         }
 
         /**
-         * Handles the deletion of a member from Firestore and their photo from Storage.
+         * Handles the deletion of a member from Firestore.
+         * Note: Photo deletion from Cloudinary is not handled client-side for security.
          */
         async function handleDelete() {
-            if (!db || !memberToDelete || !storage) {
-                showMessage('Database or Storage not ready, or no member selected for deletion.', 'error');
+            if (!db || !memberToDelete) {
+                showMessage('Database not ready or no member selected for deletion.', 'error');
                 return;
             }
 
             try {
-                // 1. Delete photo from Firebase Storage if it exists
-                if (memberToDelete.photoURL) {
-                    const photoRef = ref(storage, `member_photos/${memberToDelete.id}`);
-                    try {
-                        await deleteObject(photoRef);
-                        console.log("Photo deleted from storage successfully.");
-                    } catch (storageError) {
-                        // If the photo doesn't exist in storage (e.g., deleted manually or never uploaded),
-                        // we still want to delete the Firestore document. Log the error but don't block.
-                        console.warn("Error deleting photo from storage (might not exist):", storageError);
-                    }
-                }
-
-                // 2. Delete member document from Firestore
+                // Delete member document from Firestore
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
 
-                showMessage('Member and associated photo deleted successfully!', 'success');
+                showMessage('Member deleted successfully! (Note: Associated photo on Cloudinary is not deleted from the app for security reasons.)', 'success');
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
             } catch (error) {
-                console.error("Error deleting member or photo:", error);
+                console.error("Error deleting member:", error);
                 showMessage('Failed to delete member. Please try again.', 'error');
             }
         }
@@ -1216,7 +1278,7 @@
         /**
          * Starts the camera feed for a given video element and updates related UI.
          * @param {HTMLVideoElement} videoElement - The video element to display the camera feed.
-         * @param {string} facingMode - 'user' for front camera, 'environment' for back camera.
+         * @param {string} facingMode - 'user' for front, 'environment' for back camera.
          * @returns {Promise<MediaStream>} The camera stream.
          */
         async function startCamera(videoElement, facingMode) {
@@ -1273,11 +1335,13 @@
          * @param {Event} event - The change event from the file input.
          * @param {HTMLImageElement} previewElement - The image element to show the preview.
          * @param {HTMLButtonElement} clearBtn - The clear photo button.
+         * @param {HTMLButtonElement} switchCameraBtnElement - The switch camera button.
          * @param {HTMLVideoElement} cameraFeedElement - The camera feed element.
          * @param {MediaStream} cameraStreamVar - The camera stream variable to clear.
+         * @param {HTMLAnchorElement} viewLinkElement - The link element to update.
          * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
          */
-        function handleFileUpload(event, previewElement, clearBtn, cameraFeedElement, cameraStreamVar, setPhotoBase64Callback) {
+        function handleFileUpload(event, previewElement, clearBtn, switchCameraBtnElement, cameraFeedElement, cameraStreamVar, viewLinkElement, setPhotoBase64Callback) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -1285,7 +1349,11 @@
                     previewElement.src = e.target.result;
                     setPhotoBase64Callback(e.target.result); // Set the correct base64 variable
                     clearBtn.classList.remove('hidden');
+                    switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
                     stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
+                    viewLinkElement.href = e.target.result;
+                    viewLinkElement.textContent = 'View Photo Preview';
+                    viewLinkElement.classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
@@ -1298,11 +1366,12 @@
          * @param {HTMLImageElement} previewElement - The image preview element.
          * @param {HTMLButtonElement} clearBtn - The clear photo button.
          * @param {HTMLButtonElement} switchCameraBtnElement - The switch camera button.
+         * @param {HTMLAnchorElement} viewLinkElement - The link element to update.
          * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
          * @param {string} currentFacingModeParam - The current camera facing mode.
          * @param {Function} setCameraStreamCallback - Callback to set the camera stream variable.
          */
-        async function handleTakePhoto(cameraFeedElement, cameraCanvasElement, previewElement, clearBtn, switchCameraBtnElement, setPhotoBase64Callback, currentFacingModeParam, setCameraStreamCallback) {
+        async function handleTakePhoto(cameraFeedElement, cameraCanvasElement, previewElement, clearBtn, switchCameraBtnElement, viewLinkElement, setPhotoBase64Callback, currentFacingModeParam, setCameraStreamCallback) {
             if (cameraFeedElement.srcObject && !cameraFeedElement.classList.contains('hidden')) {
                 // If camera is already active, capture photo
                 const dataUrl = capturePhoto(cameraFeedElement, cameraCanvasElement, previewElement);
@@ -1312,6 +1381,9 @@
                     setCameraStreamCallback(null); // Clear stream variable
                     clearBtn.classList.remove('hidden');
                     switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
+                    viewLinkElement.href = dataUrl;
+                    viewLinkElement.textContent = 'View Photo Preview';
+                    viewLinkElement.classList.remove('hidden');
                 }
             } else {
                 // Otherwise, start camera
@@ -1319,8 +1391,7 @@
                 if (stream) {
                     setCameraStreamCallback(stream);
                     previewElement.classList.add('hidden'); // Hide static preview while camera is on
-                    clearBtn.classList.remove('hidden');
-                    switchCameraBtnElement.classList.remove('hidden'); // Show switch camera button
+                    viewLinkElement.classList.add('hidden'); // Hide link while camera is live
                 }
             }
         }
@@ -1333,32 +1404,28 @@
          * @param {HTMLInputElement} fileInput - The file input element.
          * @param {HTMLVideoElement} cameraFeedElement - The camera feed element.
          * @param {MediaStream} cameraStreamVar - The camera stream variable to clear.
+         * @param {HTMLAnchorElement} viewLinkElement - The link element to update.
          * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
          * @param {string|null} memberId - The ID of the member if editing, null if adding new.
          */
-        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, setPhotoBase64Callback, memberId) {
+        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, viewLinkElement, setPhotoBase64Callback, memberId) {
             setPhotoBase64Callback(null);
-            previewElement.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+            previewElement.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
             clearBtn.classList.add('hidden');
             switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
             fileInput.value = ''; // Clear file input
             stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
+            viewLinkElement.classList.add('hidden'); // Hide the photo link
+            viewLinkElement.href = '#'; // Reset href
 
             // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
             if (memberId) {
                 try {
                     await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
-                    console.log("PhotoURL removed from Firestore.");
+                    showMessage('Photo link removed from member. (Image remains on Cloudinary)', 'success');
                 } catch (error) {
                     console.error("Error removing photoURL from Firestore:", error);
-                }
-                // Also, attempt to delete the actual file from storage
-                const photoRef = ref(storage, `member_photos/${memberId}`);
-                try {
-                    await deleteObject(photoRef);
-                    console.log("Photo deleted from storage.");
-                } catch (error) {
-                    console.warn("Could not delete photo from storage (might not exist):", error);
+                    showMessage('Failed to clear photo link from member. Please try again.', 'error');
                 }
             }
         }
@@ -1370,14 +1437,18 @@
          * @param {Function} setCameraStreamCallback - Callback to set the camera stream variable.
          * @param {Function} setFacingModeCallback - Callback to set the current facing mode.
          * @param {string} currentFacingModeParam - The current camera facing mode.
+         * @param {HTMLImageElement} previewElement - The image preview element.
+         * @param {HTMLAnchorElement} viewLinkElement - The link element to update.
          */
-        async function handleSwitchCamera(cameraFeedElement, cameraStreamVar, setCameraStreamCallback, setFacingModeCallback, currentFacingModeParam) {
+        async function handleSwitchCamera(cameraFeedElement, cameraStreamVar, setCameraStreamCallback, setFacingModeCallback, currentFacingModeParam, previewElement, viewLinkElement) {
             stopCamera(cameraFeedElement, cameraStreamVar);
             const newFacingMode = currentFacingModeParam === 'user' ? 'environment' : 'user';
             setFacingModeCallback(newFacingMode); // Update the facing mode
             const stream = await startCamera(cameraFeedElement, newFacingMode);
             if (stream) {
                 setCameraStreamCallback(stream);
+                previewElement.classList.add('hidden'); // Hide static preview while camera is on
+                viewLinkElement.classList.add('hidden'); // Hide link while camera is live
             }
         }
 
@@ -1403,7 +1474,7 @@
             // Deactivate all tabs and hide all content
             [tabManageMember, tabAddExisting, tabAdvancePayment].forEach(tab => {
                 tab.classList.remove('tab-active');
-                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
             });
 
             [contentManageMember, contentAddExisting, contentAdvancePayment].forEach(content => {
@@ -1413,19 +1484,19 @@
             // Activate the selected tab and show its content
             if (tabId === 'manage-member') {
                 tabManageMember.classList.add('tab-active');
-                tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentManageMember.classList.remove('hidden');
                 clearExistingMemberForm(); // Clear other forms
                 clearAdvancePaymentForm();
             } else if (tabId === 'add-existing') {
                 tabAddExisting.classList.add('tab-active');
-                tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddExisting.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
                 clearAdvancePaymentForm();
             } else if (tabId === 'advance-payment') {
                 tabAdvancePayment.classList.add('tab-active');
-                tabAdvancePayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                tabAdvancePayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAdvancePayment.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
                 clearExistingMemberForm();
@@ -1461,7 +1532,8 @@
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                storage = getStorage(app); // Initialize Firebase Storage
+                // Removed storage initialization:
+                // storage = getStorage(app);
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
                 showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
@@ -1595,8 +1667,8 @@
         // Main Member Form Event Listener (for adding new or updating existing)
         memberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!db || !currentUserId || !storage) {
-                showMessage('Database or Storage not ready, or user not authenticated. Please sign in.', 'error');
+            if (!db || !currentUserId) {
+                showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
@@ -1622,52 +1694,30 @@
 
             try {
                 let docRef;
-                let memberIdForPhoto = editingMemberId; // Use existing ID for photo if editing
+                let photoURL = null; // Initialize photoURL
+
+                // Handle photo upload if a new photo is present
+                if (currentPhotoBase64 && !currentPhotoBase64.startsWith('https://res.cloudinary.com/')) {
+                    // Only upload if it's a new base64 image (not an existing Cloudinary URL)
+                    photoURL = await uploadImageToCloudinary(currentPhotoBase64);
+                    if (!photoURL) {
+                        // If upload fails, stop the process or handle appropriately
+                        showMessage('Failed to upload photo to Cloudinary. Member not saved.', 'error');
+                        return;
+                    }
+                    memberData.photoURL = photoURL;
+                } else if (currentPhotoBase64 && currentPhotoBase64.startsWith('https://res.cloudinary.com/')) {
+                    // If it's an existing Cloudinary URL, retain it
+                    memberData.photoURL = currentPhotoBase64;
+                } else {
+                    // If photo was cleared or never set
+                    memberData.photoURL = null;
+                }
+
 
                 if (editingMemberId) {
                     // Update existing member
                     docRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId);
-                    // Fetch current member to compare photoURL
-                    const currentMember = allMembers.find(m => m.id === editingMemberId);
-
-                    // Handle photo update/deletion
-                    if (currentPhotoBase64 && currentPhotoBase64 !== currentMember?.photoURL) {
-                        // New photo uploaded or existing photo re-selected (if it was a data URL)
-                        // If there was an old photo, attempt to delete it
-                        if (currentMember?.photoURL) {
-                            try {
-                                const oldPhotoRef = ref(storage, `member_photos/${editingMemberId}`);
-                                await deleteObject(oldPhotoRef);
-                                console.log("Old photo deleted from storage.");
-                            } catch (storageError) {
-                                console.warn("Could not delete old photo from storage (might not exist):", storageError);
-                            }
-                        }
-
-                        // Upload new photo
-                        const photoBlob = await (await fetch(currentPhotoBase64)).blob();
-                        const photoStorageRef = ref(storage, `member_photos/${editingMemberId}`);
-                        await uploadBytes(photoStorageRef, photoBlob);
-                        memberData.photoURL = await getDownloadURL(photoStorageRef);
-                        showMessage('Photo uploaded successfully!', 'success');
-                    } else if (!currentPhotoBase64 && currentMember?.photoURL) {
-                        // Photo was cleared from the form, and there was an existing photo
-                        try {
-                            const oldPhotoRef = ref(storage, `member_photos/${editingMemberId}`);
-                            await deleteObject(oldPhotoRef);
-                            console.log("Photo cleared and deleted from storage.");
-                        } catch (storageError) {
-                            console.warn("Could not delete cleared photo from storage (might not exist):", storageError);
-                        }
-                        memberData.photoURL = null; // Set photoURL to null in Firestore
-                    } else if (currentPhotoBase64 && currentPhotoBase64 === currentMember?.photoURL) {
-                        // Photo was not changed, retain existing URL
-                        memberData.photoURL = currentMember.photoURL;
-                    } else {
-                        // No photo was ever set, or no photo is currently set and none was provided
-                        memberData.photoURL = null;
-                    }
-
                     await updateDoc(docRef, memberData);
                     showMessage('Member updated successfully!', 'success');
 
@@ -1675,19 +1725,7 @@
                     // Add new member
                     memberData.createdAt = serverTimestamp(); // Set createdAt only for new members
                     docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
-                    memberIdForPhoto = docRef.id; // Get the ID for the newly created document
-
-                    // If a photo was provided, upload it and update the document with its URL
-                    if (currentPhotoBase64) {
-                        const photoBlob = await (await fetch(currentPhotoBase64)).blob();
-                        const photoStorageRef = ref(storage, `member_photos/${memberIdForPhoto}`);
-                        await uploadBytes(photoStorageRef, photoBlob);
-                        const photoURL = await getDownloadURL(photoStorageRef);
-                        await updateDoc(docRef, { photoURL: photoURL });
-                        showMessage('Member and photo added successfully!', 'success');
-                    } else {
-                        showMessage('Member added successfully!', 'success');
-                    }
+                    showMessage('Member added successfully!', 'success');
                 }
                 clearMainForm();
             } catch (error) {
@@ -1716,11 +1754,11 @@
 
         // Photo related event listeners for Manage Member Details tab
         uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click()); // Trigger file input click
-        photoUploadInput.addEventListener('change', (event) => handleFileUpload(event, photoPreview, clearPhotoBtn, cameraFeed, cameraStream, (data) => currentPhotoBase64 = data));
+        photoUploadInput.addEventListener('change', (event) => handleFileUpload(event, photoPreview, clearPhotoBtn, switchCameraBtn, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data));
 
-        takePhotoBtn.addEventListener('click', () => handleTakePhoto(cameraFeed, cameraCanvas, photoPreview, clearPhotoBtn, switchCameraBtn, (data) => currentPhotoBase64 = data, currentCameraFacingMode, (stream) => cameraStream = stream));
+        takePhotoBtn.addEventListener('click', () => handleTakePhoto(cameraFeed, cameraCanvas, photoPreview, clearPhotoBtn, switchCameraBtn, viewPhotoLink, (data) => currentPhotoBase64 = data, currentCameraFacingMode, (stream) => cameraStream = stream));
 
-        switchCameraBtn.addEventListener('click', () => handleSwitchCamera(cameraFeed, cameraStream, (stream) => cameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode));
+        switchCameraBtn.addEventListener('click', () => handleSwitchCamera(cameraFeed, cameraStream, (stream) => cameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode, photoPreview, viewPhotoLink));
 
         cameraFeed.addEventListener('click', () => {
             const dataUrl = capturePhoto(cameraFeed, cameraCanvas, photoPreview);
@@ -1730,10 +1768,14 @@
                 cameraStream = null;
                 clearPhotoBtn.classList.remove('hidden');
                 switchCameraBtn.classList.add('hidden');
+                viewPhotoLink.href = dataUrl;
+                viewPhotoLink.textContent = 'View Photo Preview';
+                viewPhotoLink.classList.remove('hidden');
             }
         });
 
-        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, (data) => currentPhotoBase64 = data, editingMemberId));
+        // Clear photo button now only clears the link in Firestore
+        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data, editingMemberId));
 
         // Add double-tap/click listener to the photo preview in the form
         addPhotoEnlargeListeners(photoPreview);
@@ -1754,18 +1796,18 @@
 
         existingMemberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!db || !currentUserId || !storage) {
-                showMessage('Database or Storage not ready, or user not authenticated. Please sign in.', 'error');
+            if (!db || !currentUserId) {
+                showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
             const memberData = {
-                memberId: existingMemberIdInput.value.trim(),
+                memberId: existingMemberIdInput.value.trim(), // Get Member ID
                 name: existingNameInput.value.trim(),
-                phoneNumber: existingPhoneNumberInput.value.trim(),
+                phoneNumber: existingPhoneNumberInput.value.trim(), // Get Phone Number
                 membershipType: existingMembershipTypeInput.value,
                 startDate: existingStartDateInput.value,
-                dueDate: calculatedDueDateInput.value,
+                dueDate: calculatedDueDateInput.value, // Use the calculated due date
                 feeAmount: parseFloat(existingFeeAmountInput.value),
                 status: 'Active', // Existing members are always 'Active' initially
                 createdAt: serverTimestamp(),
@@ -1779,20 +1821,20 @@
             }
 
             try {
-                const docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
-                const newMemberId = docRef.id;
-
-                // If a photo was provided, upload it and update the document with its URL
+                let photoURL = null;
                 if (existingPhotoBase64) {
-                    const photoBlob = await (await fetch(existingPhotoBase64)).blob();
-                    const photoStorageRef = ref(storage, `member_photos/${newMemberId}`);
-                    await uploadBytes(photoStorageRef, photoBlob);
-                    const photoURL = await getDownloadURL(photoStorageRef);
-                    await updateDoc(docRef, { photoURL: photoURL });
-                    showMessage('Existing member and photo added successfully!', 'success');
+                    photoURL = await uploadImageToCloudinary(existingPhotoBase64);
+                    if (!photoURL) {
+                        showMessage('Failed to upload photo to Cloudinary. Member not added.', 'error');
+                        return;
+                    }
+                    memberData.photoURL = photoURL;
                 } else {
-                    showMessage('Existing member added successfully!', 'success');
+                    memberData.photoURL = null;
                 }
+
+                const docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
+                showMessage('Existing member added successfully!', 'success');
                 clearExistingMemberForm();
             } catch (error) {
                 console.error("Error adding existing member:", error);
@@ -1802,11 +1844,11 @@
 
         // Photo related event listeners for Add Existing Member tab
         existingUploadPhotoBtn.addEventListener('click', () => existingPhotoUploadInput.click());
-        existingPhotoUploadInput.addEventListener('change', (event) => handleFileUpload(event, existingPhotoPreview, existingClearPhotoBtn, existingCameraFeed, existingCameraStream, (data) => existingPhotoBase64 = data));
+        existingPhotoUploadInput.addEventListener('change', (event) => handleFileUpload(event, existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingCameraFeed, existingCameraStream, existingViewPhotoLink, (data) => existingPhotoBase64 = data));
 
-        existingTakePhotoBtn.addEventListener('click', () => handleTakePhoto(existingCameraFeed, existingCameraCanvas, existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, (data) => existingPhotoBase64 = data, currentCameraFacingMode, (stream) => existingCameraStream = stream));
+        existingTakePhotoBtn.addEventListener('click', () => handleTakePhoto(existingCameraFeed, existingCameraCanvas, existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingViewPhotoLink, (data) => existingPhotoBase64 = data, currentCameraFacingMode, (stream) => existingCameraStream = stream));
 
-        existingSwitchCameraBtn.addEventListener('click', () => handleSwitchCamera(existingCameraFeed, existingCameraStream, (stream) => existingCameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode));
+        existingSwitchCameraBtn.addEventListener('click', () => handleSwitchCamera(existingCameraFeed, existingCameraStream, (stream) => existingCameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode, existingPhotoPreview, existingViewPhotoLink));
 
         existingCameraFeed.addEventListener('click', () => {
             const dataUrl = capturePhoto(existingCameraFeed, existingCameraCanvas, existingPhotoPreview);
@@ -1816,10 +1858,13 @@
                 existingCameraStream = null;
                 existingClearPhotoBtn.classList.remove('hidden');
                 existingSwitchCameraBtn.classList.add('hidden');
+                existingViewPhotoLink.href = dataUrl;
+                existingViewPhotoLink.textContent = 'View Photo Preview';
+                existingViewPhotoLink.classList.remove('hidden');
             }
         });
 
-        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, (data) => existingPhotoBase64 = data, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
+        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, existingViewPhotoLink, (data) => existingPhotoBase64 = data, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
 
         // Add double-tap/click listener to the photo preview in the existing form
         addPhotoEnlargeListeners(existingPhotoPreview);
