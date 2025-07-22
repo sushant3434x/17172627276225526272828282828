@@ -53,6 +53,32 @@
         .line-through-name {
             text-decoration: line-through;
         }
+
+        /* Photo View Modal Styles */
+        #photo-view-modal {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            transition: opacity 0.3s ease-in-out;
+        }
+        #photo-view-modal.hidden {
+            opacity: 0;
+            pointer-events: none; /* Allows clicks to pass through when hidden */
+        }
+        #photo-view-modal.flex {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #photo-view-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #photo-view-modal.hidden #photo-view-content {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        #photo-view-modal.flex #photo-view-content {
+            transform: scale(1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex flex-col items-center justify-center">
@@ -94,6 +120,12 @@
     <div id="main-app-section" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-5xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out">
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-4xl font-extrabold text-gray-900">Gym Dashboard</h1>
+            <!-- Date, Time, Day Display -->
+            <div id="datetime-display" class="text-right text-gray-600 text-sm font-medium">
+                <div id="current-time" class="text-xl font-semibold text-gray-800"></div>
+                <div id="current-date"></div>
+                <div id="current-day"></div>
+            </div>
             <button id="signout-button" class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out">
                 Sign Out
             </button>
@@ -217,11 +249,11 @@
                         </button>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <img id="photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm" src="https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo" alt="Photo Preview">
+                        <img id="photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm cursor-pointer" src="https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo" alt="Photo Preview">
                         <video id="camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm hidden" autoplay playsinline></video>
                         <canvas id="camera-canvas" class="hidden"></canvas>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Note: Photos are for temporary preview only and will not be saved persistently.</p>
+                    <p class="text-xs text-gray-500 mt-2">Note: Photos are uploaded permanently to Firebase Storage. Double-tap to enlarge.</p>
                 </div>
 
                 <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
@@ -413,8 +445,33 @@
             </select>
         </div>
 
-        <!-- Members List -->
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Current Members</h2>
+        <!-- Overdue Members List (Moved Up) -->
+        <h2 class="text-2xl font-bold text-red-700 mb-4 mt-8">Overdue Members</h2>
+        <div id="overdue-members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-red-200">
+            <table class="min-w-full divide-y divide-red-200">
+                <thead class="bg-red-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Photo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Member ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Phone Number</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Start Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Due Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Fee</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Days Overdue</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="overdue-members-table-body" class="bg-white divide-y divide-red-100">
+                    <!-- Overdue member rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+            <p id="no-overdue-members-message" class="text-gray-600 text-center p-6 hidden">No members are currently overdue. Great job!</p>
+        </div>
+
+        <!-- Members List (Moved Down) -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 mt-8">Current Members</h2>
         <div id="members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-gray-200">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-blue-50">
@@ -437,6 +494,7 @@
             </table>
             <p id="no-members-message" class="text-gray-600 text-center p-6 hidden">No members found. Add a new member above!</p>
         </div>
+
 
         <!-- Credits -->
         <div class="mt-10 text-center text-gray-500 text-sm">
@@ -468,21 +526,35 @@
         </div>
     </div>
 
+    <!-- Photo View Modal -->
+    <div id="photo-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
+        <div id="photo-view-content" class="relative bg-white p-4 rounded-xl shadow-2xl max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0">
+            <button id="close-photo-modal-btn" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none">
+                &times;
+            </button>
+            <img id="enlarged-photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" src="" alt="Enlarged Member Photo">
+        </div>
+    </div>
+
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
 
         // Global variables for Firebase instances
         let app;
         let db;
         let auth;
+        let storage; // Declare storage variable
         let currentUserId = null;
         let editingMemberId = null;
         let memberToDelete = null;
         let allMembers = []; // To store all members fetched from Firestore
-        let currentPhotoBase64 = null; // To store the base64 for temporary preview
+        let currentPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL
 
         // Firebase project details provided by the user
         const firebaseConfig = {
@@ -563,6 +635,16 @@
         const cancelDeleteButton = document.getElementById('cancel-delete-button');
         const confirmDeleteButton = document.getElementById('confirm-delete-button');
 
+        // Overdue Members specific DOM elements
+        const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
+        const noOverdueMembersMessage = document.getElementById('no-overdue-members-message');
+
+        // Date & Time Display elements
+        const currentTimeDisplay = document.getElementById('current-time');
+        const currentDateDisplay = document.getElementById('current-date');
+        const currentDayDisplay = document.getElementById('current-day');
+
+
         // Photo related DOM elements
         const photoUploadInput = document.getElementById('photo-upload');
         const uploadPhotoBtn = document.getElementById('upload-photo-btn');
@@ -572,6 +654,16 @@
         const cameraFeed = document.getElementById('camera-feed');
         const cameraCanvas = document.getElementById('camera-canvas');
         let cameraStream = null; // To hold the camera stream
+
+        // Photo View Modal elements
+        const photoViewModal = document.getElementById('photo-view-modal');
+        const enlargedPhoto = document.getElementById('enlarged-photo');
+        const closePhotoModalBtn = document.getElementById('close-photo-modal-btn');
+        const photoViewContent = document.getElementById('photo-view-content');
+
+        // Double tap detection variables
+        let lastTap = 0;
+        const TAP_THRESHOLD = 300; // milliseconds
 
         /**
          * Displays a message to the user.
@@ -680,46 +772,99 @@
             return `${year}-${month}-${day}`;
         }
 
+        /**
+         * Opens the photo view modal with the given image URL.
+         * @param {string} imageUrl - The URL of the image to display.
+         */
+        function openPhotoModal(imageUrl) {
+            if (imageUrl && imageUrl !== "https://placehold.co/40x40/e2e8f0/64748b?text=👤" && imageUrl !== "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo") {
+                enlargedPhoto.src = imageUrl;
+                photoViewModal.classList.remove('hidden');
+                photoViewModal.classList.add('flex');
+            } else {
+                showMessage('No photo available to enlarge.', 'error');
+            }
+        }
+
+        /**
+         * Closes the photo view modal.
+         */
+        function closePhotoModal() {
+            photoViewModal.classList.remove('flex');
+            photoViewModal.classList.add('hidden');
+            enlargedPhoto.src = ''; // Clear image source
+        }
+
+        /**
+         * Attaches double-tap/click event listeners to a photo element.
+         * @param {HTMLElement} photoElement - The image element to attach listeners to.
+         */
+        function addPhotoEnlargeListeners(photoElement) {
+            photoElement.addEventListener('dblclick', (e) => {
+                openPhotoModal(e.target.src);
+            });
+
+            let lastTouchEndTime = 0;
+            photoElement.addEventListener('touchend', function(event) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTouchEndTime;
+
+                // Check for double tap within threshold
+                if (tapLength < TAP_THRESHOLD && tapLength > 0) {
+                    event.preventDefault(); // Prevent default browser behavior (e.g., zoom)
+                    openPhotoModal(this.src);
+                }
+                lastTouchEndTime = currentTime;
+            });
+        }
+
 
         /**
          * Renders the list of members in the table.
          * Applies search and filter criteria.
          */
         function renderMembers() {
-            membersTableBody.innerHTML = ''; // Clear existing rows
+            membersTableBody.innerHTML = ''; // Clear existing current members rows
+            overdueMembersTableBody.innerHTML = ''; // Clear existing overdue members rows
+
             const searchTerm = searchInput.value.toLowerCase();
             const filterStatus = filterStatusSelect.value;
 
-            const filteredMembers = allMembers.filter(member => {
+            const filteredAndSortedMembers = allMembers.filter(member => {
                 const matchesSearch = (member.name && member.name.toLowerCase().includes(searchTerm)) ||
                                       (member.memberId && member.memberId.toLowerCase().includes(searchTerm)) ||
-                                      (member.phoneNumber && member.phoneNumber.toLowerCase().includes(searchTerm)) || // Search by phone number
+                                      (member.phoneNumber && member.phoneNumber.toLowerCase().includes(searchTerm)) ||
                                       (member.membershipType && member.membershipType.toLowerCase().includes(searchTerm));
                 const matchesStatus = filterStatus === 'All' || (member.status && member.status === filterStatus);
                 return matchesSearch && matchesStatus;
+            }).sort((a, b) => {
+                // Sort by due date, overdue first
+                const dateA = new Date(a.dueDate);
+                const dateB = new Date(b.dueDate);
+                return dateA - dateB;
             });
 
-            if (filteredMembers.length === 0) {
+
+            let hasOverdueMembers = false;
+
+            if (filteredAndSortedMembers.length === 0) {
                 noMembersMessage.classList.remove('hidden');
-                membersTableBody.innerHTML = ''; // Ensure table body is empty
+                noOverdueMembersMessage.classList.remove('hidden'); // Also show for overdue if no members
+                membersTableBody.innerHTML = '';
             } else {
                 noMembersMessage.classList.add('hidden');
-                filteredMembers.forEach(member => {
+                filteredAndSortedMembers.forEach(member => {
                     const row = membersTableBody.insertRow();
                     const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-50' : '';
                     row.className = overdueClass;
 
                     const daysLeftText = getDaysLeft(member.dueDate);
-
-                    // Determine if name should have strikethrough
                     const nameClass = member.status === 'Inactive' ? 'line-through-name' : '';
-
-                    // Placeholder image for member photos in the list
-                    const photoSrc = "https://placehold.co/40x40/e2e8f0/64748b?text=👤"; // Generic placeholder
+                    const photoSrc = member.photoURL || "https://placehold.co/40x40/e2e8f0/64748b?text=👤"; // Use actual photo or generic placeholder
 
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            <img src="${photoSrc}" alt="Member Photo" class="member-photo">
+                            <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member.memberId || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${nameClass}">${member.name || 'N/A'}</td>
@@ -767,9 +912,63 @@
                             </button>
                         </td>
                     `;
+                    // Attach double-tap/click listener to the photo in the row
+                    const photoElementInRow = row.querySelector('.member-photo');
+                    if (photoElementInRow) {
+                        addPhotoEnlargeListeners(photoElementInRow);
+                    }
+
+
+                    // Populate Overdue Members table
+                    if (isOverdue(member.dueDate) && member.status !== 'Paid') {
+                        hasOverdueMembers = true;
+                        const overdueRow = overdueMembersTableBody.insertRow();
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const dueDate = new Date(member.dueDate);
+                        dueDate.setHours(0,0,0,0);
+                        const daysOverdue = Math.ceil(Math.abs(today - dueDate) / (1000 * 60 * 60 * 24));
+
+
+                        overdueRow.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member.memberId || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${member.name || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.phoneNumber || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.membershipType || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.startDate || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${member.dueDate || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${(member.feeAmount || 0).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">${daysOverdue} days</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
+                                <button data-id="${member.id}" class="edit-btn text-blue-600 hover:text-blue-900" title="Edit Member">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
+                                    </svg>
+                                </button>
+                                <button data-id="${member.id}" class="pause-btn text-yellow-600 hover:text-yellow-800" title="Pause Membership">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                                <button data-id="${member.id}" class="delete-btn text-red-600 hover:text-red-900" title="Delete Member">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                            </td>
+                        `;
+                        // Attach double-tap/click listener to the photo in the row
+                        const photoElementInOverdueRow = overdueRow.querySelector('.member-photo');
+                        if (photoElementInOverdueRow) {
+                            addPhotoEnlargeListeners(photoElementInOverdueRow);
+                        }
+                    }
                 });
 
-                // Attach event listeners to new buttons
+                // Attach event listeners to new buttons (for both tables)
                 document.querySelectorAll('.edit-btn').forEach(button => {
                     button.addEventListener('click', (e) => {
                         const id = e.currentTarget.dataset.id;
@@ -800,6 +999,12 @@
                         }
                     });
                 });
+            }
+
+            if (hasOverdueMembers) {
+                noOverdueMembersMessage.classList.add('hidden');
+            } else {
+                noOverdueMembersMessage.classList.remove('hidden');
             }
         }
 
@@ -869,11 +1074,18 @@
             editingMemberId = member.id;
             submitButton.textContent = 'Update Member';
             cancelEditButton.classList.remove('hidden');
-            // For editing, we don't load a photo as it's not persisted.
-            // Reset photo preview to default.
-            currentPhotoBase64 = null;
-            photoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
-            clearPhotoBtn.classList.add('hidden');
+
+            // Set photo preview to existing photo or default
+            if (member.photoURL) {
+                photoPreview.src = member.photoURL;
+                currentPhotoBase64 = member.photoURL; // Treat existing URL as current "base64" for simpler logic
+                clearPhotoBtn.classList.remove('hidden');
+            } else {
+                photoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+                currentPhotoBase64 = null;
+                clearPhotoBtn.classList.add('hidden');
+            }
+            photoUploadInput.value = ''; // Clear file input
             stopCamera(); // Stop camera if active
         }
 
@@ -918,22 +1130,37 @@
         }
 
         /**
-         * Handles the deletion of a member from Firestore.
+         * Handles the deletion of a member from Firestore and their photo from Storage.
          */
         async function handleDelete() {
-            if (!db || !memberToDelete) {
-                showMessage('Database not ready or no member selected for deletion.', 'error');
+            if (!db || !memberToDelete || !storage) {
+                showMessage('Database or Storage not ready, or no member selected for deletion.', 'error');
                 return;
             }
 
             try {
+                // 1. Delete photo from Firebase Storage if it exists
+                if (memberToDelete.photoURL) {
+                    const photoRef = ref(storage, `member_photos/${memberToDelete.id}`);
+                    try {
+                        await deleteObject(photoRef);
+                        console.log("Photo deleted from storage successfully.");
+                    } catch (storageError) {
+                        // If the photo doesn't exist in storage (e.g., deleted manually or never uploaded),
+                        // we still want to delete the Firestore document. Log the error but don't block.
+                        console.warn("Error deleting photo from storage (might not exist):", storageError);
+                    }
+                }
+
+                // 2. Delete member document from Firestore
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
-                showMessage('Member deleted successfully!', 'success');
+
+                showMessage('Member and associated photo deleted successfully!', 'success');
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
             } catch (error) {
-                console.error("Error deleting member:", error);
+                console.error("Error deleting member or photo:", error);
                 showMessage('Failed to delete member. Please try again.', 'error');
             }
         }
@@ -943,7 +1170,7 @@
          */
         async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); // Prefer front camera
                 cameraFeed.srcObject = stream;
                 cameraStream = stream;
                 cameraFeed.classList.remove('hidden');
@@ -951,7 +1178,7 @@
                 clearPhotoBtn.classList.remove('hidden');
             } catch (err) {
                 console.error("Error accessing camera: ", err);
-                showMessage('Could not access camera. Please ensure permissions are granted.', 'error');
+                showMessage('Could not access camera. Please ensure permissions are granted and no other app is using it.', 'error');
                 cameraFeed.classList.add('hidden');
                 photoPreview.classList.remove('hidden');
             }
@@ -1040,6 +1267,26 @@
             }
         }
 
+        /**
+         * Updates the current date, time, and day displayed in the header.
+         */
+        function updateDateTime() {
+            const now = new Date();
+
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const timeString = now.toLocaleTimeString('en-US', timeOptions);
+
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('en-US', dateOptions);
+
+            const dayOptions = { weekday: 'long' };
+            const dayString = now.toLocaleDateString('en-US', dayOptions);
+
+            currentTimeDisplay.textContent = timeString;
+            currentDateDisplay.textContent = dateString;
+            currentDayDisplay.textContent = dayString;
+        }
+
 
         // Initialize Firebase on window load
         window.onload = async function() {
@@ -1047,11 +1294,16 @@
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                storage = getStorage(app); // Initialize Firebase Storage
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
                 showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
                 return;
             }
+
+            // Start updating date/time immediately and then every second
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
 
             // Listen for authentication state changes
             onAuthStateChanged(auth, async (user) => {
@@ -1176,51 +1428,103 @@
         // Main Member Form Event Listener (for adding new or updating existing)
         memberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!db || !currentUserId) {
-                showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
+            if (!db || !currentUserId || !storage) {
+                showMessage('Database or Storage not ready, or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
-            // Recalculate dueDate just before saving to ensure it's up-to-date
             const calculatedDueDate = addDurationToDate(startDateInput.value, membershipTypeInput.value);
 
-            const memberData = {
-                memberId: memberIdInput.value.trim(), // Get Member ID
+            let memberData = {
+                memberId: memberIdInput.value.trim(),
                 name: nameInput.value.trim(),
-                phoneNumber: phoneNumberInput.value.trim(), // Get Phone Number
+                phoneNumber: phoneNumberInput.value.trim(),
                 membershipType: membershipTypeInput.value,
                 startDate: startDateInput.value,
-                dueDate: calculatedDueDate, // Use the calculated due date
+                dueDate: calculatedDueDate,
                 feeAmount: parseFloat(feeAmountInput.value),
                 status: 'Active', // New members are always 'Active' initially
-                createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 createdBy: currentUserId,
             };
 
-            // Basic validation for Member ID
             if (!memberData.memberId) {
                 showMessage('Member ID is required.', 'error');
                 return;
             }
 
             try {
+                let docRef;
+                let memberIdForPhoto = editingMemberId; // Use existing ID for photo if editing
+
                 if (editingMemberId) {
-                    // Update existing member (status is not updated via form, only via table button)
-                    const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId);
-                    // Only update fields that are present in the form, excluding status
-                    const updatePayload = { ...memberData };
-                    delete updatePayload.status; // Ensure status isn't overwritten from form submit
-                    await updateDoc(memberDocRef, updatePayload);
+                    // Update existing member
+                    docRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId);
+                    // Fetch current member to compare photoURL
+                    const currentMember = allMembers.find(m => m.id === editingMemberId);
+
+                    // Handle photo update/deletion
+                    if (currentPhotoBase64 && currentPhotoBase64 !== currentMember?.photoURL) {
+                        // New photo uploaded or existing photo re-selected (if it was a data URL)
+                        // If there was an old photo, attempt to delete it
+                        if (currentMember?.photoURL) {
+                            try {
+                                const oldPhotoRef = ref(storage, `member_photos/${editingMemberId}`);
+                                await deleteObject(oldPhotoRef);
+                                console.log("Old photo deleted from storage.");
+                            } catch (storageError) {
+                                console.warn("Could not delete old photo from storage (might not exist):", storageError);
+                            }
+                        }
+
+                        // Upload new photo
+                        const photoBlob = await (await fetch(currentPhotoBase64)).blob();
+                        const photoStorageRef = ref(storage, `member_photos/${editingMemberId}`);
+                        await uploadBytes(photoStorageRef, photoBlob);
+                        memberData.photoURL = await getDownloadURL(photoStorageRef);
+                        showMessage('Photo uploaded successfully!', 'success');
+                    } else if (!currentPhotoBase64 && currentMember?.photoURL) {
+                        // Photo was cleared from the form, and there was an existing photo
+                        try {
+                            const oldPhotoRef = ref(storage, `member_photos/${editingMemberId}`);
+                            await deleteObject(oldPhotoRef);
+                            console.log("Photo cleared and deleted from storage.");
+                        } catch (storageError) {
+                            console.warn("Could not delete cleared photo from storage (might not exist):", storageError);
+                        }
+                        memberData.photoURL = null; // Set photoURL to null in Firestore
+                    } else if (currentPhotoBase64 && currentPhotoBase64 === currentMember?.photoURL) {
+                        // Photo was not changed, retain existing URL
+                        memberData.photoURL = currentMember.photoURL;
+                    } else {
+                        // No photo was ever set, or no photo is currently set and none was provided
+                        memberData.photoURL = null;
+                    }
+
+                    await updateDoc(docRef, memberData);
                     showMessage('Member updated successfully!', 'success');
+
                 } else {
                     // Add new member
-                    await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
-                    showMessage('Member added successfully!', 'success');
+                    memberData.createdAt = serverTimestamp(); // Set createdAt only for new members
+                    docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
+                    memberIdForPhoto = docRef.id; // Get the ID for the newly created document
+
+                    // If a photo was provided, upload it and update the document with its URL
+                    if (currentPhotoBase64) {
+                        const photoBlob = await (await fetch(currentPhotoBase64)).blob();
+                        const photoStorageRef = ref(storage, `member_photos/${memberIdForPhoto}`);
+                        await uploadBytes(photoStorageRef, photoBlob);
+                        const photoURL = await getDownloadURL(photoStorageRef);
+                        await updateDoc(docRef, { photoURL: photoURL });
+                        showMessage('Member and photo added successfully!', 'success');
+                    } else {
+                        showMessage('Member added successfully!', 'success');
+                    }
                 }
                 clearMainForm();
             } catch (error) {
-                console.error("Error adding/updating member:", error);
+                console.error("Error adding/updating member or uploading photo:", error);
                 showMessage('Failed to save member. Please try again.', 'error');
             }
         });
@@ -1279,7 +1583,22 @@
             clearPhotoBtn.classList.add('hidden');
             photoUploadInput.value = ''; // Clear file input
             stopCamera(); // Stop camera if active
+            // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
+            if (editingMemberId) {
+                updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId), { photoURL: null })
+                    .then(() => console.log("PhotoURL removed from Firestore."))
+                    .catch(error => console.error("Error removing photoURL from Firestore:", error));
+                // Also, attempt to delete the actual file from storage
+                const photoRef = ref(storage, `member_photos/${editingMemberId}`);
+                deleteObject(photoRef)
+                    .then(() => console.log("Photo deleted from storage."))
+                    .catch(error => console.warn("Could not delete photo from storage (might not exist):", error));
+            }
         });
+
+        // Add double-tap/click listener to the photo preview in the form
+        addPhotoEnlargeListeners(photoPreview);
+
 
         // Existing Member Form Event Listeners
         existingStartDateInput.addEventListener('input', () => {
@@ -1322,6 +1641,8 @@
             }
 
             try {
+                // Note: The "Add Existing Member" tab does not support photo upload in this version.
+                // If you want to add photo upload here, similar logic from the main form would be needed.
                 await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
                 showMessage('Existing member added successfully!', 'success');
                 clearExistingMemberForm();
@@ -1388,6 +1709,15 @@
             } catch (error) {
                 console.error("Error processing advance payment:", error);
                 showMessage('Failed to process advance payment. Please try again.', 'error');
+            }
+        });
+
+        // Photo View Modal Event Listeners
+        closePhotoModalBtn.addEventListener('click', closePhotoModal);
+        photoViewModal.addEventListener('click', (e) => {
+            // Close modal if clicking outside the enlarged image (on the overlay)
+            if (e.target === photoViewModal) {
+                closePhotoModal();
             }
         });
 
