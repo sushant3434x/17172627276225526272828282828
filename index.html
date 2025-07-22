@@ -149,6 +149,7 @@
             <button id="tab-advance-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
                 Advance Payment
             </button>
+            <!-- Removed Plan Management Tab -->
         </div>
 
         <!-- Tab Content: Manage Member Details (Existing Form) -->
@@ -197,6 +198,7 @@
                     >
                         <option value="Monthly">Monthly</option>
                         <option value="Quarterly">Quarterly</option>
+                        <option value="HalfYearly">Half Yearly</option>
                         <option value="Annual">Annual</option>
                     </select>
                 </div>
@@ -221,20 +223,7 @@
                         required
                     />
                 </div>
-                <div>
-                    <label for="feeAmount" class="block text-sm font-medium text-gray-300">Fee Amount ($)</label>
-                    <input
-                        type="number"
-                        id="feeAmount"
-                        name="feeAmount"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="e.g., 50.00"
-                        step="0.01"
-                        required
-                    />
-                </div>
-
-                <!-- Photo Upload/Capture -->
+                <!-- Fee Amount input removed -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
@@ -326,6 +315,7 @@
                     >
                         <option value="Monthly">Monthly</option>
                         <option value="Quarterly">Quarterly</option>
+                        <option value="HalfYearly">Half Yearly</option>
                         <option value="Annual">Annual</option>
                     </select>
                 </div>
@@ -350,19 +340,7 @@
                         required
                     />
                 </div>
-                <div>
-                    <label for="existing-feeAmount" class="block text-sm font-medium text-gray-300">Fee Amount ($)</label>
-                    <input
-                        type="number"
-                        id="existing-feeAmount"
-                        name="feeAmount"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="e.g., 50.00"
-                        step="0.01"
-                        required
-                    />
-                </div>
-                <!-- Photo Upload/Capture for Existing Member Tab -->
+                <!-- Fee Amount input removed -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
@@ -433,6 +411,7 @@
                     >
                         <option value="Monthly">Monthly</option>
                         <option value="Quarterly">Quarterly</option>
+                        <option value="HalfYearly">Half Yearly</option>
                         <option value="Annual">Annual</option>
                     </select>
                 </div>
@@ -455,6 +434,8 @@
                 </div>
             </form>
         </div>
+
+        <!-- Removed Plan Management Tab Content -->
 
         <!-- Search and Filter -->
         <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
@@ -572,17 +553,13 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        // Removed Firebase Storage imports:
-        // import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
         // Global variables for Firebase instances
         let app;
         let db;
         let auth;
-        // Removed storage variable:
-        // let storage;
         let currentUserId = null;
         let editingMemberId = null;
         let memberToDelete = null;
@@ -592,20 +569,28 @@
 
         let currentCameraFacingMode = 'user'; // 'user' for front, 'environment' for back
 
+        // Hardcoded default plan amounts
+        const defaultPlanAmounts = {
+            Monthly: 700.00,
+            Quarterly: 2000.00,
+            HalfYearly: 3500.00,
+            Annual: 6000.00
+        };
+
         // Firebase project details provided by the user
         const firebaseConfig = {
             apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
             authDomain: "alpha-core-fitness-data.firebaseapp.com",
             projectId: "alpha-core-fitness-data",
-            storageBucket: "alpha-core-fitness-data.firebasestorage.app", // This is no longer directly used for uploads
+            storageBucket: "alpha-core-fitness-data.firebasestorage.app",
             messagingSenderId: "311733734225",
             appId: "1:311733734225:web:697ef2dc197ebb2e662170",
             measurementId: "G-C5EKPN2K2J"
         };
 
-        // Cloudinary Configuration - **IMPORTANT: Ensure this matches your Cloudinary setup**
-        const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2'; // Your Cloud Name from the screenshot
-        const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset'; // The name you gave your unsigned upload preset
+        // Cloudinary Configuration
+        const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2';
+        const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset';
 
         // Access global appId and initialAuthToken provided by the environment
         const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -625,38 +610,45 @@
         const tabManageMember = document.getElementById('tab-manage-member');
         const tabAddExisting = document.getElementById('tab-add-existing');
         const tabAdvancePayment = document.getElementById('tab-advance-payment');
+        // const tabPlanManagement = document.getElementById('tab-plan-management'); // Removed tab button
         const contentManageMember = document.getElementById('content-manage-member');
         const contentAddExisting = document.getElementById('content-add-existing');
         const contentAdvancePayment = document.getElementById('content-advance-payment');
+        // const contentPlanManagement = document.getElementById('content-plan-management'); // Removed tab content
 
         // Main Member Form (Manage Member Details)
         const memberForm = document.getElementById('member-form');
-        const memberIdInput = document.getElementById('member-id'); // New Member ID input
+        const memberIdInput = document.getElementById('member-id');
         const nameInput = document.getElementById('name');
-        const phoneNumberInput = document.getElementById('phone-number'); // New Phone Number input
+        const phoneNumberInput = document.getElementById('phone-number');
         const membershipTypeInput = document.getElementById('membershipType');
         const startDateInput = document.getElementById('startDate');
-        const dueDateInput = document.getElementById('dueDate'); // Now read-only
-        const feeAmountInput = document.getElementById('feeAmount');
+        const dueDateInput = document.getElementById('dueDate');
         const submitButton = document.getElementById('submit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
 
         // Existing Member Form
         const existingMemberForm = document.getElementById('existing-member-form');
-        const existingMemberIdInput = document.getElementById('existing-member-id'); // New Existing Member ID input
+        const existingMemberIdInput = document.getElementById('existing-member-id');
         const existingNameInput = document.getElementById('existing-name');
-        const existingPhoneNumberInput = document.getElementById('existing-phone-number'); // New Existing Phone Number input
+        const existingPhoneNumberInput = document.getElementById('existing-phone-number');
         const existingMembershipTypeInput = document.getElementById('existing-membershipType');
         const existingStartDateInput = document.getElementById('existing-startDate');
-        const calculatedDueDateInput = document.getElementById('calculated-dueDate'); // Read-only
-        const existingFeeAmountInput = document.getElementById('existing-feeAmount');
+        const calculatedDueDateInput = document.getElementById('calculated-dueDate');
 
         // Advance Payment Form
         const advancePaymentForm = document.getElementById('advance-payment-form');
         const advanceMemberSelect = document.getElementById('advance-member-select');
         const advanceCurrentDueDateInput = document.getElementById('advance-current-dueDate');
         const advanceMembershipTypeInput = document.getElementById('advance-membershipType');
-        const advanceNewDueDateInput = document.getElementById('advance-new-dueDate'); // Read-only
+        const advanceNewDueDateInput = document.getElementById('advance-new-dueDate');
+
+        // Plan Management Form (inputs are now unused, but kept for reference if needed)
+        // const planManagementForm = document.getElementById('plan-management-form');
+        // const defaultMonthlyFeeInput = document.getElementById('default-monthly-fee');
+        // const defaultQuarterlyFeeInput = document.getElementById('default-quarterly-fee');
+        // const defaultHalfYearlyFeeInput = document.getElementById('default-halfyearly-fee');
+        // const defaultAnnualFeeInput = document.getElementById('default-annual-fee');
 
 
         // Other DOM Elements
@@ -784,7 +776,7 @@
          * Adds a duration (based on membership type) to a given date.
          * Handles month-end overflows correctly.
          * @param {string} baseDateString - The date string (YYYY-MM-DD) to add duration to.
-         * @param {string} membershipType - The type of membership (Monthly, Quarterly, Annual).
+         * @param {string} membershipType - The type of membership (Monthly, Quarterly, HalfYearly, Annual).
          * @returns {string} The new date string in 'YYYY-MM-DD' format.
          */
         function addDurationToDate(baseDateString, membershipType) {
@@ -803,6 +795,9 @@
                 case 'Quarterly':
                     newDate.setMonth(newDate.getMonth() + 3);
                     break;
+                case 'HalfYearly': // New case for Half Yearly
+                    newDate.setMonth(newDate.getMonth() + 6);
+                    break;
                 case 'Annual':
                     newDate.setFullYear(newDate.getFullYear() + 1);
                     break;
@@ -812,10 +807,8 @@
 
             // If the original day was the last day of the month, and the new month has fewer days,
             // set the day to the last day of the new month.
-            // Example: Jan 31 + 1 month -> Feb 31 (invalid) -> Feb 28/29.
-            // This logic ensures if you start on the last day of a month, you end on the last day of the new month.
-            if (originalDay !== newDate.getDate()) { // Check if the day rolled over due to short month
-                newDate.setDate(0); // Set to last day of previous month (which is the month we just added to)
+            if (originalDay !== newDate.getDate()) {
+                newDate.setDate(0);
             }
 
 
@@ -1126,7 +1119,6 @@
             membershipTypeInput.value = 'Monthly';
             startDateInput.value = '';
             dueDateInput.value = ''; // Clear calculated due date
-            feeAmountInput.value = '';
             editingMemberId = null;
             submitButton.textContent = 'Add Member';
             cancelEditButton.classList.add('hidden');
@@ -1150,7 +1142,6 @@
             existingMembershipTypeInput.value = 'Monthly';
             existingStartDateInput.value = '';
             calculatedDueDateInput.value = '';
-            existingFeeAmountInput.value = '';
             existingPhotoBase64 = null; // Clear the temporary photo
             existingPhotoPreview.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
             existingClearPhotoBtn.classList.add('hidden');
@@ -1186,7 +1177,6 @@
             startDateInput.value = member.startDate;
             // When editing, the dueDate will be recalculated based on startDate and membershipType
             dueDateInput.value = addDurationToDate(member.startDate, membershipTypeInput.value); // Use form's membership type
-            feeAmountInput.value = member.feeAmount;
             editingMemberId = member.id;
             submitButton.textContent = 'Update Member';
             cancelEditButton.classList.remove('hidden');
@@ -1286,11 +1276,23 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
                 videoElement.srcObject = stream;
                 videoElement.classList.remove('hidden');
+                // Show switch camera button only if camera started successfully
+                if (videoElement === cameraFeed) {
+                    switchCameraBtn.classList.remove('hidden');
+                } else if (videoElement === existingCameraFeed) {
+                    existingSwitchCameraBtn.classList.remove('hidden');
+                }
                 return stream;
             } catch (err) {
                 console.error("Error accessing camera: ", err);
                 showMessage('Could not access camera. Please ensure permissions are granted and no other app is using it.', 'error');
                 videoElement.classList.add('hidden');
+                // Hide switch camera button if camera fails to start
+                if (videoElement === cameraFeed) {
+                    switchCameraBtn.classList.add('hidden');
+                } else if (videoElement === existingCameraFeed) {
+                    existingSwitchCameraBtn.classList.add('hidden');
+                }
                 return null;
             }
         }
@@ -1306,6 +1308,12 @@
                 videoElement.srcObject = null;
             }
             videoElement.classList.add('hidden');
+            // Hide switch camera button when camera is stopped
+            if (videoElement === cameraFeed) {
+                switchCameraBtn.classList.add('hidden');
+            } else if (videoElement === existingCameraFeed) {
+                existingSwitchCameraBtn.classList.add('hidden');
+            }
         }
 
         /**
@@ -1354,6 +1362,7 @@
                     viewLinkElement.href = e.target.result;
                     viewLinkElement.textContent = 'View Photo Preview';
                     viewLinkElement.classList.remove('hidden');
+                    previewElement.classList.remove('hidden'); // Ensure preview is visible
                 };
                 reader.readAsDataURL(file);
             }
@@ -1384,6 +1393,7 @@
                     viewLinkElement.href = dataUrl;
                     viewLinkElement.textContent = 'View Photo Preview';
                     viewLinkElement.classList.remove('hidden');
+                    previewElement.classList.remove('hidden'); // Ensure preview is visible
                 }
             } else {
                 // Otherwise, start camera
@@ -1417,6 +1427,7 @@
             stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
             viewLinkElement.classList.add('hidden'); // Hide the photo link
             viewLinkElement.href = '#'; // Reset href
+            previewElement.classList.remove('hidden'); // Ensure preview is visible
 
             // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
             if (memberId) {
@@ -1468,7 +1479,7 @@
 
         /**
          * Handles tab switching.
-         * @param {string} tabId - The ID of the tab to show ('manage-member', 'add-existing', or 'advance-payment').
+         * @param {string} tabId - The ID of the tab to show ('manage-member', 'add-existing', 'advance-payment').
          */
         function showTab(tabId) {
             // Deactivate all tabs and hide all content
@@ -1488,12 +1499,16 @@
                 contentManageMember.classList.remove('hidden');
                 clearExistingMemberForm(); // Clear other forms
                 clearAdvancePaymentForm();
+                // Ensure camera is stopped if active in other tabs
+                stopCamera(existingCameraFeed, existingCameraStream);
             } else if (tabId === 'add-existing') {
                 tabAddExisting.classList.add('tab-active');
                 tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddExisting.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
                 clearAdvancePaymentForm();
+                // Ensure camera is stopped if active in other tabs
+                stopCamera(cameraFeed, cameraStream);
             } else if (tabId === 'advance-payment') {
                 tabAdvancePayment.classList.add('tab-active');
                 tabAdvancePayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
@@ -1502,6 +1517,9 @@
                 clearExistingMemberForm();
                 populateAdvanceMemberSelect(); // Populate member dropdown for advance payment
                 clearAdvancePaymentForm(); // Clear the advance payment form itself
+                // Ensure camera is stopped if active in other tabs
+                stopCamera(cameraFeed, cameraStream);
+                stopCamera(existingCameraFeed, existingCameraStream);
             }
         }
 
@@ -1525,15 +1543,12 @@
             currentDayDisplay.textContent = dayString;
         }
 
-
         // Initialize Firebase on window load
         window.onload = async function() {
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                // Removed storage initialization:
-                // storage = getStorage(app);
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
                 showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
@@ -1559,7 +1574,7 @@
 
                     showTab('manage-member'); // Show default tab on successful login
 
-                    // Start listening to Firestore only when authenticated
+                    // Start listening to Firestore for gym members
                     const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
                     onSnapshot(membersCollectionRef, (snapshot) => {
                         allMembers = snapshot.docs.map(doc => ({
@@ -1672,16 +1687,23 @@
                 return;
             }
 
-            const calculatedDueDate = addDurationToDate(startDateInput.value, membershipTypeInput.value);
+            const membershipType = membershipTypeInput.value;
+            const calculatedDueDate = addDurationToDate(startDateInput.value, membershipType);
+            const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
+
+            if (feeAmount === undefined) {
+                showMessage(`Error: Default fee for ${membershipType} is not defined.`, 'error');
+                return;
+            }
 
             let memberData = {
                 memberId: memberIdInput.value.trim(),
                 name: nameInput.value.trim(),
                 phoneNumber: phoneNumberInput.value.trim(),
-                membershipType: membershipTypeInput.value,
+                membershipType: membershipType,
                 startDate: startDateInput.value,
                 dueDate: calculatedDueDate,
-                feeAmount: parseFloat(feeAmountInput.value),
+                feeAmount: parseFloat(feeAmount), // Use the default amount
                 status: 'Active', // New members are always 'Active' initially
                 updatedAt: serverTimestamp(),
                 createdBy: currentUserId,
@@ -1801,14 +1823,22 @@
                 return;
             }
 
+            const membershipType = existingMembershipTypeInput.value;
+            const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
+
+            if (feeAmount === undefined) {
+                showMessage(`Error: Default fee for ${membershipType} is not defined.`, 'error');
+                return;
+            }
+
             const memberData = {
                 memberId: existingMemberIdInput.value.trim(), // Get Member ID
                 name: existingNameInput.value.trim(),
                 phoneNumber: existingPhoneNumberInput.value.trim(), // Get Phone Number
-                membershipType: existingMembershipTypeInput.value,
+                membershipType: membershipType,
                 startDate: existingStartDateInput.value,
                 dueDate: calculatedDueDateInput.value, // Use the calculated due date
-                feeAmount: parseFloat(existingFeeAmountInput.value),
+                feeAmount: parseFloat(feeAmount), // Use the default amount
                 status: 'Active', // Existing members are always 'Active' initially
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
@@ -1913,11 +1943,18 @@
                 return;
             }
 
+            const feeAmount = defaultPlanAmounts[newMembershipType]; // Get fee from hardcoded default plans
+            if (feeAmount === undefined) {
+                showMessage(`Error: Default fee for ${newMembershipType} is not defined.`, 'error');
+                return;
+            }
+
             try {
                 const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberId);
                 await updateDoc(memberDocRef, {
                     dueDate: newDueDate,
-                    // If status was overdue or inactive, set to Active after payment
+                    membershipType: newMembershipType, // Update membership type as well
+                    feeAmount: parseFloat(feeAmount), // Update fee amount
                     status: 'Active', // Always set to Active on advance payment
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
