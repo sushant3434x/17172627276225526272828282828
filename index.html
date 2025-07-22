@@ -235,7 +235,7 @@
 
                 <!-- Photo Upload/Capture -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Member Photo (Preview Only)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
                         <input type="file" id="photo-upload" accept="image/*" class="hidden">
                         <button type="button" id="upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
@@ -243,6 +243,9 @@
                         </button>
                         <button type="button" id="take-photo-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
                             Take Photo
+                        </button>
+                        <button type="button" id="switch-camera-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                            Switch Camera
                         </button>
                         <button type="button" id="clear-photo-btn" class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
                             Clear Photo
@@ -357,7 +360,32 @@
                         required
                     />
                 </div>
-                <!-- Removed Status dropdown from here -->
+                <!-- Photo Upload/Capture for Existing Member Tab -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Member Photo</label>
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <input type="file" id="existing-photo-upload" accept="image/*" class="hidden">
+                        <button type="button" id="existing-upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+                            Upload Photo
+                        </button>
+                        <button type="button" id="existing-take-photo-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+                            Take Photo
+                        </button>
+                        <button type="button" id="existing-switch-camera-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                            Switch Camera
+                        </button>
+                        <button type="button" id="existing-clear-photo-btn" class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                            Clear Photo
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <img id="existing-photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm cursor-pointer" src="https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo" alt="Photo Preview">
+                        <video id="existing-camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-200 shadow-sm hidden" autoplay playsinline></video>
+                        <canvas id="existing-camera-canvas" class="hidden"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Note: Photos are uploaded permanently to Firebase Storage. Double-tap to enlarge.</p>
+                </div>
+
                 <div class="md:col-span-2 flex justify-end pt-4">
                     <button
                         type="submit"
@@ -554,7 +582,10 @@
         let editingMemberId = null;
         let memberToDelete = null;
         let allMembers = []; // To store all members fetched from Firestore
-        let currentPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL
+        let currentPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL for main form
+        let existingPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL for existing member form
+
+        let currentCameraFacingMode = 'user'; // 'user' for front, 'environment' for back
 
         // Firebase project details provided by the user
         const firebaseConfig = {
@@ -598,7 +629,6 @@
         const startDateInput = document.getElementById('startDate');
         const dueDateInput = document.getElementById('dueDate'); // Now read-only
         const feeAmountInput = document.getElementById('feeAmount');
-        // const statusInput = document.getElementById('status'); // Removed from form
         const submitButton = document.getElementById('submit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
 
@@ -611,7 +641,6 @@
         const existingStartDateInput = document.getElementById('existing-startDate');
         const calculatedDueDateInput = document.getElementById('calculated-dueDate'); // Read-only
         const existingFeeAmountInput = document.getElementById('existing-feeAmount');
-        // const existingStatusInput = document.getElementById('existing-status'); // Removed from form
 
         // Advance Payment Form
         const advancePaymentForm = document.getElementById('advance-payment-form');
@@ -645,15 +674,28 @@
         const currentDayDisplay = document.getElementById('current-day');
 
 
-        // Photo related DOM elements
+        // Photo related DOM elements for Manage Member Details tab
         const photoUploadInput = document.getElementById('photo-upload');
         const uploadPhotoBtn = document.getElementById('upload-photo-btn');
         const takePhotoBtn = document.getElementById('take-photo-btn');
+        const switchCameraBtn = document.getElementById('switch-camera-btn');
         const clearPhotoBtn = document.getElementById('clear-photo-btn');
         const photoPreview = document.getElementById('photo-preview');
         const cameraFeed = document.getElementById('camera-feed');
         const cameraCanvas = document.getElementById('camera-canvas');
-        let cameraStream = null; // To hold the camera stream
+        let cameraStream = null; // To hold the camera stream for main tab
+
+        // Photo related DOM elements for Add Existing Member tab
+        const existingPhotoUploadInput = document.getElementById('existing-photo-upload');
+        const existingUploadPhotoBtn = document.getElementById('existing-upload-photo-btn');
+        const existingTakePhotoBtn = document.getElementById('existing-take-photo-btn');
+        const existingSwitchCameraBtn = document.getElementById('existing-switch-camera-btn');
+        const existingClearPhotoBtn = document.getElementById('existing-clear-photo-btn');
+        const existingPhotoPreview = document.getElementById('existing-photo-preview');
+        const existingCameraFeed = document.getElementById('existing-camera-feed');
+        const existingCameraCanvas = document.getElementById('existing-camera-canvas');
+        let existingCameraStream = null; // To hold the camera stream for existing member tab
+
 
         // Photo View Modal elements
         const photoViewModal = document.getElementById('photo-view-modal');
@@ -777,7 +819,8 @@
          * @param {string} imageUrl - The URL of the image to display.
          */
         function openPhotoModal(imageUrl) {
-            if (imageUrl && imageUrl !== "https://placehold.co/40x40/e2e8f0/64748b?text=👤" && imageUrl !== "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo") {
+            // Check if the image is a placeholder before opening
+            if (imageUrl && !imageUrl.includes("placehold.co")) {
                 enlargedPhoto.src = imageUrl;
                 photoViewModal.classList.remove('hidden');
                 photoViewModal.classList.add('flex');
@@ -1019,19 +1062,19 @@
             startDateInput.value = '';
             dueDateInput.value = ''; // Clear calculated due date
             feeAmountInput.value = '';
-            // statusInput.value = 'Active'; // Removed from form clear
             editingMemberId = null;
             submitButton.textContent = 'Add Member';
             cancelEditButton.classList.add('hidden');
             currentPhotoBase64 = null; // Clear the temporary photo
             photoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
             clearPhotoBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden'); // Hide switch camera button
             photoUploadInput.value = ''; // Clear file input
-            stopCamera(); // Stop camera if active
+            stopCamera(cameraFeed, cameraStream); // Stop camera if active for main form
         }
 
         /**
-         * Clears the existing member form inputs.
+         * Clears the existing member form inputs and photo preview.
          */
         function clearExistingMemberForm() {
             existingMemberIdInput.value = ''; // Clear Existing Member ID
@@ -1041,7 +1084,12 @@
             existingStartDateInput.value = '';
             calculatedDueDateInput.value = '';
             existingFeeAmountInput.value = '';
-            // existingStatusInput.value = 'Active'; // Removed from form clear
+            existingPhotoBase64 = null; // Clear the temporary photo
+            existingPhotoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+            existingClearPhotoBtn.classList.add('hidden');
+            existingSwitchCameraBtn.classList.add('hidden'); // Hide switch camera button
+            existingPhotoUploadInput.value = ''; // Clear file input
+            stopCamera(existingCameraFeed, existingCameraStream); // Stop camera if active for existing form
         }
 
         /**
@@ -1068,9 +1116,8 @@
             membershipTypeInput.value = member.membershipType;
             startDateInput.value = member.startDate;
             // When editing, the dueDate will be recalculated based on startDate and membershipType
-            dueDateInput.value = addDurationToDate(member.startDate, member.membershipType);
+            dueDateInput.value = addDurationToDate(member.startDate, membershipTypeInput.value); // Use form's membership type
             feeAmountInput.value = member.feeAmount;
-            // statusInput.value = member.status; // Removed from form edit
             editingMemberId = member.id;
             submitButton.textContent = 'Update Member';
             cancelEditButton.classList.remove('hidden');
@@ -1086,7 +1133,8 @@
                 clearPhotoBtn.classList.add('hidden');
             }
             photoUploadInput.value = ''; // Clear file input
-            stopCamera(); // Stop camera if active
+            stopCamera(cameraFeed, cameraStream); // Stop camera if active
+            switchCameraBtn.classList.add('hidden'); // Hide switch camera button when editing
         }
 
         /**
@@ -1166,54 +1214,173 @@
         }
 
         /**
-         * Starts the camera feed.
+         * Starts the camera feed for a given video element and updates related UI.
+         * @param {HTMLVideoElement} videoElement - The video element to display the camera feed.
+         * @param {string} facingMode - 'user' for front camera, 'environment' for back camera.
+         * @returns {Promise<MediaStream>} The camera stream.
          */
-        async function startCamera() {
+        async function startCamera(videoElement, facingMode) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); // Prefer front camera
-                cameraFeed.srcObject = stream;
-                cameraStream = stream;
-                cameraFeed.classList.remove('hidden');
-                photoPreview.classList.add('hidden');
-                clearPhotoBtn.classList.remove('hidden');
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+                videoElement.srcObject = stream;
+                videoElement.classList.remove('hidden');
+                return stream;
             } catch (err) {
                 console.error("Error accessing camera: ", err);
                 showMessage('Could not access camera. Please ensure permissions are granted and no other app is using it.', 'error');
-                cameraFeed.classList.add('hidden');
-                photoPreview.classList.remove('hidden');
+                videoElement.classList.add('hidden');
+                return null;
             }
         }
 
         /**
-         * Stops the camera feed.
+         * Stops the camera feed for a given video element and stream.
+         * @param {HTMLVideoElement} videoElement - The video element whose stream to stop.
+         * @param {MediaStream} stream - The camera stream to stop.
          */
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraFeed.srcObject = null;
-                cameraFeed.classList.add('hidden');
-                photoPreview.classList.remove('hidden');
+        function stopCamera(videoElement, stream) {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
             }
+            videoElement.classList.add('hidden');
         }
 
         /**
-         * Captures a photo from the camera feed.
+         * Captures a photo from the camera feed and updates the photo preview.
+         * @param {HTMLVideoElement} videoElement - The video element to capture from.
+         * @param {HTMLCanvasElement} canvasElement - The canvas element to draw the image on.
+         * @param {HTMLImageElement} previewElement - The image element to show the preview.
+         * @returns {string|null} The base64 data URL of the captured photo, or null if capture failed.
          */
-        function capturePhoto() {
-            if (cameraStream && !cameraFeed.classList.contains('hidden')) {
-                cameraCanvas.width = cameraFeed.videoWidth;
-                cameraCanvas.height = cameraFeed.videoHeight;
-                const context = cameraCanvas.getContext('2d');
-                context.drawImage(cameraFeed, 0, 0, cameraCanvas.width, cameraCanvas.height);
-                const dataUrl = cameraCanvas.toDataURL('image/png');
-                photoPreview.src = dataUrl;
-                currentPhotoBase64 = dataUrl; // Store for temporary session preview
-                stopCamera(); // Stop camera after capture
-                clearPhotoBtn.classList.remove('hidden');
+        function capturePhoto(videoElement, canvasElement, previewElement) {
+            if (videoElement.srcObject && !videoElement.classList.contains('hidden')) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                const context = canvasElement.getContext('2d');
+                context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                const dataUrl = canvasElement.toDataURL('image/png');
+                previewElement.src = dataUrl;
+                return dataUrl;
             } else {
                 showMessage('Camera is not active. Please start camera first.', 'error');
+                return null;
             }
         }
+
+        /**
+         * Generic function to handle photo upload from file input.
+         * @param {Event} event - The change event from the file input.
+         * @param {HTMLImageElement} previewElement - The image element to show the preview.
+         * @param {HTMLButtonElement} clearBtn - The clear photo button.
+         * @param {HTMLVideoElement} cameraFeedElement - The camera feed element.
+         * @param {MediaStream} cameraStreamVar - The camera stream variable to clear.
+         * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
+         */
+        function handleFileUpload(event, previewElement, clearBtn, cameraFeedElement, cameraStreamVar, setPhotoBase64Callback) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewElement.src = e.target.result;
+                    setPhotoBase64Callback(e.target.result); // Set the correct base64 variable
+                    clearBtn.classList.remove('hidden');
+                    stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        /**
+         * Generic function to handle taking a photo from camera.
+         * @param {HTMLVideoElement} cameraFeedElement - The camera feed element.
+         * @param {HTMLCanvasElement} cameraCanvasElement - The canvas element.
+         * @param {HTMLImageElement} previewElement - The image preview element.
+         * @param {HTMLButtonElement} clearBtn - The clear photo button.
+         * @param {HTMLButtonElement} switchCameraBtnElement - The switch camera button.
+         * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
+         * @param {string} currentFacingModeParam - The current camera facing mode.
+         * @param {Function} setCameraStreamCallback - Callback to set the camera stream variable.
+         */
+        async function handleTakePhoto(cameraFeedElement, cameraCanvasElement, previewElement, clearBtn, switchCameraBtnElement, setPhotoBase64Callback, currentFacingModeParam, setCameraStreamCallback) {
+            if (cameraFeedElement.srcObject && !cameraFeedElement.classList.contains('hidden')) {
+                // If camera is already active, capture photo
+                const dataUrl = capturePhoto(cameraFeedElement, cameraCanvasElement, previewElement);
+                if (dataUrl) {
+                    setPhotoBase64Callback(dataUrl);
+                    stopCamera(cameraFeedElement, cameraFeedElement.srcObject); // Stop camera after capture
+                    setCameraStreamCallback(null); // Clear stream variable
+                    clearBtn.classList.remove('hidden');
+                    switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
+                }
+            } else {
+                // Otherwise, start camera
+                const stream = await startCamera(cameraFeedElement, currentFacingModeParam);
+                if (stream) {
+                    setCameraStreamCallback(stream);
+                    previewElement.classList.add('hidden'); // Hide static preview while camera is on
+                    clearBtn.classList.remove('hidden');
+                    switchCameraBtnElement.classList.remove('hidden'); // Show switch camera button
+                }
+            }
+        }
+
+        /**
+         * Generic function to handle clearing a photo.
+         * @param {HTMLImageElement} previewElement - The image preview element.
+         * @param {HTMLButtonElement} clearBtn - The clear photo button.
+         * @param {HTMLButtonElement} switchCameraBtnElement - The switch camera button.
+         * @param {HTMLInputElement} fileInput - The file input element.
+         * @param {HTMLVideoElement} cameraFeedElement - The camera feed element.
+         * @param {MediaStream} cameraStreamVar - The camera stream variable to clear.
+         * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
+         * @param {string|null} memberId - The ID of the member if editing, null if adding new.
+         */
+        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, setPhotoBase64Callback, memberId) {
+            setPhotoBase64Callback(null);
+            previewElement.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
+            clearBtn.classList.add('hidden');
+            switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
+            fileInput.value = ''; // Clear file input
+            stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
+
+            // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
+            if (memberId) {
+                try {
+                    await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
+                    console.log("PhotoURL removed from Firestore.");
+                } catch (error) {
+                    console.error("Error removing photoURL from Firestore:", error);
+                }
+                // Also, attempt to delete the actual file from storage
+                const photoRef = ref(storage, `member_photos/${memberId}`);
+                try {
+                    await deleteObject(photoRef);
+                    console.log("Photo deleted from storage.");
+                } catch (error) {
+                    console.warn("Could not delete photo from storage (might not exist):", error);
+                }
+            }
+        }
+
+        /**
+         * Generic function to handle switching cameras.
+         * @param {HTMLVideoElement} cameraFeedElement - The camera feed element.
+         * @param {MediaStream} cameraStreamVar - The camera stream variable.
+         * @param {Function} setCameraStreamCallback - Callback to set the camera stream variable.
+         * @param {Function} setFacingModeCallback - Callback to set the current facing mode.
+         * @param {string} currentFacingModeParam - The current camera facing mode.
+         */
+        async function handleSwitchCamera(cameraFeedElement, cameraStreamVar, setCameraStreamCallback, setFacingModeCallback, currentFacingModeParam) {
+            stopCamera(cameraFeedElement, cameraStreamVar);
+            const newFacingMode = currentFacingModeParam === 'user' ? 'environment' : 'user';
+            setFacingModeCallback(newFacingMode); // Update the facing mode
+            const stream = await startCamera(cameraFeedElement, newFacingMode);
+            if (stream) {
+                setCameraStreamCallback(stream);
+            }
+        }
+
 
         /**
          * Populates the member select dropdown in the Advance Payment tab.
@@ -1547,54 +1714,26 @@
         });
         confirmDeleteButton.addEventListener('click', handleDelete);
 
-        // Photo related event listeners (still tied to the main form)
+        // Photo related event listeners for Manage Member Details tab
         uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click()); // Trigger file input click
-        photoUploadInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    photoPreview.src = e.target.result;
-                    currentPhotoBase64 = e.target.result; // Store for temporary preview
-                    clearPhotoBtn.classList.remove('hidden');
-                    stopCamera(); // Stop camera if active
-                };
-                reader.readAsDataURL(file);
+        photoUploadInput.addEventListener('change', (event) => handleFileUpload(event, photoPreview, clearPhotoBtn, cameraFeed, cameraStream, (data) => currentPhotoBase64 = data));
+
+        takePhotoBtn.addEventListener('click', () => handleTakePhoto(cameraFeed, cameraCanvas, photoPreview, clearPhotoBtn, switchCameraBtn, (data) => currentPhotoBase64 = data, currentCameraFacingMode, (stream) => cameraStream = stream));
+
+        switchCameraBtn.addEventListener('click', () => handleSwitchCamera(cameraFeed, cameraStream, (stream) => cameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode));
+
+        cameraFeed.addEventListener('click', () => {
+            const dataUrl = capturePhoto(cameraFeed, cameraCanvas, photoPreview);
+            if (dataUrl) {
+                currentPhotoBase64 = dataUrl;
+                stopCamera(cameraFeed, cameraStream);
+                cameraStream = null;
+                clearPhotoBtn.classList.remove('hidden');
+                switchCameraBtn.classList.add('hidden');
             }
         });
 
-        takePhotoBtn.addEventListener('click', () => {
-            if (cameraStream && !cameraFeed.classList.contains('hidden')) {
-                // If camera is already active, capture photo
-                capturePhoto();
-            } else {
-                // Otherwise, start camera
-                startCamera();
-            }
-        });
-
-        // Add an event listener to the video element to capture photo when clicked
-        cameraFeed.addEventListener('click', capturePhoto);
-
-
-        clearPhotoBtn.addEventListener('click', () => {
-            currentPhotoBase64 = null;
-            photoPreview.src = "https://placehold.co/112x112/e2e8f0/64748b?text=No+Photo";
-            clearPhotoBtn.classList.add('hidden');
-            photoUploadInput.value = ''; // Clear file input
-            stopCamera(); // Stop camera if active
-            // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
-            if (editingMemberId) {
-                updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId), { photoURL: null })
-                    .then(() => console.log("PhotoURL removed from Firestore."))
-                    .catch(error => console.error("Error removing photoURL from Firestore:", error));
-                // Also, attempt to delete the actual file from storage
-                const photoRef = ref(storage, `member_photos/${editingMemberId}`);
-                deleteObject(photoRef)
-                    .then(() => console.log("Photo deleted from storage."))
-                    .catch(error => console.warn("Could not delete photo from storage (might not exist):", error));
-            }
-        });
+        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, (data) => currentPhotoBase64 = data, editingMemberId));
 
         // Add double-tap/click listener to the photo preview in the form
         addPhotoEnlargeListeners(photoPreview);
@@ -1615,18 +1754,18 @@
 
         existingMemberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!db || !currentUserId) {
-                showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
+            if (!db || !currentUserId || !storage) {
+                showMessage('Database or Storage not ready, or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
             const memberData = {
-                memberId: existingMemberIdInput.value.trim(), // Get Member ID
+                memberId: existingMemberIdInput.value.trim(),
                 name: existingNameInput.value.trim(),
-                phoneNumber: existingPhoneNumberInput.value.trim(), // Get Phone Number
+                phoneNumber: existingPhoneNumberInput.value.trim(),
                 membershipType: existingMembershipTypeInput.value,
                 startDate: existingStartDateInput.value,
-                dueDate: calculatedDueDateInput.value, // Use the calculated due date
+                dueDate: calculatedDueDateInput.value,
                 feeAmount: parseFloat(existingFeeAmountInput.value),
                 status: 'Active', // Existing members are always 'Active' initially
                 createdAt: serverTimestamp(),
@@ -1634,23 +1773,57 @@
                 createdBy: currentUserId,
             };
 
-            // Basic validation for Member ID
             if (!memberData.memberId) {
                 showMessage('Member ID is required.', 'error');
                 return;
             }
 
             try {
-                // Note: The "Add Existing Member" tab does not support photo upload in this version.
-                // If you want to add photo upload here, similar logic from the main form would be needed.
-                await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
-                showMessage('Existing member added successfully!', 'success');
+                const docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
+                const newMemberId = docRef.id;
+
+                // If a photo was provided, upload it and update the document with its URL
+                if (existingPhotoBase64) {
+                    const photoBlob = await (await fetch(existingPhotoBase64)).blob();
+                    const photoStorageRef = ref(storage, `member_photos/${newMemberId}`);
+                    await uploadBytes(photoStorageRef, photoBlob);
+                    const photoURL = await getDownloadURL(photoStorageRef);
+                    await updateDoc(docRef, { photoURL: photoURL });
+                    showMessage('Existing member and photo added successfully!', 'success');
+                } else {
+                    showMessage('Existing member added successfully!', 'success');
+                }
                 clearExistingMemberForm();
             } catch (error) {
                 console.error("Error adding existing member:", error);
                 showMessage('Failed to add existing member. Please try again.', 'error');
             }
         });
+
+        // Photo related event listeners for Add Existing Member tab
+        existingUploadPhotoBtn.addEventListener('click', () => existingPhotoUploadInput.click());
+        existingPhotoUploadInput.addEventListener('change', (event) => handleFileUpload(event, existingPhotoPreview, existingClearPhotoBtn, existingCameraFeed, existingCameraStream, (data) => existingPhotoBase64 = data));
+
+        existingTakePhotoBtn.addEventListener('click', () => handleTakePhoto(existingCameraFeed, existingCameraCanvas, existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, (data) => existingPhotoBase64 = data, currentCameraFacingMode, (stream) => existingCameraStream = stream));
+
+        existingSwitchCameraBtn.addEventListener('click', () => handleSwitchCamera(existingCameraFeed, existingCameraStream, (stream) => existingCameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode));
+
+        existingCameraFeed.addEventListener('click', () => {
+            const dataUrl = capturePhoto(existingCameraFeed, existingCameraCanvas, existingPhotoPreview);
+            if (dataUrl) {
+                existingPhotoBase64 = dataUrl;
+                stopCamera(existingCameraFeed, existingCameraStream);
+                existingCameraStream = null;
+                existingClearPhotoBtn.classList.remove('hidden');
+                existingSwitchCameraBtn.classList.add('hidden');
+            }
+        });
+
+        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, (data) => existingPhotoBase64 = data, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
+
+        // Add double-tap/click listener to the photo preview in the existing form
+        addPhotoEnlargeListeners(existingPhotoPreview);
+
 
         // Advance Payment Form Event Listeners
         advanceMemberSelect.addEventListener('change', () => {
