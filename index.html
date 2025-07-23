@@ -11,38 +11,43 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* Darker, bolder background */
-            background: linear-gradient(to bottom right, #1a202c, #2d3748); /* Dark Gray to Dark Blue-Gray */
+            background: linear-gradient(to bottom right, #1a202c, #2d3748);
         }
-        /* Custom scrollbar for better aesthetics */
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #4a5568; /* Darker scrollbar track */
+            background: #4a5568;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #a0aec0; /* Lighter scrollbar thumb */
+            background: #a0aec0;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e0; /* Even lighter on hover */
+            background: #cbd5e0;
         }
         .member-photo {
             width: 40px;
             height: 40px;
             object-fit: cover;
             border-radius: 50%;
-            border: 1px solid #4a5568; /* Darker border for photo */
+            border: 1px solid #4a5568;
         }
-        /* Style for the active tab button */
+        /* ID Card Photo */
+        .id-card-photo {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #6366f1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
         .tab-active {
-            border-color: #6366f1; /* Indigo-500 for active tab */
-            color: #818cf8; /* Indigo-400 for active tab text */
+            border-color: #6366f1;
+            color: #818cf8;
             font-weight: 600;
         }
-        /* Animation for message display */
         #message-display.hidden {
             opacity: 0;
             transform: translateY(-20px);
@@ -51,20 +56,17 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* Strikethrough for inactive members */
         .line-through-name {
             text-decoration: line-through;
         }
-
-        /* Photo View Modal Styles */
         #photo-view-modal {
-            background-color: rgba(0, 0, 0, 0.9); /* Even darker overlay */
-            backdrop-filter: blur(12px); /* More blur */
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(12px);
             transition: opacity 0.3s ease-in-out;
         }
         #photo-view-modal.hidden {
             opacity: 0;
-            pointer-events: none; /* Allows clicks to pass through when hidden */
+            pointer-events: none;
         }
         #photo-view-modal.flex {
             opacity: 1;
@@ -81,6 +83,31 @@
             transform: scale(1);
             opacity: 1;
         }
+        /* Style for the password entry modal */
+        #password-entry-modal {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            transition: opacity 0.3s ease-in-out;
+        }
+        #password-entry-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #password-entry-modal.flex {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #password-entry-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #password-entry-modal.hidden #password-entry-content {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        #password-entry-modal.flex #password-entry-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="min-h-screen p-6 flex flex-col items-center justify-center">
@@ -88,7 +115,7 @@
     <!-- Message Display -->
     <div id="message-display" class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
 
-    <!-- Authentication Section -->
+    <!-- Authentication Section (Re-introduced) -->
     <div id="auth-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md mb-8 hidden border border-gray-700">
         <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Gym Manager</h1>
         <p class="text-gray-300 text-center mb-8 text-lg">Sign in or sign up to access your dashboard.</p>
@@ -118,6 +145,18 @@
         </div>
     </div>
 
+    <!-- Password Entry Modal -->
+    <div id="password-entry-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div id="password-entry-content" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">Enter App Password</h2>
+            <input type="password" id="app-password-input" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl" placeholder="••••" maxlength="4">
+            <button id="submit-app-password" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6">
+                Unlock App
+            </button>
+        </div>
+    </div>
+
+
     <!-- Main Gym App Section -->
     <div id="main-app-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700">
         <div class="flex justify-between items-center mb-8">
@@ -146,10 +185,12 @@
             <button id="tab-add-existing" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
                 Add Existing Member
             </button>
-            <button id="tab-advance-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                Advance Payment
+            <button id="tab-add-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                Add Payment
             </button>
-            <!-- Removed Plan Management Tab -->
+            <button id="tab-id-card" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                ID Card View
+            </button>
         </div>
 
         <!-- Tab Content: Manage Member Details (Existing Form) -->
@@ -223,7 +264,6 @@
                         required
                     />
                 </div>
-                <!-- Fee Amount input removed -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
@@ -340,7 +380,6 @@
                         required
                     />
                 </div>
-                <!-- Fee Amount input removed -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
@@ -378,14 +417,23 @@
             </form>
         </div>
 
-        <!-- Tab Content: Advance Payment -->
-        <div id="content-advance-payment" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Process Advance Payment</h2>
-            <form id="advance-payment-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Tab Content: Add Payment -->
+        <div id="content-add-payment" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-2xl font-bold text-white mb-6">Process Payment</h2>
+            <form id="add-payment-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label for="add-payment-member-search" class="block text-sm font-medium text-gray-300">Search Member</label>
+                    <input
+                        type="text"
+                        id="add-payment-member-search"
+                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        placeholder="Type name or ID to search..."
+                    />
+                </div>
                 <div>
-                    <label for="advance-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
+                    <label for="add-payment-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
                     <select
-                        id="advance-member-select"
+                        id="add-payment-member-select"
                         class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     >
@@ -394,18 +442,18 @@
                     </select>
                 </div>
                 <div>
-                    <label for="advance-current-dueDate" class="block text-sm font-medium text-gray-300">Current Due Date</label>
+                    <label for="add-payment-current-dueDate" class="block text-sm font-medium text-gray-300">Current Due Date</label>
                     <input
-                        type="date"
-                        id="advance-current-dueDate"
+                        type="text"
+                        id="add-payment-current-dueDate"
                         class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
                         readonly
                     />
                 </div>
                 <div>
-                    <label for="advance-membershipType" class="block text-sm font-medium text-gray-300">Payment Plan Type</label>
+                    <label for="add-payment-membershipType" class="block text-sm font-medium text-gray-300">Payment Plan Type</label>
                     <select
-                        id="advance-membershipType"
+                        id="add-payment-membershipType"
                         class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
                         required
                     >
@@ -416,10 +464,10 @@
                     </select>
                 </div>
                 <div>
-                    <label for="advance-new-dueDate" class="block text-sm font-medium text-gray-300">New Due Date (Calculated)</label>
+                    <label for="add-payment-new-dueDate" class="block text-sm font-medium text-gray-300">New Due Date (Calculated)</label>
                     <input
-                        type="date"
-                        id="advance-new-dueDate"
+                        type="text"
+                        id="add-payment-new-dueDate"
                         class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
                         readonly
                     />
@@ -429,13 +477,52 @@
                         type="submit"
                         class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
                     >
-                        Process Advance Payment
+                        Process Payment
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Removed Plan Management Tab Content -->
+        <!-- Tab Content: ID Card View (New Tab) -->
+        <div id="content-id-card" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-2xl font-bold text-white mb-6">Member ID Card View</h2>
+            <div class="mb-6">
+                <label for="id-card-member-search" class="block text-sm font-medium text-gray-300">Search Member</label>
+                <input
+                    type="text"
+                    id="id-card-member-search"
+                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                    placeholder="Type name or ID to search..."
+                />
+            </div>
+            <div class="mb-6">
+                <label for="id-card-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
+                <select
+                    id="id-card-member-select"
+                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                >
+                    <option value="">-- Select a Member --</option>
+                </select>
+            </div>
+
+            <div id="id-card-display" class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-6 hidden">
+                <div class="flex-shrink-0">
+                    <img id="id-card-photo" class="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo" alt="Member Photo">
+                </div>
+                <div class="flex-grow text-white">
+                    <h3 id="id-card-name" class="text-3xl font-bold mb-2"></h3>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Member ID:</span> <span id="id-card-member-id"></span></p>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Phone:</span> <span id="id-card-phone"></span></p>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Membership Type:</span> <span id="id-card-membership-type"></span></p>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Start Date:</span> <span id="id-card-start-date"></span></p>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Due Date:</span> <span id="id-card-due-date"></span></p>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Fee:</span> <span id="id-card-fee"></span></p>
+                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Status:</span> <span id="id-card-status"></span></p>
+                </div>
+            </div>
+            <p id="no-id-card-selected-message" class="text-gray-400 text-center p-6">Select a member to view their ID card.</p>
+        </div>
+
 
         <!-- Search and Filter -->
         <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
@@ -553,7 +640,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
         // Global variables for Firebase instances
@@ -577,6 +664,9 @@
             Annual: 6000.00
         };
 
+        // The in-app password
+        const APP_PASSWORD = "2003";
+
         // Firebase project details provided by the user
         const firebaseConfig = {
             apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
@@ -598,23 +688,31 @@
 
         // DOM Elements for Authentication
         const authSection = document.getElementById('auth-section');
-        const mainAppSection = document.getElementById('main-app-section');
         const authEmailInput = document.getElementById('auth-email');
         const authPasswordInput = document.getElementById('auth-password');
         const signInButton = document.getElementById('signin-button');
         const signUpButton = document.getElementById('signup-button');
         const anonymousSignInButton = document.getElementById('anonymous-signin-button');
+
+        // DOM Elements for In-App Password Entry
+        const passwordEntryModal = document.getElementById('password-entry-modal');
+        const appPasswordInput = document.getElementById('app-password-input');
+        const submitAppPasswordBtn = document.getElementById('submit-app-password');
+
+
+        // DOM Elements for Main App
+        const mainAppSection = document.getElementById('main-app-section');
         const signOutButton = document.getElementById('signout-button');
 
         // Tab Buttons and Content
         const tabManageMember = document.getElementById('tab-manage-member');
         const tabAddExisting = document.getElementById('tab-add-existing');
-        const tabAdvancePayment = document.getElementById('tab-advance-payment');
-        // const tabPlanManagement = document.getElementById('tab-plan-management'); // Removed tab button
+        const tabAddPayment = document.getElementById('tab-add-payment'); // Renamed ID and text
+        const tabIdCard = document.getElementById('tab-id-card');
         const contentManageMember = document.getElementById('content-manage-member');
         const contentAddExisting = document.getElementById('content-add-existing');
-        const contentAdvancePayment = document.getElementById('content-advance-payment');
-        // const contentPlanManagement = document.getElementById('content-plan-management'); // Removed tab content
+        const contentAddPayment = document.getElementById('content-add-payment'); // Renamed ID
+        const contentIdCard = document.getElementById('content-id-card');
 
         // Main Member Form (Manage Member Details)
         const memberForm = document.getElementById('member-form');
@@ -636,19 +734,28 @@
         const existingStartDateInput = document.getElementById('existing-startDate');
         const calculatedDueDateInput = document.getElementById('calculated-dueDate');
 
-        // Advance Payment Form
-        const advancePaymentForm = document.getElementById('advance-payment-form');
-        const advanceMemberSelect = document.getElementById('advance-member-select');
-        const advanceCurrentDueDateInput = document.getElementById('advance-current-dueDate');
-        const advanceMembershipTypeInput = document.getElementById('advance-membershipType');
-        const advanceNewDueDateInput = document.getElementById('advance-new-dueDate');
+        // Add Payment Form (formerly Advance Payment)
+        const addPaymentForm = document.getElementById('add-payment-form'); // Renamed ID
+        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search'); // Renamed ID
+        const addPaymentMemberSelect = document.getElementById('add-payment-member-select'); // Renamed ID
+        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate'); // Renamed ID
+        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType'); // Renamed ID
+        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate'); // Renamed ID
 
-        // Plan Management Form (inputs are now unused, but kept for reference if needed)
-        // const planManagementForm = document.getElementById('plan-management-form');
-        // const defaultMonthlyFeeInput = document.getElementById('default-monthly-fee');
-        // const defaultQuarterlyFeeInput = document.getElementById('default-quarterly-fee');
-        // const defaultHalfYearlyFeeInput = document.getElementById('default-halfyearly-fee');
-        // const defaultAnnualFeeInput = document.getElementById('default-annual-fee');
+        // ID Card Tab Elements
+        const idCardMemberSearchInput = document.getElementById('id-card-member-search');
+        const idCardMemberSelect = document.getElementById('id-card-member-select');
+        const idCardDisplay = document.getElementById('id-card-display');
+        const idCardPhoto = document.getElementById('id-card-photo');
+        const idCardName = document.getElementById('id-card-name');
+        const idCardMemberId = document.getElementById('id-card-member-id');
+        const idCardPhone = document.getElementById('id-card-phone');
+        const idCardMembershipType = document.getElementById('id-card-membership-type');
+        const idCardStartDate = document.getElementById('id-card-start-date');
+        const idCardDueDate = document.getElementById('id-card-due-date');
+        const idCardFee = document.getElementById('id-card-fee');
+        const idCardStatus = document.getElementById('id-card-status');
+        const noIdCardSelectedMessage = document.getElementById('no-id-card-selected-message');
 
 
         // Other DOM Elements
@@ -709,6 +816,20 @@
         // Double tap detection variables
         let lastTap = 0;
         const TAP_THRESHOLD = 300; // milliseconds
+
+        /**
+         * Formats a date string from YYYY-MM-DD to DD-MM-YYYY.
+         * @param {string} dateString - The date string in YYYY-MM-DD format.
+         * @returns {string} The date string in DD-MM-YYYY format, or original if invalid.
+         */
+        function formatToDDMMYYYY(dateString) {
+            if (!dateString) return 'N/A';
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return dateString; // Return original if format is unexpected
+        }
 
         /**
          * Displays a message to the user.
@@ -786,7 +907,7 @@
             let newDate = new Date(baseDate);
 
             // Store original day to handle month-end rollovers
-            const originalDay = baseDate.getDate();
+            const originalDay = newDate.getDate();
 
             switch (membershipType) {
                 case 'Monthly':
@@ -795,7 +916,7 @@
                 case 'Quarterly':
                     newDate.setMonth(newDate.getMonth() + 3);
                     break;
-                case 'HalfYearly': // New case for Half Yearly
+                case 'HalfYearly':
                     newDate.setMonth(newDate.getMonth() + 6);
                     break;
                 case 'Annual':
@@ -811,12 +932,51 @@
                 newDate.setDate(0);
             }
 
-
             const year = newDate.getFullYear();
             const month = String(newDate.getMonth() + 1).padStart(2, '0');
             const day = String(newDate.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
+
+        /**
+         * Calculates a new due date for an overdue member after payment.
+         * @param {string} selectedPlanType - The new membership plan type.
+         * @param {string} currentDueDateString - The member's current overdue due date (YYYY-MM-DD).
+         * @returns {string} The new due date in YYYY-MM-DD format.
+         */
+        function calculateOverduePaidDueDate(selectedPlanType, currentDueDateString) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const overdueDate = new Date(currentDueDateString);
+            overdueDate.setHours(0, 0, 0, 0);
+
+            // Calculate days overdue
+            const diffTimeOverdue = today.getTime() - overdueDate.getTime();
+            const daysOverdue = Math.floor(diffTimeOverdue / (1000 * 60 * 60 * 24));
+
+            // Determine plan duration in months for calculation
+            let planMonths = 0;
+            switch (selectedPlanType) {
+                case 'Monthly': planMonths = 1; break;
+                case 'Quarterly': planMonths = 3; break;
+                case 'HalfYearly': planMonths = 6; break;
+                case 'Annual': planMonths = 12; break;
+            }
+
+            // Calculate the new due date: today + plan duration (in months) - days overdue
+            let newCalculatedDate = new Date(today);
+            newCalculatedDate.setMonth(newCalculatedDate.getMonth() + planMonths);
+
+            // Subtract days overdue from this new date
+            newCalculatedDate.setDate(newCalculatedDate.getDate() - daysOverdue);
+
+            const year = newCalculatedDate.getFullYear();
+            const month = String(newCalculatedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(newCalculatedDate.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
 
         /**
          * Opens the photo view modal with the given image URL.
@@ -962,16 +1122,16 @@
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
                             <a href="${photoSrc}" target="_blank" class="block">
-                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="console.error('Failed to load image:', this.src);">
+                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
                             </a>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200 ${nameClass}">${member.name || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.startDate || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            ${member.dueDate || 'N/A'}
+                            ${formatToDDMMYYYY(member.dueDate) || 'N/A'}
                             ${isOverdue(member.dueDate) && member.status !== 'Paid' ? `
                                 <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-700 text-red-100">
                                     Overdue
@@ -1032,15 +1192,15 @@
                         overdueRow.innerHTML = `
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
                                 <a href="${photoSrc}" target="_blank" class="block">
-                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="console.error('Failed to load image:', this.src);">
+                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
                                 </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.name || 'N/A'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.startDate || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.dueDate || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.dueDate) || 'N/A'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-semibold">${daysOverdue} days</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
@@ -1153,13 +1313,33 @@
         }
 
         /**
-         * Clears the advance payment form inputs.
+         * Clears the add payment form inputs.
          */
-        function clearAdvancePaymentForm() {
-            advanceMemberSelect.value = '';
-            advanceCurrentDueDateInput.value = '';
-            advanceMembershipTypeInput.value = 'Monthly';
-            advanceNewDueDateInput.value = '';
+        function clearAddPaymentForm() { // Renamed function
+            addPaymentMemberSearchInput.value = ''; // Clear search input
+            addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>'; // Clear and reset options
+            addPaymentCurrentDueDateInput.value = '';
+            addPaymentMembershipTypeInput.value = 'Monthly';
+            addPaymentNewDueDateInput.value = '';
+        }
+
+        /**
+         * Clears the ID card display.
+         */
+        function clearIdCardDisplay() {
+            idCardMemberSearchInput.value = ''; // Clear search input
+            idCardMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>'; // Clear and reset options
+            idCardDisplay.classList.add('hidden');
+            noIdCardSelectedMessage.classList.remove('hidden');
+            idCardPhoto.src = "https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo";
+            idCardName.textContent = '';
+            idCardMemberId.textContent = '';
+            idCardPhone.textContent = '';
+            idCardMembershipType.textContent = '';
+            idCardStartDate.textContent = '';
+            idCardDueDate.textContent = '';
+            idCardFee.textContent = '';
+            idCardStatus.textContent = '';
         }
 
         /**
@@ -1397,14 +1577,20 @@
                 }
             } else {
                 // Otherwise, start camera
-                const stream = await startCamera(cameraFeedElement, currentFacingModeParam);
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingModeParam } });
                 if (stream) {
                     setCameraStreamCallback(stream);
+                    cameraFeedElement.srcObject = stream;
+                    cameraFeedElement.classList.remove('hidden');
                     previewElement.classList.add('hidden'); // Hide static preview while camera is on
                     viewLinkElement.classList.add('hidden'); // Hide link while camera is live
+                    switchCameraBtnElement.classList.remove('hidden'); // Show switch camera button
+                } else {
+                    showMessage('Could not access camera. Please ensure permissions are granted and no other app is using it.', 'error');
                 }
             }
         }
+
 
         /**
          * Generic function to handle clearing a photo.
@@ -1455,40 +1641,102 @@
             stopCamera(cameraFeedElement, cameraStreamVar);
             const newFacingMode = currentFacingModeParam === 'user' ? 'environment' : 'user';
             setFacingModeCallback(newFacingMode); // Update the facing mode
-            const stream = await startCamera(cameraFeedElement, newFacingMode);
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacingMode } });
             if (stream) {
                 setCameraStreamCallback(stream);
+                cameraFeedElement.srcObject = stream;
+                cameraFeedElement.classList.remove('hidden');
                 previewElement.classList.add('hidden'); // Hide static preview while camera is on
                 viewLinkElement.classList.add('hidden'); // Hide link while camera is live
+            } else {
+                showMessage('Could not switch camera. Please ensure permissions are granted.', 'error');
             }
         }
 
 
         /**
-         * Populates the member select dropdown in the Advance Payment tab.
+         * Populates the member select dropdown in the Add Payment tab.
+         * Filters based on search input.
          */
-        function populateAdvanceMemberSelect() {
-            advanceMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>';
-            allMembers.forEach(member => {
+        function populateAddPaymentMemberSelect(searchTerm = '') { // Renamed function
+            addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>';
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+            const filteredMembers = allMembers.filter(member =>
+                (member.name && member.name.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                (member.memberId && member.memberId.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                (member.phoneNumber && member.phoneNumber.toLowerCase().includes(lowerCaseSearchTerm))
+            );
+
+            filteredMembers.forEach(member => {
                 const option = document.createElement('option');
                 option.value = member.id;
                 option.textContent = `${member.name} (ID: ${member.memberId})`;
-                advanceMemberSelect.appendChild(option);
+                addPaymentMemberSelect.appendChild(option);
             });
         }
 
         /**
+         * Populates the member select dropdown in the ID Card tab.
+         * Filters based on search input.
+         */
+        function populateIdCardMemberSelect(searchTerm = '') {
+            idCardMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>';
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+            const filteredMembers = allMembers.filter(member =>
+                (member.name && member.name.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                (member.memberId && member.memberId.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                (member.phoneNumber && member.phoneNumber.toLowerCase().includes(lowerCaseSearchTerm))
+            );
+
+            filteredMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = `${member.name} (ID: ${member.memberId})`;
+                idCardMemberSelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Displays the selected member's details in the ID card format.
+         * @param {string} memberId - The ID of the member to display.
+         */
+        function displayIdCard(memberId) {
+            const member = allMembers.find(m => m.id === memberId);
+            if (member) {
+                idCardPhoto.src = member.photoURL || "https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo";
+                idCardPhoto.onerror = () => idCardPhoto.src = "https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"; // Fallback on error
+                idCardName.textContent = member.name || 'N/A';
+                idCardMemberId.textContent = member.memberId || 'N/A';
+                idCardPhone.textContent = member.phoneNumber || 'N/A';
+                idCardMembershipType.textContent = member.membershipType || 'N/A';
+                idCardStartDate.textContent = formatToDDMMYYYY(member.startDate) || 'N/A';
+                idCardDueDate.textContent = formatToDDMMYYYY(member.dueDate) || 'N/A';
+                idCardFee.textContent = `$${(member.feeAmount || 0).toFixed(2)}`;
+                idCardStatus.textContent = member.status || 'N/A';
+
+                idCardDisplay.classList.remove('hidden');
+                noIdCardSelectedMessage.classList.add('hidden');
+            } else {
+                idCardDisplay.classList.add('hidden');
+                noIdCardSelectedMessage.classList.remove('hidden');
+            }
+        }
+
+
+        /**
          * Handles tab switching.
-         * @param {string} tabId - The ID of the tab to show ('manage-member', 'add-existing', 'advance-payment').
+         * @param {string} tabId - The ID of the tab to show ('manage-member', 'add-existing', 'add-payment', 'id-card').
          */
         function showTab(tabId) {
             // Deactivate all tabs and hide all content
-            [tabManageMember, tabAddExisting, tabAdvancePayment].forEach(tab => {
+            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard].forEach(tab => { // Updated tab ID
                 tab.classList.remove('tab-active');
                 tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
             });
 
-            [contentManageMember, contentAddExisting, contentAdvancePayment].forEach(content => {
+            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard].forEach(content => { // Updated content ID
                 content.classList.add('hidden');
             });
 
@@ -1498,7 +1746,8 @@
                 tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentManageMember.classList.remove('hidden');
                 clearExistingMemberForm(); // Clear other forms
-                clearAdvancePaymentForm();
+                clearAddPaymentForm(); // Updated function call
+                clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(existingCameraFeed, existingCameraStream);
             } else if (tabId === 'add-existing') {
@@ -1506,17 +1755,31 @@
                 tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddExisting.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
-                clearAdvancePaymentForm();
+                clearAddPaymentForm(); // Updated function call
+                clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
-            } else if (tabId === 'advance-payment') {
-                tabAdvancePayment.classList.add('tab-active');
-                tabAdvancePayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
-                contentAdvancePayment.classList.remove('hidden');
+            } else if (tabId === 'add-payment') { // Updated tab ID
+                tabAddPayment.classList.add('tab-active'); // Updated tab ID
+                tabAddPayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
+                contentAddPayment.classList.remove('hidden'); // Updated content ID
                 clearMainForm(); // Clear other forms
                 clearExistingMemberForm();
-                populateAdvanceMemberSelect(); // Populate member dropdown for advance payment
-                clearAdvancePaymentForm(); // Clear the advance payment form itself
+                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
+                clearAddPaymentForm(); // Clear the add payment form itself (updated function call)
+                clearIdCardDisplay(); // Clear ID card display
+                // Ensure camera is stopped if active in other tabs
+                stopCamera(cameraFeed, cameraStream);
+                stopCamera(existingCameraFeed, existingCameraStream);
+            } else if (tabId === 'id-card') {
+                tabIdCard.classList.add('tab-active');
+                tabIdCard.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
+                contentIdCard.classList.remove('hidden');
+                clearMainForm();
+                clearExistingMemberForm();
+                clearAddPaymentForm(); // Updated function call
+                populateIdCardMemberSelect(idCardMemberSearchInput.value); // Populate member dropdown for ID card
+                displayIdCard(null); // Clear displayed ID card
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
                 stopCamera(existingCameraFeed, existingCameraStream);
@@ -1543,7 +1806,7 @@
             currentDayDisplay.textContent = dayString;
         }
 
-        // Initialize Firebase on window load
+        // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
             try {
                 app = initializeApp(firebaseConfig);
@@ -1559,22 +1822,18 @@
             updateDateTime();
             setInterval(updateDateTime, 1000);
 
-            // Listen for authentication state changes
+            // Listen for authentication state changes (Firebase login)
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     currentUserId = user.uid;
                     userIdValue.textContent = currentUserId;
-                    authSection.classList.add('hidden');
-                    // Show main app section with animation
-                    mainAppSection.classList.remove('hidden');
-                    setTimeout(() => {
-                        mainAppSection.classList.remove('scale-95', 'opacity-0');
-                        mainAppSection.classList.add('scale-100', 'opacity-100');
-                    }, 10); // Small delay to allow 'hidden' to apply first
+                    authSection.classList.add('hidden'); // Hide Firebase auth section
+                    passwordEntryModal.classList.remove('hidden'); // Show in-app password modal
+                    passwordEntryModal.classList.add('flex');
+                    appPasswordInput.value = ''; // Clear input
+                    appPasswordInput.focus();
 
-                    showTab('manage-member'); // Show default tab on successful login
-
-                    // Start listening to Firestore for gym members
+                    // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
                     const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
                     onSnapshot(membersCollectionRef, (snapshot) => {
                         allMembers = snapshot.docs.map(doc => ({
@@ -1582,19 +1841,29 @@
                             ...doc.data()
                         }));
                         renderMembers(); // Re-render whenever data changes
-                        // If advance payment tab is active, re-populate member select
-                        if (!contentAdvancePayment.classList.contains('hidden')) {
-                             populateAdvanceMemberSelect();
+                        // If add payment tab is active, re-populate member select
+                        if (!contentAddPayment.classList.contains('hidden')) { // Updated content ID
+                             populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
+                        }
+                        // If ID card tab is active, re-populate member select
+                        if (!contentIdCard.classList.contains('hidden')) {
+                            populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                            // If a member was selected, re-display their card
+                            if (idCardMemberSelect.value) {
+                                displayIdCard(idCardMemberSelect.value);
+                            }
                         }
                     }, (error) => {
                         console.error("Error fetching members:", error);
                         showMessage('Failed to load members. Check your internet connection.', 'error');
                     });
+
                 } else {
                     currentUserId = null;
                     userIdValue.textContent = ''; // Clear user ID
-                    mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide with animation
-                    authSection.classList.remove('hidden');
+                    mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
+                    passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
+                    authSection.classList.remove('hidden'); // Show Firebase auth section
                     // Clear members list if not authenticated
                     allMembers = [];
                     renderMembers();
@@ -1602,6 +1871,7 @@
             });
 
             // Initial sign-in attempt with custom token if available, otherwise anonymously
+            // This happens first to establish Firebase auth, then the in-app password takes over
             if (!auth.currentUser) {
                 try {
                     if (initialAuthToken) {
@@ -1611,8 +1881,7 @@
                     }
                 } catch (error) {
                     console.error("Initial sign-in error:", error);
-                    // If initial sign-in fails, the auth section will remain visible
-                    showMessage('Failed to automatically sign in. Please use the options below.', 'error');
+                    showMessage('Failed to automatically sign in to backend. Please use the options below.', 'error');
                 }
             }
         };
@@ -1628,6 +1897,7 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Signed in successfully!', 'success');
+                // onAuthStateChanged will handle showing passwordEntryModal
             } catch (error) {
                 console.error("Sign in error:", error);
                 showMessage(`Sign in failed: ${error.message}`, 'error');
@@ -1644,6 +1914,7 @@
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
                 showMessage('Account created and signed in successfully!', 'success');
+                // onAuthStateChanged will handle showing passwordEntryModal
             } catch (error) {
                 console.error("Sign up error:", error);
                 showMessage(`Sign up failed: ${error.message}`, 'error');
@@ -1654,19 +1925,51 @@
             try {
                 await signInAnonymously(auth);
                 showMessage('Signed in anonymously!', 'success');
+                // onAuthStateChanged will handle showing passwordEntryModal
             } catch (error) {
                 console.error("Anonymous sign in error:", error);
                 showMessage(`Anonymous sign in failed: ${error.message}`, 'error');
             }
         });
 
+        // In-App Password Entry Event Listener
+        submitAppPasswordBtn.addEventListener('click', () => {
+            const enteredPassword = appPasswordInput.value;
+            if (enteredPassword === APP_PASSWORD) {
+                passwordEntryModal.classList.remove('flex');
+                passwordEntryModal.classList.add('hidden');
+                // Show main app section with animation
+                mainAppSection.classList.remove('hidden');
+                setTimeout(() => {
+                    mainAppSection.classList.remove('scale-95', 'opacity-0');
+                    mainAppSection.classList.add('scale-100', 'opacity-100');
+                }, 10); // Small delay to allow 'hidden' to apply first
+                showTab('manage-member'); // Show default tab on successful app password entry
+            } else {
+                showMessage('Incorrect password. Please try again.', 'error');
+                appPasswordInput.value = '';
+                appPasswordInput.focus();
+            }
+        });
+
+        // Allow pressing Enter in password field
+        appPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitAppPasswordBtn.click();
+            }
+        });
+
+
+        // Sign Out Button (logs out from Firebase and returns to Firebase login screen)
         signOutButton.addEventListener('click', async () => {
             try {
-                await signOut(auth);
-                showMessage('Signed out successfully!', 'success');
-                clearMainForm(); // Clear main form and photo preview on sign out
-                clearExistingMemberForm(); // Clear existing member form on sign out
-                clearAdvancePaymentForm(); // Clear advance payment form on sign out
+                await signOut(auth); // This signs out the Firebase user (anonymous or email/password)
+                showMessage('Signed out successfully! Please log in again.', 'success');
+                clearMainForm();
+                clearExistingMemberForm();
+                clearAddPaymentForm(); // Updated function call
+                clearIdCardDisplay();
+                // onAuthStateChanged will handle showing authSection and hiding mainAppSection/passwordEntryModal
             } catch (error) {
                 console.error("Sign out error:", error);
                 showMessage(`Sign out failed: ${error.message}`, 'error');
@@ -1676,7 +1979,8 @@
         // Tab Event Listeners
         tabManageMember.addEventListener('click', () => showTab('manage-member'));
         tabAddExisting.addEventListener('click', () => showTab('add-existing'));
-        tabAdvancePayment.addEventListener('click', () => showTab('advance-payment'));
+        tabAddPayment.addEventListener('click', () => showTab('add-payment')); // Updated ID
+        tabIdCard.addEventListener('click', () => showTab('id-card'));
 
 
         // Main Member Form Event Listener (for adding new or updating existing)
@@ -1900,45 +2204,63 @@
         addPhotoEnlargeListeners(existingPhotoPreview);
 
 
-        // Advance Payment Form Event Listeners
-        advanceMemberSelect.addEventListener('change', () => {
-            const selectedMemberId = advanceMemberSelect.value;
+        // Add Payment Form Event Listeners (formerly Advance Payment)
+        addPaymentMemberSearchInput.addEventListener('input', (e) => { // Updated ID
+            populateAddPaymentMemberSelect(e.target.value); // Updated function call
+            // Clear details if search changes
+            addPaymentMemberSelect.value = '';
+            addPaymentCurrentDueDateInput.value = '';
+            addPaymentNewDueDateInput.value = '';
+        });
+
+        addPaymentMemberSelect.addEventListener('change', () => { // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
-                advanceCurrentDueDateInput.value = selectedMember.dueDate;
-                // Calculate initial new due date based on current due date and default payment type
-                advanceNewDueDateInput.value = addDurationToDate(selectedMember.dueDate, advanceMembershipTypeInput.value);
+                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted // Updated ID
+                // If member is overdue, use the special calculation for new due date
+                if (isOverdue(selectedMember.dueDate)) {
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
+                } else {
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
+                }
             } else {
-                advanceCurrentDueDateInput.value = '';
-                advanceNewDueDateInput.value = '';
+                addPaymentCurrentDueDateInput.value = ''; // Updated ID
+                addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
 
-        advanceMembershipTypeInput.addEventListener('change', () => {
-            const selectedMemberId = advanceMemberSelect.value;
+        addPaymentMembershipTypeInput.addEventListener('change', () => { // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
                 // Calculate new due date based on current due date and selected payment type
-                advanceNewDueDateInput.value = addDurationToDate(selectedMember.dueDate, advanceMembershipTypeInput.value);
+                // If member is overdue, use the special calculation for new due date
+                if (isOverdue(selectedMember.dueDate)) {
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
+                } else {
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
+                }
             } else {
-                advanceNewDueDateInput.value = '';
+                addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
 
-        advancePaymentForm.addEventListener('submit', async (e) => {
+        addPaymentForm.addEventListener('submit', async (e) => { // Updated ID
             e.preventDefault();
             if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
-            const selectedMemberId = advanceMemberSelect.value;
-            const newMembershipType = advanceMembershipTypeInput.value;
-            const newDueDate = advanceNewDueDateInput.value;
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
+            const newMembershipType = addPaymentMembershipTypeInput.value; // Updated ID
+            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY // Updated ID
+            const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
-            if (!selectedMemberId || !newDueDate) {
+            if (!selectedMemberId || !newDueDate || !selectedMember) {
                 showMessage('Please select a member and a payment plan.', 'error');
                 return;
             }
@@ -1949,22 +2271,38 @@
                 return;
             }
 
+            // Convert newDueDate back to YYYY-MM-DD for Firestore storage
+            const parts = newDueDate.split('-');
+            const newDueDateForFirestore = `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+
             try {
                 const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberId);
+
                 await updateDoc(memberDocRef, {
-                    dueDate: newDueDate,
+                    dueDate: newDueDateForFirestore, // Store in YYYY-MM-DD
                     membershipType: newMembershipType, // Update membership type as well
                     feeAmount: parseFloat(feeAmount), // Update fee amount
-                    status: 'Active', // Always set to Active on advance payment
+                    status: 'Active', // Always set to Active on add payment
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
                 });
-                showMessage('Advance payment processed and due date updated successfully!', 'success');
-                clearAdvancePaymentForm();
+                showMessage('Payment processed and due date updated successfully!', 'success'); // Updated message
+                clearAddPaymentForm(); // Updated function call
             } catch (error) {
-                console.error("Error processing advance payment:", error);
-                showMessage('Failed to process advance payment. Please try again.', 'error');
+                console.error("Error processing payment:", error); // Updated message
+                showMessage('Failed to process payment. Please try again.', 'error'); // Updated message
             }
+        });
+
+        // ID Card Tab Event Listeners
+        idCardMemberSearchInput.addEventListener('input', (e) => {
+            populateIdCardMemberSelect(e.target.value);
+            displayIdCard(null); // Clear displayed card when search changes
+        });
+
+        idCardMemberSelect.addEventListener('change', (e) => {
+            displayIdCard(e.target.value);
         });
 
         // Photo View Modal Event Listeners
