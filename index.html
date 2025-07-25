@@ -12,6 +12,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(to bottom right, #1a202c, #2d3748);
+            overflow: hidden; /* Hide scrollbar initially for splash screen */
         }
         ::-webkit-scrollbar {
             width: 8px;
@@ -108,9 +109,44 @@
             transform: translateY(0);
             opacity: 1;
         }
+        /* Splash Screen Styles */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, #1a202c, #2d3748);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none; /* Disable interaction during fade-out */
+        }
+        #splash-screen p {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #cbd5e0;
+        }
     </style>
 </head>
 <body class="min-h-screen p-6 flex flex-col items-center justify-center">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <h1 class="text-6xl font-extrabold text-indigo-400 animate-pulse">Gym Manager</h1>
+        <p>Made by ~ SUSHANT SINGH</p>
+    </div>
 
     <!-- Message Display -->
     <div id="message-display" class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
@@ -679,12 +715,18 @@
         };
 
         // Cloudinary Configuration
+        // IMPORTANT: Cloudinary API Secret should NEVER be exposed in client-side code.
+        // Photo deletion will be handled by a Firebase Cloud Function for security.
         const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2';
         const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset';
+
 
         // Access global appId and initialAuthToken provided by the environment
         const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // DOM Elements for Splash Screen
+        const splashScreen = document.getElementById('splash-screen');
 
         // DOM Elements for Authentication
         const authSection = document.getElementById('auth-section');
@@ -782,8 +824,8 @@
         // Overdue Members specific DOM elements
         const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
         const noOverdueMembersMessage = document.getElementById('no-overdue-members-message');
-        const countOverdueMembers = document.getElementById('count-overdue-members'); // Span for overdue count
-        const countCurrentMembers = document.getElementById('count-current-members'); // Span for current members count
+        const countOverdueMembers = document.getElementById('count-overdue-members');
+        const countCurrentMembers = document.getElementById('count-current-members');
 
         // Date & Time Display elements
         const currentTimeDisplay = document.getElementById('current-time');
@@ -1474,7 +1516,7 @@
 
         /**
          * Handles the deletion of a member from Firestore.
-         * Note: Photo deletion from Cloudinary is not handled client-side for security.
+         * This will also trigger a Firebase Cloud Function to delete the photo from Cloudinary.
          */
         async function handleDelete() {
             if (!db || !memberToDelete) {
@@ -1484,9 +1526,10 @@
 
             try {
                 // Delete member document from Firestore
+                // This deletion will trigger the Cloud Function to delete the associated photo.
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
 
-                showMessage('Member deleted successfully! (Note: Associated photo on Cloudinary is not deleted from the app for security reasons.)', 'success');
+                showMessage('Member deleted successfully! (Photo deletion from Cloudinary will be handled by backend.)', 'success');
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
@@ -1670,7 +1713,7 @@
             if (memberId) {
                 try {
                     await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
-                    showMessage('Photo link removed from member. (Image remains on Cloudinary)', 'success');
+                    showMessage('Photo link removed from member. (Image remains on Cloudinary until backend deletion)', 'success');
                 } catch (error) {
                     console.error("Error removing photoURL from Firestore:", error);
                     showMessage('Failed to clear photo link from member. Please try again.', 'error');
@@ -1859,82 +1902,90 @@
 
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-            } catch (error) {
-                console.error("Failed to initialize Firebase:", error);
-                showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
-                return;
-            }
-
-            // Start updating date/time immediately and then every second
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
-
-            // Listen for authentication state changes (Firebase login)
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUserId = user.uid;
-                    userIdValue.textContent = currentUserId;
-                    authSection.classList.add('hidden'); // Hide Firebase auth section
-                    passwordEntryModal.classList.remove('hidden'); // Show in-app password modal
-                    passwordEntryModal.classList.add('flex');
-                    appPasswordInput.value = ''; // Clear input
-                    appPasswordInput.focus();
-
-                    // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
-                    const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
-                    onSnapshot(membersCollectionRef, (snapshot) => {
-                        allMembers = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        renderMembers(); // Re-render whenever data changes
-                        // If add payment tab is active, re-populate member select
-                        if (!contentAddPayment.classList.contains('hidden')) {
-                             populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
-                        }
-                        // If ID card tab is active, re-populate member select
-                        if (!contentIdCard.classList.contains('hidden')) {
-                            populateIdCardMemberSelect(idCardMemberSearchInput.value);
-                            // If a member was selected, re-display their card
-                            if (idCardMemberSelect.value) {
-                                displayIdCard(idCardMemberSelect.value);
-                            }
-                        }
-                    }, (error) => {
-                        console.error("Error fetching members:", error);
-                        showMessage('Failed to load members. Check your internet connection.', 'error');
-                    });
-
-                } else {
-                    currentUserId = null;
-                    userIdValue.textContent = ''; // Clear user ID
-                    mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
-                    passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
-                    authSection.classList.remove('hidden'); // Show Firebase auth section
-                    // Clear members list if not authenticated
-                    allMembers = [];
-                    renderMembers(); // Update counts to 0
-                }
-            });
-
-            // Initial sign-in attempt with custom token if available, otherwise anonymously
-            // This happens first to establish Firebase auth, then the in-app password takes over
-            if (!auth.currentUser) {
+            // Show splash screen and then fade out
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                document.body.style.overflow = 'auto'; // Re-enable scrolling
+            }, 2000); // Display splash for 2 seconds
+            setTimeout(async () => {
+                splashScreen.style.display = 'none'; // Completely hide after fade-out
                 try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
                 } catch (error) {
-                    console.error("Initial sign-in error:", error);
-                    showMessage('Failed to automatically sign in to backend. Please use the options below.', 'error');
+                    console.error("Failed to initialize Firebase:", error);
+                    showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
+                    return;
                 }
-            }
+
+                // Start updating date/time immediately and then every second
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+
+                // Listen for authentication state changes (Firebase login)
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        userIdValue.textContent = currentUserId;
+                        authSection.classList.add('hidden'); // Hide Firebase auth section
+                        passwordEntryModal.classList.remove('hidden'); // Show in-app password modal
+                        passwordEntryModal.classList.add('flex');
+                        appPasswordInput.value = ''; // Clear input
+                        appPasswordInput.focus();
+
+                        // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
+                        const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+                        onSnapshot(membersCollectionRef, (snapshot) => {
+                            allMembers = snapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            }));
+                            renderMembers(); // Re-render whenever data changes
+                            // If add payment tab is active, re-populate member select
+                            if (!contentAddPayment.classList.contains('hidden')) {
+                                 populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
+                            }
+                            // If ID card tab is active, re-populate member select
+                            if (!contentIdCard.classList.contains('hidden')) {
+                                populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                                // If a member was selected, re-display their card
+                                if (idCardMemberSelect.value) {
+                                    displayIdCard(idCardMemberSelect.value);
+                                }
+                            }
+                        }, (error) => {
+                            console.error("Error fetching members:", error);
+                            showMessage('Failed to load members. Check your internet connection.', 'error');
+                        });
+
+                    } else {
+                        currentUserId = null;
+                        userIdValue.textContent = ''; // Clear user ID
+                        mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
+                        passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
+                        authSection.classList.remove('hidden'); // Show Firebase auth section
+                        // Clear members list if not authenticated
+                        allMembers = [];
+                        renderMembers(); // Update counts to 0
+                    }
+                });
+
+                // Initial sign-in attempt with custom token if available, otherwise anonymously
+                // This happens first to establish Firebase auth, then the in-app password takes over
+                if (!auth.currentUser) {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Initial sign-in error:", error);
+                        showMessage('Failed to automatically sign in to backend. Please use the options below.', 'error');
+                    }
+                }
+            }, 3000); // Start app initialization after 3 seconds (2s fade + 1s buffer)
         };
 
         // Authentication Event Listeners
@@ -2296,7 +2347,6 @@
                     addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
                 }
             } else {
-                addPaymentCurrentDueDateInput.value = '';
                 addPaymentNewDueDateInput.value = '';
             }
         });
