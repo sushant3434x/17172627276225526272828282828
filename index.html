@@ -12,6 +12,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(to bottom right, #1a202c, #2d3748);
+            overflow-x: hidden; /* Prevent horizontal scroll on body */
+            min-height: 100vh; /* Ensure body takes full viewport height */
         }
         ::-webkit-scrollbar {
             width: 8px;
@@ -26,6 +28,7 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #cbd5e0;
+            box-shadow: 0 0 8px rgba(197, 206, 219, 0.5); /* Subtle glow on hover */
         }
         .member-photo {
             width: 40px;
@@ -33,6 +36,10 @@
             object-fit: cover;
             border-radius: 50%;
             border: 1px solid #4a5568;
+            transition: transform 0.2s ease-in-out;
+        }
+        .member-photo:hover {
+            transform: scale(1.05);
         }
         /* ID Card Photo */
         .id-card-photo {
@@ -48,9 +55,10 @@
             color: #818cf8;
             font-weight: 600;
         }
-        #message-display.hidden {
+        #message-display {
             opacity: 0;
             transform: translateY(-20px);
+            transition: all 0.3s ease-in-out;
         }
         #message-display.block {
             opacity: 1;
@@ -58,6 +66,7 @@
         }
         .line-through-name {
             text-decoration: line-through;
+            opacity: 0.7; /* Slightly faded for inactive */
         }
         #photo-view-modal {
             background-color: rgba(0, 0, 0, 0.9);
@@ -108,49 +117,103 @@
             transform: translateY(0);
             opacity: 1;
         }
+        /* Splash Screen Styles */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, #1a202c, #2d3748);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none; /* Disable interaction during fade-out */
+        }
+        #splash-screen p {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #cbd5e0;
+        }
+        /* New style for overdue/due today rows */
+        .overdue-row {
+            background-color: #4a0e1e; /* Darker red for overdue/due today rows */
+        }
+        .overdue-row:hover {
+            background-color: #5c142b; /* Slightly lighter on hover */
+        }
+
+        /* Table specific styles for better mobile experience */
+        #members-list-container table {
+            width: 100%; /* Ensure table takes full width of its container */
+            border-collapse: collapse; /* Remove double borders */
+        }
+        #members-list-container th,
+        #members-list-container td {
+            padding: 0.75rem 0.5rem; /* Adjust padding for smaller screens */
+            text-align: left;
+            border-bottom: 1px solid #4a5568; /* Lighter border for cells */
+            font-size: 0.875rem; /* Smaller font size for cells on mobile */
+        }
+        #members-list-container th {
+            font-size: 0.75rem; /* Even smaller for headers */
+            white-space: nowrap; /* Prevent header text from wrapping too much */
+        }
+
+        /* Adjustments for very small screens if needed, though Tailwind should handle most */
+        @media (max-width: 640px) {
+            .member-photo {
+                width: 32px;
+                height: 32px;
+            }
+            #members-list-container th,
+            #members-list-container td {
+                padding: 0.5rem 0.4rem;
+                font-size: 0.75rem;
+            }
+            .tab-button-text { /* For tab buttons on small screens */
+                font-size: 0.8rem;
+                padding: 0.75rem 0.5rem;
+            }
+            /* Make action buttons smaller on mobile */
+            .edit-btn, .pause-btn, .activate-btn, .delete-btn {
+                padding: 0.25rem;
+            }
+            .edit-btn svg, .pause-btn svg, .activate-btn svg, .delete-btn svg {
+                width: 1rem;
+                height: 1rem;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen p-6 flex flex-col items-center justify-center">
+<body class="min-h-screen p-4 sm:p-6 flex flex-col items-center justify-center">
 
-    <!-- Message Display -->
-    <div id="message-display" class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
-
-    <!-- Authentication Section (Re-introduced) -->
-    <div id="auth-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md mb-8 hidden border border-gray-700">
-        <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Gym Manager</h1>
-        <p class="text-gray-300 text-center mb-8 text-lg">Sign in or sign up to access your dashboard.</p>
-
-        <div class="space-y-5">
-            <div>
-                <label for="auth-email" class="block text-sm font-medium text-gray-300">Email Address</label>
-                <input type="email" id="auth-email" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400" placeholder="your@example.com">
-            </div>
-            <div>
-                <label for="auth-password" class="block text-sm font-medium text-gray-300">Password</label>
-                <input type="password" id="auth-password" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400" placeholder="••••••••">
-            </div>
-
-            <div class="flex flex-col space-y-4 pt-2">
-                <button id="signin-button" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
-                    Sign In
-                </button>
-                <button id="signup-button" class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
-                    Sign Up
-                </button>
-                <div class="text-center text-gray-400 text-sm">— OR —</div>
-                <button id="anonymous-signin-button" class="w-full py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
-                    Continue Anonymously
-                </button>
-            </div>
-        </div>
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <h1 class="text-4xl sm:text-6xl font-extrabold text-indigo-400 animate-pulse">Gym Manager</h1>
+        <p class="text-base sm:text-xl mt-2">Made by ~ SUSHANT SINGH</p>
     </div>
 
-    <!-- Password Entry Modal -->
-    <div id="password-entry-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-        <div id="password-entry-content" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700">
-            <h2 class="text-3xl font-bold text-white mb-6 text-center">Enter App Password</h2>
-            <input type="password" id="app-password-input" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl" placeholder="••••" maxlength="4">
-            <button id="submit-app-password" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6">
+    <!-- Message Display -->
+    <div id="message-display" class="fixed top-4 sm:top-6 right-4 sm:right-6 p-3 sm:p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
+
+    <!-- Password Entry Modal (Always shown first) -->
+    <div id="password-entry-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden p-4">
+        <div id="password-entry-content" class="bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-sm border border-gray-700">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 text-center">Enter App Password</h2>
+            <input type="password" id="app-password-input" class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl" placeholder="••••" maxlength="4">
+            <button id="submit-app-password" class="w-full py-2.5 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-base sm:text-lg mt-4 sm:mt-6">
                 Unlock App
             </button>
         </div>
@@ -158,52 +221,50 @@
 
 
     <!-- Main Gym App Section -->
-    <div id="main-app-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-extrabold text-white">Gym Dashboard</h1>
+    <div id="main-app-section" class="bg-gray-800 p-4 sm:p-8 rounded-2xl shadow-xl w-full max-w-full lg:max-w-4xl xl:max-w-6xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white text-center sm:text-left">Gym Dashboard</h1>
             <!-- Date, Time, Day Display -->
-            <div id="datetime-display" class="text-right text-gray-400 text-sm font-medium">
-                <div id="current-time" class="text-xl font-semibold text-gray-200"></div>
-                <div id="current-date"></div>
-                <div id="current-day"></div>
+            <div id="datetime-display" class="text-center sm:text-right text-gray-400 text-sm font-medium">
+                <div id="current-time" class="text-lg sm:text-xl font-semibold text-gray-200"></div>
+                <div id="current-date" class="text-xs sm:text-sm"></div>
+                <div id="current-day" class="text-xs sm:text-sm"></div>
             </div>
-            <button id="signout-button" class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out">
-                Sign Out
-            </button>
+            <!-- Sign Out Button Removed -->
         </div>
 
         <!-- User ID Display for collaborative environment -->
-        <div id="user-id-display" class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600">
-            Your User ID: <span id="user-id-value" class="font-mono text-gray-200 font-semibold"></span>
+        <div id="user-id-display" class="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-6 text-center bg-gray-700 p-2 sm:p-3 rounded-lg border border-gray-600">
+            Your User ID: <span id="user-id-value" class="font-mono text-gray-200 font-semibold break-all"></span>
         </div>
 
         <!-- Tabs for Member Forms -->
-        <div class="flex border-b border-gray-700 mb-8">
-            <button id="tab-manage-member" class="py-3 px-6 text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out">
-                Manage Member Details
+        <div class="flex flex-wrap justify-center sm:justify-start border-b border-gray-700 mb-6 sm:mb-8">
+            <button id="tab-manage-member" class="tab-button-text py-2 sm:py-3 px-3 sm:px-6 text-sm sm:text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out">
+                Manage Member Details <span id="count-manage-member" class="text-gray-400 text-xs sm:text-sm ml-1"></span>
             </button>
-            <button id="tab-add-existing" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                Add Existing Member
+            <button id="tab-add-existing" class="tab-button-text py-2 sm:py-3 px-3 sm:px-6 text-sm sm:text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                Add Existing Member <span id="count-add-existing" class="text-gray-400 text-xs sm:text-sm ml-1"></span>
             </button>
-            <button id="tab-add-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                Add Payment
+            <button id="tab-add-payment" class="tab-button-text py-2 sm:py-3 px-3 sm:px-6 text-sm sm:text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                Add Payment <span id="count-add-payment" class="text-gray-400 text-xs sm:text-sm ml-1"></span>
             </button>
-            <button id="tab-id-card" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                ID Card View
+            <button id="tab-id-card" class="tab-button-text py-2 sm:py-3 px-3 sm:px-6 text-sm sm:text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+                ID Card View <span id="count-id-card" class="text-gray-400 text-xs sm:text-sm ml-1"></span>
             </button>
         </div>
 
         <!-- Tab Content: Manage Member Details (Existing Form) -->
-        <div id="content-manage-member" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Manage Member Details</h2>
-            <form id="member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="content-manage-member" class="tab-content bg-gray-700 p-4 sm:p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Manage Member Details</h2>
+            <form id="member-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label for="member-id" class="block text-sm font-medium text-gray-300">Member ID</label>
                     <input
                         type="text"
                         id="member-id"
                         name="memberId"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Unique Member ID"
                         required
                     />
@@ -214,7 +275,7 @@
                         type="text"
                         id="name"
                         name="name"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Full Name"
                         required
                     />
@@ -225,7 +286,7 @@
                         type="tel"
                         id="phone-number"
                         name="phoneNumber"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="e.g., 123-456-7890"
                     />
                 </div>
@@ -234,7 +295,7 @@
                     <select
                         id="membershipType"
                         name="membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                         required
                     >
                         <option value="Monthly">Monthly</option>
@@ -249,7 +310,7 @@
                         type="date"
                         id="startDate"
                         name="startDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                         required
                     />
                 </div>
@@ -259,49 +320,49 @@
                         type="date"
                         id="dueDate"
                         name="dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed text-sm sm:text-base"
                         readonly
                         required
                     />
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
                         <input type="file" id="photo-upload" accept="image/*" class="hidden">
-                        <button type="button" id="upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+                        <button type="button" id="upload-photo-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm">
                             Upload Photo
                         </button>
-                        <button type="button" id="take-photo-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+                        <button type="button" id="take-photo-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm">
                             Take Photo
                         </button>
-                        <button type="button" id="switch-camera-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                        <button type="button" id="switch-camera-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm hidden">
                             Switch Camera
                         </button>
-                        <button type="button" id="clear-photo-btn" class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                        <button type="button" id="clear-photo-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm hidden">
                             Clear Photo
                         </button>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <img id="photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
-                        <video id="camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" autoplay playsinline></video>
+                    <div class="flex items-center space-x-3 sm:space-x-4">
+                        <img id="photo-preview" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
+                        <video id="camera-feed" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" autoplay playsinline></video>
                         <canvas id="camera-canvas" class="hidden"></canvas>
                     </div>
-                    <a id="view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" target="_blank">View Photo Preview</a>
+                    <a id="view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer text-sm hidden" target="_blank">View Photo Preview</a>
                     <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
                 </div>
 
-                <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
+                <div class="md:col-span-2 flex justify-end space-x-2 sm:space-x-3 pt-4">
                     <button
                         type="submit"
                         id="submit-button"
-                        class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
+                        class="px-5 py-2.5 sm:px-6 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-base sm:text-lg"
                     >
                         Add Member
                     </button>
                     <button
                         type="button"
                         id="cancel-edit-button"
-                        class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden"
+                        class="px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-base sm:text-lg hidden"
                     >
                         Cancel Edit
                     </button>
@@ -310,16 +371,16 @@
         </div>
 
         <!-- Tab Content: Add Existing Member (New Form) -->
-        <div id="content-add-existing" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Add Existing Member</h2>
-            <form id="existing-member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="content-add-existing" class="tab-content bg-gray-700 p-4 sm:p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Add Existing Member</h2>
+            <form id="existing-member-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                     <label for="existing-member-id" class="block text-sm font-medium text-gray-300">Member ID</label>
                     <input
                         type="text"
                         id="existing-member-id"
                         name="memberId"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Unique Member ID"
                         required
                     />
@@ -330,7 +391,7 @@
                         type="text"
                         id="existing-name"
                         name="name"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Full Name"
                         required
                     />
@@ -341,7 +402,7 @@
                         type="tel"
                         id="existing-phone-number"
                         name="phoneNumber"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="e.g., 123-456-7890"
                     />
                 </div>
@@ -350,7 +411,7 @@
                     <select
                         id="existing-membershipType"
                         name="membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                         required
                     >
                         <option value="Monthly">Monthly</option>
@@ -365,7 +426,7 @@
                         type="date"
                         id="existing-startDate"
                         name="startDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                         required
                     />
                 </div>
@@ -375,41 +436,41 @@
                         type="date"
                         id="calculated-dueDate"
                         name="dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed text-sm sm:text-base"
                         readonly
                         required
                     />
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
                         <input type="file" id="existing-photo-upload" accept="image/*" class="hidden">
-                        <button type="button" id="existing-upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+                        <button type="button" id="existing-upload-photo-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm">
                             Upload Photo
                         </button>
-                        <button type="button" id="existing-take-photo-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+                        <button type="button" id="existing-take-photo-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm">
                             Take Photo
                         </button>
-                        <button type="button" id="existing-switch-camera-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                        <button type="button" id="existing-switch-camera-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm hidden">
                             Switch Camera
                         </button>
-                        <button type="button" id="existing-clear-photo-btn" class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+                        <button type="button" id="existing-clear-photo-btn" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-xs sm:text-sm hidden">
                             Clear Photo
                         </button>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <img id="existing-photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
-                        <video id="existing-camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" autoplay playsinline></video>
+                    <div class="flex items-center space-x-3 sm:space-x-4">
+                        <img id="existing-photo-preview" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
+                        <video id="existing-camera-feed" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" autoplay playsinline></video>
                         <canvas id="existing-camera-canvas" class="hidden"></canvas>
                     </div>
-                    <a id="existing-view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" target="_blank">View Photo Preview</a>
+                    <a id="existing-view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer text-sm hidden" target="_blank">View Photo Preview</a>
                     <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
                 </div>
 
                 <div class="md:col-span-2 flex justify-end pt-4">
                     <button
                         type="submit"
-                        class="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
+                        class="px-5 py-2.5 sm:px-6 sm:py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-base sm:text-lg"
                     >
                         Add Existing Member
                     </button>
@@ -418,15 +479,15 @@
         </div>
 
         <!-- Tab Content: Add Payment -->
-        <div id="content-add-payment" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Process Payment</h2>
-            <form id="add-payment-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="content-add-payment" class="tab-content bg-gray-700 p-4 sm:p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Process Payment</h2>
+            <form id="add-payment-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div class="md:col-span-2">
                     <label for="add-payment-member-search" class="block text-sm font-medium text-gray-300">Search Member</label>
                     <input
                         type="text"
                         id="add-payment-member-search"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Type name or ID to search..."
                     />
                 </div>
@@ -434,7 +495,7 @@
                     <label for="add-payment-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
                     <select
                         id="add-payment-member-select"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                         required
                     >
                         <option value="">-- Select a Member --</option>
@@ -446,7 +507,7 @@
                     <input
                         type="text"
                         id="add-payment-current-dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed text-sm sm:text-base"
                         readonly
                     />
                 </div>
@@ -454,7 +515,7 @@
                     <label for="add-payment-membershipType" class="block text-sm font-medium text-gray-300">Payment Plan Type</label>
                     <select
                         id="add-payment-membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                         required
                     >
                         <option value="Monthly">Monthly</option>
@@ -468,14 +529,14 @@
                     <input
                         type="text"
                         id="add-payment-new-dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
+                        class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed text-sm sm:text-base"
                         readonly
                     />
                 </div>
                 <div class="md:col-span-2 flex justify-end pt-4">
                     <button
                         type="submit"
-                        class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
+                        class="px-5 py-2.5 sm:px-6 sm:py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-base sm:text-lg"
                     >
                         Process Payment
                     </button>
@@ -484,151 +545,145 @@
         </div>
 
         <!-- Tab Content: ID Card View (New Tab) -->
-        <div id="content-id-card" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Member ID Card View</h2>
-            <div class="mb-6">
+        <div id="content-id-card" class="tab-content bg-gray-700 p-4 sm:p-6 rounded-xl shadow-inner hidden border border-gray-600">
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Member ID Card View</h2>
+            <div class="mb-4 sm:mb-6">
                 <label for="id-card-member-search" class="block text-sm font-medium text-gray-300">Search Member</label>
                 <input
                     type="text"
                     id="id-card-member-search"
-                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                    class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
                     placeholder="Type name or ID to search..."
                 />
             </div>
-            <div class="mb-6">
+            <div class="mb-4 sm:mb-6">
                 <label for="id-card-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
                 <select
                     id="id-card-member-select"
-                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                    class="mt-1 block w-full p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
                 >
                     <option value="">-- Select a Member --</option>
                 </select>
             </div>
 
-            <div id="id-card-display" class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-6 hidden">
+            <div id="id-card-display" class="bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-4 sm:gap-6 hidden">
                 <div class="flex-shrink-0">
                     <img id="id-card-photo" class="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo" alt="Member Photo">
                 </div>
-                <div class="flex-grow text-white">
-                    <h3 id="id-card-name" class="text-3xl font-bold mb-2"></h3>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Member ID:</span> <span id="id-card-member-id"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Phone:</span> <span id="id-card-phone"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Membership Type:</span> <span id="id-card-membership-type"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Start Date:</span> <span id="id-card-start-date"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Due Date:</span> <span id="id-card-due-date"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Fee:</span> <span id="id-card-fee"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Status:</span> <span id="id-card-status"></span></p>
+                <div class="flex-grow text-white text-sm sm:text-base">
+                    <h3 id="id-card-name" class="text-xl sm:text-3xl font-bold mb-1 sm:mb-2"></h3>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Member ID:</span> <span id="id-card-member-id"></span></p>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Phone:</span> <span id="id-card-phone"></span></p>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Membership Type:</span> <span id="id-card-membership-type"></span></p>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Start Date:</span> <span id="id-card-start-date"></span></p>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Due Date:</span> <span id="id-card-due-date"></span></p>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Fee:</span> <span id="id-card-fee"></span></p>
+                    <p class="text-gray-300 mb-0.5 sm:mb-1"><span class="font-semibold">Status:</span> <span id="id-card-status"></span></p>
                 </div>
             </div>
-            <p id="no-id-card-selected-message" class="text-gray-400 text-center p-6">Select a member to view their ID card.</p>
+            <p id="no-id-card-selected-message" class="text-gray-400 text-center p-4 sm:p-6">Select a member to view their ID card.</p>
         </div>
 
 
         <!-- Search and Filter -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 mt-6 sm:mt-8 p-3 sm:p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
             <input
                 type="text"
                 id="search-input"
                 placeholder="Search by Name or Member ID..."
-                class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
+                class="flex-grow p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 text-sm sm:text-base"
             />
             <select
                 id="filter-status"
-                class="p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+                class="p-2.5 sm:p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white text-sm sm:text-base"
             >
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
-                <option value="Overdue">Overdue</option>
+                <option value="Overdue">Overdue / Due Today</option>
                 <option value="Inactive">Inactive</option>
                 <option value="Paid">Paid</option>
             </select>
         </div>
 
-        <!-- Overdue Members List (Moved Up) -->
-        <h2 class="text-2xl font-bold text-red-500 mb-4 mt-8">Overdue Members</h2>
-        <div id="overdue-members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-red-800">
-            <table class="min-w-full divide-y divide-red-800">
-                <thead class="bg-red-900">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Photo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Member ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Phone Number</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Start Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Due Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Fee</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Days Overdue</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="overdue-members-table-body" class="bg-gray-800 divide-y divide-gray-700">
-                    <!-- Overdue member rows will be inserted here by JavaScript -->
-                </tbody>
-            </table>
-            <p id="no-overdue-members-message" class="text-gray-400 text-center p-6 hidden">No members are currently overdue. Great job!</p>
-        </div>
-
-        <!-- Members List (Moved Down) -->
-        <h2 class="text-2xl font-bold text-white mb-4 mt-8">Current Members</h2>
+        <!-- Current Members List (Now includes Overdue/Due Today) -->
+        <h2 class="text-xl sm:text-2xl font-bold text-white mb-4 mt-6 sm:mt-8">Current Members <span id="count-current-members" class="text-gray-400 text-base sm:text-xl ml-2"></span></h2>
         <div id="members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-gray-700">
             <table class="min-w-full divide-y divide-gray-700">
-                <thead class="bg-indigo-900">
+                <thead class="bg-indigo-900 sticky top-0 z-10"> <!-- Sticky header for better scrolling UX -->
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Photo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Member ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Phone Number</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Start Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Due Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Fee</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Days Left</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Actions</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Photo</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Member ID</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Phone Number</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Start Date</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Due Date</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Fee</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Days Left/Overdue</th>
+                        <th scope="col" class="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs sm:text-sm font-medium text-indigo-200 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="members-table-body" class="bg-gray-800 divide-y divide-gray-700">
                     <!-- Member rows will be inserted here by JavaScript -->
                 </tbody>
             </table>
-            <p id="no-members-message" class="text-gray-400 text-center p-6 hidden">No members found. Add a new member above!</p>
+            <p id="no-members-message" class="text-gray-400 text-center p-4 sm:p-6 hidden">No members found. Add a new member above!</p>
         </div>
 
 
         <!-- Credits -->
-        <div class="mt-10 text-center text-gray-500 text-sm">
+        <div class="mt-8 text-center text-gray-500 text-xs sm:text-sm">
             Built with ❤️ by <span class="font-semibold text-indigo-400">Sushant Singh</span>
         </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="delete-modal-content">
-            <h3 class="text-2xl font-bold text-white mb-4 text-center">Confirm Deletion</h3>
-            <p class="text-gray-300 mb-8 text-center">
-                Are you sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-indigo-400"></span>"? This action cannot be undone.
+    <div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl max-w-xs sm:max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="delete-modal-content">
+            <h3 class="text-xl sm:text-2xl font-bold text-white mb-4 text-center">Confirm Deletion</h3>
+            <p class="text-red-400 font-bold text-center mb-4 text-sm sm:text-base">
+                WARNING: This action is permanent and cannot be undone!
             </p>
-            <div class="flex justify-center space-x-4">
+            <p class="text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base text-center">
+                Are you absolutely sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-indigo-400"></span>"?
+            </p>
+            <div class="flex justify-center space-x-3 sm:space-x-4">
                 <button
                     id="cancel-delete-button"
-                    class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md"
+                    class="px-5 py-2 sm:px-6 sm:py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base"
                 >
                     Cancel
                 </button>
                 <button
                     id="confirm-delete-button"
-                    class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 ease-in-out shadow-md"
+                    class="px-5 py-2 sm:px-6 sm:py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base"
                 >
-                    Delete
+                    Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Action Confirmation Modal -->
+    <div id="action-confirmation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl max-w-xs sm:max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="action-confirmation-content">
+            <h3 id="action-confirmation-title" class="text-xl sm:text-2xl font-bold text-white mb-4 text-center"></h3>
+            <p id="action-confirmation-message" class="text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base text-center"></p>
+            <div class="flex justify-center space-x-3 sm:space-x-4">
+                <button id="cancel-action-button" class="px-5 py-2 sm:px-6 sm:py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base">
+                    Cancel
+                </button>
+                <button id="confirm-action-button" class="px-5 py-2 sm:px-6 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base">
+                    Confirm
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Photo View Modal -->
-    <div id="photo-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
-        <div id="photo-view-content" class="relative bg-gray-800 p-4 rounded-xl shadow-2xl max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0 border border-gray-700">
-            <button id="close-photo-modal-btn" class="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold focus:outline-none">
+    <div id="photo-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden p-4">
+        <div id="photo-view-content" class="relative bg-gray-800 p-3 sm:p-4 rounded-xl shadow-2xl max-w-full sm:max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0 border border-gray-700">
+            <button id="close-photo-modal-btn" class="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-white text-2xl sm:text-3xl font-bold focus:outline-none">
                 &times;
             </button>
             <img id="enlarged-photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" src="" alt="Enlarged Member Photo">
@@ -639,8 +694,8 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
         // Global variables for Firebase instances
@@ -679,20 +734,20 @@
         };
 
         // Cloudinary Configuration
+        // IMPORTANT: Cloudinary API Secret should NEVER be exposed in client-side code.
+        // Photo deletion will be handled by a Firebase Cloud Function for security.
         const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2';
         const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset';
 
+
         // Access global appId and initialAuthToken provided by the environment
-        const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // NOTE: __app_id is used to construct the Firestore path, but for this specific request,
+        // we are hardcoding the path to 'default-app-id' as requested by the user.
+        const envAppId = 'default-app-id'; // Hardcoded as per user's request
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // DOM Elements for Authentication
-        const authSection = document.getElementById('auth-section');
-        const authEmailInput = document.getElementById('auth-email');
-        const authPasswordInput = document.getElementById('auth-password');
-        const signInButton = document.getElementById('signin-button');
-        const signUpButton = document.getElementById('signup-button');
-        const anonymousSignInButton = document.getElementById('anonymous-signin-button');
+        // DOM Elements for Splash Screen
+        const splashScreen = document.getElementById('splash-screen');
 
         // DOM Elements for In-App Password Entry
         const passwordEntryModal = document.getElementById('password-entry-modal');
@@ -702,17 +757,24 @@
 
         // DOM Elements for Main App
         const mainAppSection = document.getElementById('main-app-section');
-        const signOutButton = document.getElementById('signout-button');
+        // Sign out button removed from HTML, no corresponding JS variable needed
 
         // Tab Buttons and Content
         const tabManageMember = document.getElementById('tab-manage-member');
         const tabAddExisting = document.getElementById('tab-add-existing');
-        const tabAddPayment = document.getElementById('tab-add-payment'); // Renamed ID and text
+        const tabAddPayment = document.getElementById('tab-add-payment');
         const tabIdCard = document.getElementById('tab-id-card');
         const contentManageMember = document.getElementById('content-manage-member');
         const contentAddExisting = document.getElementById('content-add-existing');
-        const contentAddPayment = document.getElementById('content-add-payment'); // Renamed ID
+        const contentAddPayment = document.getElementById('content-add-payment');
         const contentIdCard = document.getElementById('content-id-card');
+
+        // Tab Count Spans
+        const countManageMember = document.getElementById('count-manage-member');
+        const countAddExisting = document.getElementById('count-add-existing');
+        const countAddPayment = document.getElementById('count-add-payment');
+        const countIdCard = document.getElementById('count-id-card');
+
 
         // Main Member Form (Manage Member Details)
         const memberForm = document.getElementById('member-form');
@@ -720,7 +782,7 @@
         const nameInput = document.getElementById('name');
         const phoneNumberInput = document.getElementById('phone-number');
         const membershipTypeInput = document.getElementById('membershipType');
-        const startDateInput = document.getElementById('startDate');
+        const startDateInput = document = document.getElementById('startDate');
         const dueDateInput = document.getElementById('dueDate');
         const submitButton = document.getElementById('submit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
@@ -734,13 +796,13 @@
         const existingStartDateInput = document.getElementById('existing-startDate');
         const calculatedDueDateInput = document.getElementById('calculated-dueDate');
 
-        // Add Payment Form (formerly Advance Payment)
-        const addPaymentForm = document.getElementById('add-payment-form'); // Renamed ID
-        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search'); // Renamed ID
-        const addPaymentMemberSelect = document.getElementById('add-payment-member-select'); // Renamed ID
-        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate'); // Renamed ID
-        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType'); // Renamed ID
-        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate'); // Renamed ID
+        // Add Payment Form
+        const addPaymentForm = document.getElementById('add-payment-form');
+        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search');
+        const addPaymentMemberSelect = document.getElementById('add-payment-member-select');
+        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate');
+        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType');
+        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate');
 
         // ID Card Tab Elements
         const idCardMemberSearchInput = document.getElementById('id-card-member-search');
@@ -772,9 +834,16 @@
         const cancelDeleteButton = document.getElementById('cancel-delete-button');
         const confirmDeleteButton = document.getElementById('confirm-delete-button');
 
-        // Overdue Members specific DOM elements
-        const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
-        const noOverdueMembersMessage = document.getElementById('no-overdue-members-message');
+        // Generic Action Confirmation Modal elements
+        const actionConfirmationModal = document.getElementById('action-confirmation-modal');
+        const actionConfirmationContent = document.getElementById('action-confirmation-content');
+        const actionConfirmationTitle = document.getElementById('action-confirmation-title');
+        const actionConfirmationMessage = document.getElementById('action-confirmation-message');
+        const cancelActionButton = document.getElementById('cancel-action-button');
+        const confirmActionButton = document.getElementById('confirm-action-button');
+        let currentActionConfirmCallback = null; // To store the callback for the generic modal
+
+        const countCurrentMembers = document.getElementById('count-current-members');
 
         // Date & Time Display elements
         const currentTimeDisplay = document.getElementById('current-time');
@@ -858,16 +927,16 @@
         }
 
         /**
-         * Checks if a due date is overdue.
+         * Checks if a due date is overdue or due today.
          * @param {string} dueDateString - The due date in 'YYYY-MM-DD' format.
-         * @returns {boolean} True if the due date is in the past, false otherwise.
+         * @returns {boolean} True if the due date is in the past or today, false otherwise.
          */
-        function isOverdue(dueDateString) {
+        function isOverdueOrDueToday(dueDateString) {
             const today = new Date();
             today.setHours(0, 0, 0, 0); // Normalize today to start of day
             const due = new Date(dueDateString);
             due.setHours(0, 0, 0, 0); // Normalize due date to start of day
-            return due < today;
+            return due <= today; // Changed to <= to include today
         }
 
         /**
@@ -885,11 +954,11 @@
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays < 0) {
-                return 'Overdue';
+                return `${Math.abs(diffDays)} days overdue`; // More descriptive
             } else if (diffDays === 0) {
                 return 'Due Today';
             } else {
-                return `${diffDays} days`;
+                return `${diffDays} days left`; // More descriptive
             }
         }
 
@@ -948,13 +1017,6 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const overdueDate = new Date(currentDueDateString);
-            overdueDate.setHours(0, 0, 0, 0);
-
-            // Calculate days overdue
-            const diffTimeOverdue = today.getTime() - overdueDate.getTime();
-            const daysOverdue = Math.floor(diffTimeOverdue / (1000 * 60 * 60 * 24));
-
             // Determine plan duration in months for calculation
             let planMonths = 0;
             switch (selectedPlanType) {
@@ -964,12 +1026,9 @@
                 case 'Annual': planMonths = 12; break;
             }
 
-            // Calculate the new due date: today + plan duration (in months) - days overdue
+            // The new due date should be calculated from 'today'
             let newCalculatedDate = new Date(today);
             newCalculatedDate.setMonth(newCalculatedDate.getMonth() + planMonths);
-
-            // Subtract days overdue from this new date
-            newCalculatedDate.setDate(newCalculatedDate.getDate() - daysOverdue);
 
             const year = newCalculatedDate.getFullYear();
             const month = String(newCalculatedDate.getMonth() + 1).padStart(2, '0');
@@ -1075,14 +1134,50 @@
             }
         }
 
+        /**
+         * Checks if a member with the given name, phone number, and member ID already exists.
+         * @param {string} name - The member's name.
+         * @param {string} phoneNumber - The member's phone number.
+         * @param {string} memberId - The member's ID.
+         * @param {string|null} excludeDocId - Optional. If provided, excludes the document with this ID from the check (for update scenarios).
+         * @returns {Promise<boolean>} True if a duplicate exists, false otherwise.
+         */
+        async function checkDuplicateMember(name, phoneNumber, memberId, excludeDocId = null) {
+            if (!db) {
+                console.error("Firestore DB not initialized.");
+                return true; // Treat as duplicate to prevent issues
+            }
+            const membersRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+
+            // Query for exact matches on all three fields
+            const q = query(
+                membersRef,
+                where("name", "==", name.trim()),
+                where("phoneNumber", "==", phoneNumber.trim()),
+                where("memberId", "==", memberId.trim())
+            );
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                return false; // No member with this combination
+            }
+
+            if (excludeDocId) {
+                // If we are editing, check if the found duplicate is *not* the current document being edited
+                return querySnapshot.docs.some(doc => doc.id !== excludeDocId);
+            } else {
+                // If adding new, any match means it's a duplicate
+                return true;
+            }
+        }
+
 
         /**
          * Renders the list of members in the table.
-         * Applies search and filter criteria.
+         * Also updates the counts for tabs and sections.
          */
         function renderMembers() {
-            membersTableBody.innerHTML = ''; // Clear existing current members rows
-            overdueMembersTableBody.innerHTML = ''; // Clear existing overdue members rows
+            membersTableBody.innerHTML = ''; // Clear existing members rows
 
             const searchTerm = searchInput.value.toLowerCase();
             const filterStatus = filterStatusSelect.value;
@@ -1092,181 +1187,186 @@
                                       (member.memberId && member.memberId.toLowerCase().includes(searchTerm)) ||
                                       (member.phoneNumber && member.phoneNumber.toLowerCase().includes(searchTerm)) ||
                                       (member.membershipType && member.membershipType.toLowerCase().includes(searchTerm));
-                const matchesStatus = filterStatus === 'All' || (member.status && member.status === filterStatus);
+
+                let memberOverallStatus = 'Active'; // Default status for filtering
+                if (isOverdueOrDueToday(member.dueDate) && member.status !== 'Paid' && member.status !== 'Inactive') {
+                    memberOverallStatus = 'Overdue'; // This now includes 'Due Today'
+                } else if (member.status === 'Inactive') {
+                    memberOverallStatus = 'Inactive';
+                } else if (member.status === 'Paid') { // Explicitly handle 'Paid' status
+                    memberOverallStatus = 'Paid';
+                }
+
+
+                const matchesStatus = filterStatus === 'All' || (memberOverallStatus === filterStatus);
                 return matchesSearch && matchesStatus;
             }).sort((a, b) => {
-                // Sort by due date, overdue first
+                // Sort by due date, overdue/due today first
                 const dateA = new Date(a.dueDate);
                 const dateB = new Date(b.dueDate);
-                return dateA - dateB;
+
+                const isAOverdueOrDueToday = isOverdueOrDueToday(a.dueDate) && a.status !== 'Paid' && a.status !== 'Inactive';
+                const isBOverdueOrDueToday = isOverdueOrDueToday(b.dueDate) && b.status !== 'Paid' && b.status !== 'Inactive';
+
+                if (isAOverdueOrDueToday && !isBOverdueOrDueToday) return -1;
+                if (!isAOverdueOrDueToday && isBOverdueOrDueToday) return 1;
+
+                return dateA - dateB; // Then by date
             });
 
 
-            let hasOverdueMembers = false;
+            let totalMembersCount = allMembers.length; // Total members is simply the length of allMembers
 
             if (filteredAndSortedMembers.length === 0) {
                 noMembersMessage.classList.remove('hidden');
-                noOverdueMembersMessage.classList.remove('hidden'); // Also show for overdue if no members
                 membersTableBody.innerHTML = '';
             } else {
                 noMembersMessage.classList.add('hidden');
                 filteredAndSortedMembers.forEach(member => {
                     const row = membersTableBody.insertRow();
-                    const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-900' : 'bg-gray-800'; // Darker overdue row
-                    row.className = `${overdueClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; // Hover effect
+                    const isMemberOverdueOrDueToday = isOverdueOrDueToday(member.dueDate) && member.status !== 'Paid' && member.status !== 'Inactive';
+                    const rowClass = isMemberOverdueOrDueToday ? 'overdue-row' : 'bg-gray-800'; // Apply red highlight
+                    row.className = `${rowClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; // Hover effect
 
                     const daysLeftText = getDaysLeft(member.dueDate);
                     const nameClass = member.status === 'Inactive' ? 'line-through-name' : '';
                     const photoSrc = member.photoURL || "https://placehold.co/40x40/4a5568/cbd5e0?text=👤"; // Use actual photo or generic placeholder
 
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                            <a href="${photoSrc}" target="_blank" class="block">
-                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
-                            </a>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200 ${nameClass}">${member.name || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            ${formatToDDMMYYYY(member.dueDate) || 'N/A'}
-                            ${isOverdue(member.dueDate) && member.status !== 'Paid' ? `
-                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-700 text-red-100">
-                                    Overdue
-                                </span>` : ''}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            ${daysLeftText === 'Overdue' ? `
-                                <span class="text-red-500 font-semibold">${daysLeftText}</span>
-                            ` : daysLeftText === 'Due Today' ? `
-                                <span class="text-yellow-500 font-semibold">${daysLeftText}</span>
-                            ` : daysLeftText}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                            <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200" title="Edit Member">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
-                                </svg>
-                            </button>
-                            ${member.status === 'Active' || member.status === 'Overdue' ? `
-                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300" title="Pause Membership">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            ` : `
-                                <button data-id="${member.id}" class="activate-btn text-green-500 hover:text-green-300" title="Activate Membership">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            `}
-                            <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300" title="Delete Member">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </td>
-                    `;
-                    // Attach double-tap/click listener to the photo in the row (on the <img> inside <a>)
-                    const photoElementInRow = row.querySelector('.member-photo');
-                    if (photoElementInRow) {
-                        addPhotoEnlargeListeners(photoElementInRow);
+                    // Create cells and append content programmatically
+                    const photoCell = row.insertCell();
+                    photoCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "font-medium", "text-gray-200");
+                    photoCell.innerHTML = `<a href="${photoSrc}" target="_blank" class="block"><img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';"></a>`;
+                    addPhotoEnlargeListeners(photoCell.querySelector('.member-photo')); // Attach listener to the photo
+
+                    const memberIdCell = row.insertCell();
+                    memberIdCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "font-medium", "text-gray-200");
+                    memberIdCell.textContent = member.memberId || 'N/A';
+
+                    const nameCell = row.insertCell();
+                    nameCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "font-medium", "text-gray-200", nameClass);
+                    nameCell.textContent = member.name || 'N/A';
+
+                    const phoneCell = row.insertCell();
+                    phoneCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    phoneCell.textContent = member.phoneNumber || 'N/A';
+
+                    const typeCell = row.insertCell();
+                    typeCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    typeCell.textContent = member.membershipType || 'N/A';
+
+                    const startDateCell = row.insertCell();
+                    startDateCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    startDateCell.textContent = formatToDDMMYYYY(member.startDate) || 'N/A';
+
+                    const dueDateCell = row.insertCell();
+                    dueDateCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    dueDateCell.innerHTML = `${formatToDDMMYYYY(member.dueDate) || 'N/A'} ${isMemberOverdueOrDueToday ? `
+                        <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${daysLeftText.includes('overdue') ? 'bg-red-700 text-red-100' : 'bg-yellow-700 text-yellow-100'}">
+                            ${daysLeftText.includes('overdue') ? 'OVERDUE' : 'DUE TODAY'}
+                        </span>` : ''}`;
+
+                    const feeCell = row.insertCell();
+                    feeCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    feeCell.textContent = `$${(member.feeAmount || 0).toFixed(2)}`;
+
+                    const daysLeftCell = row.insertCell();
+                    daysLeftCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    daysLeftCell.innerHTML = daysLeftText.includes('overdue') ? `
+                        <span class="text-red-500 font-semibold">${daysLeftText}</span>
+                    ` : daysLeftText === 'Due Today' ? `
+                        <span class="text-yellow-500 font-semibold">${daysLeftText}</span>
+                    ` : daysLeftText;
+
+                    const actionsCell = row.insertCell();
+                    actionsCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-right", "text-sm", "font-medium", "flex", "items-center", "space-x-1", "sm:space-x-2");
+
+                    // Edit Button
+                    const editButton = document.createElement('button');
+                    editButton.dataset.id = member.id;
+                    editButton.className = "edit-btn text-blue-400 hover:text-blue-200 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                    editButton.title = "Edit Member";
+                    editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
+                    </svg>`;
+                    editButton.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        console.log("Edit button clicked. Member ID:", id); // Debug log
+                        const memberToEdit = allMembers.find(m => m.id === id);
+                        if (memberToEdit) {
+                            handleEdit(memberToEdit);
+                        } else {
+                            console.warn("Member not found for edit with ID:", id); // Debug log
+                            showMessage('Member not found for editing.', 'error');
+                        }
+                    });
+                    actionsCell.appendChild(editButton);
+                    console.log(`Button created for member ${member.id}: Edit`); // Debug log
+
+                    // Pause/Activate Button
+                    const toggleStatusButton = document.createElement('button');
+                    toggleStatusButton.dataset.id = member.id;
+                    if (member.status === 'Active' || member.status === 'Overdue') {
+                        toggleStatusButton.className = "pause-btn text-yellow-500 hover:text-yellow-300 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                        toggleStatusButton.title = "Pause Membership";
+                        toggleStatusButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>`;
+                    } else {
+                        toggleStatusButton.className = "activate-btn text-green-500 hover:text-green-300 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                        toggleStatusButton.title = "Activate Membership";
+                        toggleStatusButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>`;
                     }
-
-
-                    // Populate Overdue Members table
-                    if (isOverdue(member.dueDate) && member.status !== 'Paid') {
-                        hasOverdueMembers = true;
-                        const overdueRow = overdueMembersTableBody.insertRow();
-                        const today = new Date();
-                        today.setHours(0,0,0,0);
-                        const dueDate = new Date(member.dueDate);
-                        dueDate.setHours(0,0,0,0);
-                        const daysOverdue = Math.ceil(Math.abs(today - dueDate) / (1000 * 60 * 60 * 24));
-
-
-                        overdueRow.innerHTML = `
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                                <a href="${photoSrc}" target="_blank" class="block">
-                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
-                                </a>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.name || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.dueDate) || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-semibold">${daysOverdue} days</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                                <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200" title="Edit Member">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
-                                    </svg>
-                                </button>
-                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300" title="Pause Membership">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300" title="Delete Member">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            </td>
-                        `;
-                        // Attach double-tap/click listener to the photo in the row (on the <img> inside <a>)
-                        const photoElementInOverdueRow = overdueRow.querySelector('.member-photo');
-                        if (photoElementInOverdueRow) {
-                            addPhotoEnlargeListeners(photoElementInOverdueRow);
-                        }
-                    }
-                });
-
-                // Attach event listeners to new buttons (for both tables)
-                document.querySelectorAll('.edit-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
+                    toggleStatusButton.addEventListener('click', (e) => {
                         const id = e.currentTarget.dataset.id;
-                        const member = allMembers.find(m => m.id === id);
-                        if (member) {
-                            handleEdit(member);
+                        const currentMember = allMembers.find(m => m.id === id);
+                        if (currentMember) {
+                            const newStatus = (currentMember.status === 'Active' || currentMember.status === 'Overdue') ? 'Inactive' : 'Active';
+                            const actionTitle = newStatus === 'Inactive' ? 'Confirm Pause' : 'Confirm Activation';
+                            const actionMessage = `Are you sure you want to set ${currentMember.name}'s membership status to '${newStatus}'?`;
+                            showConfirmationModal(actionTitle, actionMessage, async () => {
+                                await handlePauseToggle(id, newStatus);
+                            }, 'Confirm');
+                        } else {
+                            console.warn("Member not found for status toggle with ID:", id);
+                            showMessage('Member not found for status update.', 'error');
                         }
                     });
-                });
-                document.querySelectorAll('.pause-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
+                    actionsCell.appendChild(toggleStatusButton);
+                    console.log(`Button created for member ${member.id}: Toggle Status`); // Debug log
+
+                    // Delete Button
+                    const deleteButton = document.createElement('button');
+                    deleteButton.dataset.id = member.id;
+                    deleteButton.className = "delete-btn text-red-500 hover:text-red-300 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                    deleteButton.title = "Delete Member";
+                    deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
+                    </svg>`;
+                    deleteButton.addEventListener('click', (e) => {
                         const id = e.currentTarget.dataset.id;
-                        handlePauseToggle(id, 'Inactive');
-                    });
-                });
-                document.querySelectorAll('.activate-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        handlePauseToggle(id, 'Active');
-                    });
-                });
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        const member = allMembers.find(m => m.id === id);
-                        if (member) {
-                            confirmDelete(member);
+                        console.log("Delete button clicked. Member ID:", id); // Debug log
+                        const memberToDeleteFound = allMembers.find(m => m.id === id);
+                        if (memberToDeleteFound) {
+                            console.log("Member found for deletion:", memberToDeleteFound.name); // Debug log
+                            confirmDelete(memberToDeleteFound);
+                        } else {
+                            console.warn("Member not found for deletion with ID:", id); // Debug log
+                            showMessage('Member not found for deletion.', 'error');
                         }
                     });
+                    actionsCell.appendChild(deleteButton);
+                    console.log(`Button created for member ${member.id}: Delete`); // Debug log
                 });
             }
 
-            if (hasOverdueMembers) {
-                noOverdueMembersMessage.classList.add('hidden');
-            } else {
-                noOverdueMembersMessage.classList.remove('hidden');
-            }
+            // Update counts on tabs and sections
+            countManageMember.textContent = `(${allMembers.length})`;
+            countAddExisting.textContent = `(${allMembers.length})`;
+            countAddPayment.textContent = `(${allMembers.length})`;
+            countIdCard.textContent = `(${allMembers.length})`;
+            countCurrentMembers.textContent = `(${totalMembersCount})`; // This is total members
         }
 
         /**
@@ -1290,6 +1390,7 @@
             stopCamera(cameraFeed, cameraStream); // Stop camera if active for main form
             viewPhotoLink.classList.add('hidden'); // Hide the photo link
             viewPhotoLink.href = '#'; // Reset href
+            photoPreview.classList.remove('hidden'); // Ensure preview is visible
         }
 
         /**
@@ -1310,12 +1411,13 @@
             stopCamera(existingCameraFeed, existingCameraStream); // Stop camera if active for existing form
             existingViewPhotoLink.classList.add('hidden'); // Hide the photo link
             existingViewPhotoLink.href = '#'; // Reset href
+            existingPhotoPreview.classList.remove('hidden'); // Ensure preview is visible
         }
 
         /**
          * Clears the add payment form inputs.
          */
-        function clearAddPaymentForm() { // Renamed function
+        function clearAddPaymentForm() {
             addPaymentMemberSearchInput.value = ''; // Clear search input
             addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>'; // Clear and reset options
             addPaymentCurrentDueDateInput.value = '';
@@ -1347,6 +1449,7 @@
          * @param {object} member - The member object to edit.
          */
         function handleEdit(member) {
+            console.log("handleEdit called for member:", member.id); // Debug log
             // Switch to the "Manage Member Details" tab
             showTab('manage-member');
 
@@ -1379,20 +1482,24 @@
             photoUploadInput.value = ''; // Clear file input
             stopCamera(cameraFeed, cameraStream); // Stop camera if active
             switchCameraBtn.classList.add('hidden'); // Hide switch camera button when editing
+            photoPreview.classList.remove('hidden'); // Ensure preview is visible
         }
 
         /**
          * Handles pausing/activating a member's membership.
+         * This function is now called after confirmation.
          * @param {string} memberId - The ID of the member to update.
          * @param {string} newStatus - The new status to set ('Active' or 'Inactive').
          */
         async function handlePauseToggle(memberId, newStatus) {
+            console.log(`handlePauseToggle called for member ID: ${memberId}, new status: ${newStatus}`); // Debug log
             if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
             try {
+                // Use the hardcoded path for the public collection
                 const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId);
                 await updateDoc(memberDocRef, {
                     status: newStatus,
@@ -1400,6 +1507,7 @@
                     updatedBy: currentUserId,
                 });
                 showMessage(`Member status updated to '${newStatus}' successfully!`, 'success');
+                console.log(`Member ${memberId} status updated to ${newStatus} in Firestore.`); // Debug log
             } catch (error) {
                 console.error("Error updating member status:", error);
                 showMessage('Failed to update member status. Please try again.', 'error');
@@ -1411,6 +1519,7 @@
          * @param {object} member - The member object to be deleted.
          */
         function confirmDelete(member) {
+            console.log("Entering confirmDelete for member:", member.id); // Debug log
             memberToDelete = member;
             memberToDeleteName.textContent = member.name || member.memberId || 'this member';
             deleteModal.classList.remove('hidden');
@@ -1419,30 +1528,64 @@
                 deleteModalContent.classList.remove('scale-95', 'opacity-0');
                 deleteModalContent.classList.add('scale-100', 'opacity-100');
             }, 10); // Small delay to allow 'hidden' to apply first
+            console.log("Confirm delete modal shown for member:", memberToDelete.id);
         }
 
         /**
          * Handles the deletion of a member from Firestore.
-         * Note: Photo deletion from Cloudinary is not handled client-side for security.
+         * This will also trigger a Firebase Cloud Function to delete the photo from Cloudinary.
          */
         async function handleDelete() {
             if (!db || !memberToDelete) {
                 showMessage('Database not ready or no member selected for deletion.', 'error');
+                console.error("Delete failed: DB not ready or memberToDelete is null.", { dbInitialized: !!db, memberToDelete });
                 return;
             }
 
+            console.log("Attempting to delete member with ID:", memberToDelete.id); // Debug log
             try {
                 // Delete member document from Firestore
+                // Use the hardcoded path for the public collection
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
 
-                showMessage('Member deleted successfully! (Note: Associated photo on Cloudinary is not deleted from the app for security reasons.)', 'success');
+                showMessage('Member deleted successfully! (Photo deletion from Cloudinary will be handled by backend.)', 'success');
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
+                console.log("Member deletion initiated successfully in Firestore."); // Debug log
             } catch (error) {
                 console.error("Error deleting member:", error);
                 showMessage('Failed to delete member. Please try again.', 'error');
             }
+        }
+
+        /**
+         * Displays the generic action confirmation modal.
+         * @param {string} title - The title of the confirmation modal.
+         * @param {string} message - The message to display in the modal.
+         * @param {Function} onConfirmCallback - The callback function to execute if confirmed.
+         * @param {string} [confirmButtonText='Confirm'] - Text for the confirm button.
+         */
+        function showConfirmationModal(title, message, onConfirmCallback, confirmButtonText = 'Confirm') {
+            actionConfirmationTitle.textContent = title;
+            actionConfirmationMessage.textContent = message;
+            confirmActionButton.textContent = confirmButtonText;
+            currentActionConfirmCallback = onConfirmCallback; // Store the callback
+
+            actionConfirmationModal.classList.remove('hidden');
+            setTimeout(() => {
+                actionConfirmationContent.classList.remove('scale-95', 'opacity-0');
+                actionConfirmationContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        /**
+         * Closes the generic action confirmation modal.
+         */
+        function closeConfirmationModal() {
+            actionConfirmationModal.classList.add('hidden');
+            actionConfirmationContent.classList.add('scale-95', 'opacity-0');
+            currentActionConfirmCallback = null; // Clear the callback
         }
 
         /**
@@ -1619,7 +1762,7 @@
             if (memberId) {
                 try {
                     await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
-                    showMessage('Photo link removed from member. (Image remains on Cloudinary)', 'success');
+                    showMessage('Photo link removed from member. (Image remains on Cloudinary until backend deletion)', 'success');
                 } catch (error) {
                     console.error("Error removing photoURL from Firestore:", error);
                     showMessage('Failed to clear photo link from member. Please try again.', 'error');
@@ -1639,7 +1782,7 @@
          */
         async function handleSwitchCamera(cameraFeedElement, cameraStreamVar, setCameraStreamCallback, setFacingModeCallback, currentFacingModeParam, previewElement, viewLinkElement) {
             stopCamera(cameraFeedElement, cameraStreamVar);
-            const newFacingMode = currentFacingModeParam === 'user' ? 'environment' : 'user';
+            const newFacingMode = currentCameraFacingMode === 'user' ? 'environment' : 'user'; // Use global currentCameraFacingMode
             setFacingModeCallback(newFacingMode); // Update the facing mode
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacingMode } });
             if (stream) {
@@ -1658,7 +1801,7 @@
          * Populates the member select dropdown in the Add Payment tab.
          * Filters based on search input.
          */
-        function populateAddPaymentMemberSelect(searchTerm = '') { // Renamed function
+        function populateAddPaymentMemberSelect(searchTerm = '') {
             addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>';
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
@@ -1731,12 +1874,12 @@
          */
         function showTab(tabId) {
             // Deactivate all tabs and hide all content
-            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard].forEach(tab => { // Updated tab ID
+            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard].forEach(tab => {
                 tab.classList.remove('tab-active');
                 tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
             });
 
-            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard].forEach(content => { // Updated content ID
+            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard].forEach(content => {
                 content.classList.add('hidden');
             });
 
@@ -1746,7 +1889,7 @@
                 tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentManageMember.classList.remove('hidden');
                 clearExistingMemberForm(); // Clear other forms
-                clearAddPaymentForm(); // Updated function call
+                clearAddPaymentForm();
                 clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(existingCameraFeed, existingCameraStream);
@@ -1755,18 +1898,18 @@
                 tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddExisting.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
-                clearAddPaymentForm(); // Updated function call
+                clearAddPaymentForm();
                 clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
-            } else if (tabId === 'add-payment') { // Updated tab ID
-                tabAddPayment.classList.add('tab-active'); // Updated tab ID
+            } else if (tabId === 'add-payment') {
+                tabAddPayment.classList.add('tab-active');
                 tabAddPayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
-                contentAddPayment.classList.remove('hidden'); // Updated content ID
+                contentAddPayment.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
                 clearExistingMemberForm();
-                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
-                clearAddPaymentForm(); // Clear the add payment form itself (updated function call)
+                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
+                clearAddPaymentForm(); // Clear the add payment form itself
                 clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
@@ -1777,8 +1920,8 @@
                 contentIdCard.classList.remove('hidden');
                 clearMainForm();
                 clearExistingMemberForm();
-                clearAddPaymentForm(); // Updated function call
-                populateIdCardMemberSelect(idCardMemberSearchInput.value); // Populate member dropdown for ID card
+                clearAddPaymentForm();
+                populateIdCardMemberSelect(idCardMemberSearchInput.value);
                 displayIdCard(null); // Clear displayed ID card
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
@@ -1808,129 +1951,106 @@
 
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-            } catch (error) {
-                console.error("Failed to initialize Firebase:", error);
-                showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
-                return;
-            }
+            console.log("Window loaded. Starting splash screen fade out.");
+            // Show splash screen and then fade out
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                document.body.style.overflowX = 'hidden'; // Keep horizontal overflow hidden
+                document.body.style.overflowY = 'auto'; // Re-enable vertical scrolling
+                console.log("Splash screen fade-out started.");
+            }, 2000); // Display splash for 2 seconds
 
-            // Start updating date/time immediately and then every second
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
+            // After splash screen fades, initialize the app
+            setTimeout(async () => {
+                splashScreen.style.display = 'none'; // Completely hide after fade-out
+                console.log("Splash screen hidden. Initializing Firebase.");
 
-            // Listen for authentication state changes (Firebase login)
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUserId = user.uid;
-                    userIdValue.textContent = currentUserId;
-                    authSection.classList.add('hidden'); // Hide Firebase auth section
-                    passwordEntryModal.classList.remove('hidden'); // Show in-app password modal
-                    passwordEntryModal.classList.add('flex');
-                    appPasswordInput.value = ''; // Clear input
-                    appPasswordInput.focus();
-
-                    // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
-                    const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
-                    onSnapshot(membersCollectionRef, (snapshot) => {
-                        allMembers = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-                        renderMembers(); // Re-render whenever data changes
-                        // If add payment tab is active, re-populate member select
-                        if (!contentAddPayment.classList.contains('hidden')) { // Updated content ID
-                             populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
-                        }
-                        // If ID card tab is active, re-populate member select
-                        if (!contentIdCard.classList.contains('hidden')) {
-                            populateIdCardMemberSelect(idCardMemberSearchInput.value);
-                            // If a member was selected, re-display their card
-                            if (idCardMemberSelect.value) {
-                                displayIdCard(idCardMemberSelect.value);
-                            }
-                        }
-                    }, (error) => {
-                        console.error("Error fetching members:", error);
-                        showMessage('Failed to load members. Check your internet connection.', 'error');
-                    });
-
-                } else {
-                    currentUserId = null;
-                    userIdValue.textContent = ''; // Clear user ID
-                    mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
-                    passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
-                    authSection.classList.remove('hidden'); // Show Firebase auth section
-                    // Clear members list if not authenticated
-                    allMembers = [];
-                    renderMembers();
-                }
-            });
-
-            // Initial sign-in attempt with custom token if available, otherwise anonymously
-            // This happens first to establish Firebase auth, then the in-app password takes over
-            if (!auth.currentUser) {
                 try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    console.log("Firebase initialized successfully.");
                 } catch (error) {
-                    console.error("Initial sign-in error:", error);
-                    showMessage('Failed to automatically sign in to backend. Please use the options below.', 'error');
+                    console.error("Failed to initialize Firebase:", error);
+                    showMessage('Failed to initialize Firebase. Check your internet connection and Firebase project settings.', 'error');
+                    // If Firebase initialization fails, stop here.
+                    return;
                 }
-            }
+
+                // Start updating date/time immediately and then every second
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+
+                // Perform anonymous sign-in silently
+                try {
+                    await signInAnonymously(auth);
+                    console.log("Silently signed in anonymously to Firebase.");
+                } catch (error) {
+                    console.error("Anonymous sign-in error:", error);
+                    showMessage('Failed to connect to backend. Please check your internet connection.', 'error');
+                    // If anonymous sign-in fails, the app cannot proceed with Firestore access
+                    return;
+                }
+
+                // Listen for authentication state changes (Firebase login)
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        userIdValue.textContent = currentUserId;
+                        // Directly show the app password modal after anonymous sign-in
+                        passwordEntryModal.classList.remove('hidden');
+                        passwordEntryModal.classList.add('flex');
+                        appPasswordInput.value = ''; // Clear input
+                        appPasswordInput.focus();
+                        console.log("User authenticated (anonymously). Showing app password modal.");
+
+                        // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
+                        // and when the app password is correctly entered later.
+                        // This listener is set up here, but data will only be rendered once the main app section is visible.
+                        // Use the hardcoded path for the public collection
+                        const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+                        onSnapshot(membersCollectionRef, (snapshot) => {
+                            allMembers = snapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            }));
+                            console.log(`Fetched ${allMembers.length} members from Firestore.`);
+                            // Only render members if the main app section is visible (i.e., after app password)
+                            if (!mainAppSection.classList.contains('hidden')) {
+                                renderMembers(); // Re-render whenever data changes
+                                // If add payment tab is active, re-populate member select
+                                if (!contentAddPayment.classList.contains('hidden')) {
+                                     populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
+                                }
+                                // If ID card tab is active, re-populate member select
+                                if (!contentIdCard.classList.contains('hidden')) {
+                                    populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                                    // If a member was selected, re-display their card
+                                    if (idCardMemberSelect.value) {
+                                        displayIdCard(idCardMemberSelect.value);
+                                    }
+                                }
+                            }
+                        }, (error) => {
+                            console.error("Error fetching members:", error);
+                            showMessage('Failed to load members. Check your internet connection or Firebase permissions.', 'error');
+                        });
+
+                    } else {
+                        currentUserId = null;
+                        userIdValue.textContent = ''; // Clear user ID
+                        mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
+                        passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
+                        // No auth section to show as it's removed
+                        console.log("User not authenticated. App will remain locked.");
+                        // Clear members list if not authenticated
+                        allMembers = [];
+                        renderMembers(); // Update counts to 0
+                    }
+                });
+
+            }, 3000); // Start app initialization after 3 seconds (2s fade + 1s buffer)
         };
-
-        // Authentication Event Listeners
-        signInButton.addEventListener('click', async () => {
-            const email = authEmailInput.value;
-            const password = authPasswordInput.value;
-            if (!email || !password) {
-                showMessage('Please enter both email and password.', 'error');
-                return;
-            }
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                showMessage('Signed in successfully!', 'success');
-                // onAuthStateChanged will handle showing passwordEntryModal
-            } catch (error) {
-                console.error("Sign in error:", error);
-                showMessage(`Sign in failed: ${error.message}`, 'error');
-            }
-        });
-
-        signUpButton.addEventListener('click', async () => {
-            const email = authEmailInput.value;
-            const password = authPasswordInput.value;
-            if (!email || !password) {
-                showMessage('Please enter both email and password.', 'error');
-                return;
-            }
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                showMessage('Account created and signed in successfully!', 'success');
-                // onAuthStateChanged will handle showing passwordEntryModal
-            } catch (error) {
-                console.error("Sign up error:", error);
-                showMessage(`Sign up failed: ${error.message}`, 'error');
-            }
-        });
-
-        anonymousSignInButton.addEventListener('click', async () => {
-            try {
-                await signInAnonymously(auth);
-                showMessage('Signed in anonymously!', 'success');
-                // onAuthStateChanged will handle showing passwordEntryModal
-            } catch (error) {
-                console.error("Anonymous sign in error:", error);
-                showMessage(`Anonymous sign in failed: ${error.message}`, 'error');
-            }
-        });
 
         // In-App Password Entry Event Listener
         submitAppPasswordBtn.addEventListener('click', () => {
@@ -1943,12 +2063,16 @@
                 setTimeout(() => {
                     mainAppSection.classList.remove('scale-95', 'opacity-0');
                     mainAppSection.classList.add('scale-100', 'opacity-100');
+                    // After main app is visible, ensure members are rendered
+                    renderMembers();
                 }, 10); // Small delay to allow 'hidden' to apply first
                 showTab('manage-member'); // Show default tab on successful app password entry
+                console.log("App password correct. Main app section displayed.");
             } else {
                 showMessage('Incorrect password. Please try again.', 'error');
                 appPasswordInput.value = '';
                 appPasswordInput.focus();
+                console.warn("Incorrect app password entered.");
             }
         });
 
@@ -1959,27 +2083,10 @@
             }
         });
 
-
-        // Sign Out Button (logs out from Firebase and returns to Firebase login screen)
-        signOutButton.addEventListener('click', async () => {
-            try {
-                await signOut(auth); // This signs out the Firebase user (anonymous or email/password)
-                showMessage('Signed out successfully! Please log in again.', 'success');
-                clearMainForm();
-                clearExistingMemberForm();
-                clearAddPaymentForm(); // Updated function call
-                clearIdCardDisplay();
-                // onAuthStateChanged will handle showing authSection and hiding mainAppSection/passwordEntryModal
-            } catch (error) {
-                console.error("Sign out error:", error);
-                showMessage(`Sign out failed: ${error.message}`, 'error');
-            }
-        });
-
         // Tab Event Listeners
         tabManageMember.addEventListener('click', () => showTab('manage-member'));
         tabAddExisting.addEventListener('click', () => showTab('add-existing'));
-        tabAddPayment.addEventListener('click', () => showTab('add-payment')); // Updated ID
+        tabAddPayment.addEventListener('click', () => showTab('add-payment'));
         tabIdCard.addEventListener('click', () => showTab('id-card'));
 
 
@@ -1991,6 +2098,9 @@
                 return;
             }
 
+            const memberId = memberIdInput.value.trim();
+            const name = nameInput.value.trim();
+            const phoneNumber = phoneNumberInput.value.trim();
             const membershipType = membershipTypeInput.value;
             const calculatedDueDate = addDurationToDate(startDateInput.value, membershipType);
             const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
@@ -2000,10 +2110,23 @@
                 return;
             }
 
+            if (!memberId || !name || !phoneNumber) {
+                showMessage('Member ID, Name, and Phone Number are required.', 'error');
+                return;
+            }
+
+            // Check for duplicate member (name, phone, memberId combination)
+            const isDuplicate = await checkDuplicateMember(name, phoneNumber, memberId, editingMemberId);
+            if (isDuplicate) {
+                showMessage(`A member with this Name, Phone Number, and Member ID already exists. Please use unique details.`, 'error');
+                return;
+            }
+
+
             let memberData = {
-                memberId: memberIdInput.value.trim(),
-                name: nameInput.value.trim(),
-                phoneNumber: phoneNumberInput.value.trim(),
+                memberId: memberId,
+                name: name,
+                phoneNumber: phoneNumber,
                 membershipType: membershipType,
                 startDate: startDateInput.value,
                 dueDate: calculatedDueDate,
@@ -2013,11 +2136,6 @@
                 createdBy: currentUserId,
             };
 
-            if (!memberData.memberId) {
-                showMessage('Member ID is required.', 'error');
-                return;
-            }
-
             try {
                 let docRef;
                 let photoURL = null; // Initialize photoURL
@@ -2025,6 +2143,7 @@
                 // Handle photo upload if a new photo is present
                 if (currentPhotoBase64 && !currentPhotoBase64.startsWith('https://res.cloudinary.com/')) {
                     // Only upload if it's a new base64 image (not an existing Cloudinary URL)
+                    showMessage('Uploading photo...', 'success'); // Provide feedback during upload
                     photoURL = await uploadImageToCloudinary(currentPhotoBase64);
                     if (!photoURL) {
                         // If upload fails, stop the process or handle appropriately
@@ -2054,7 +2173,8 @@
                     showMessage('Member added successfully!', 'success');
                 }
                 clearMainForm();
-            } catch (error) {
+            }
+            catch (error) {
                 console.error("Error adding/updating member or uploading photo:", error);
                 showMessage('Failed to save member. Please try again.', 'error');
             }
@@ -2075,8 +2195,22 @@
         cancelDeleteButton.addEventListener('click', () => {
             deleteModal.classList.add('hidden');
             deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
+            memberToDelete = null; // Clear the memberToDelete reference
+            console.log("Delete modal cancelled. memberToDelete cleared."); // Debug log
         });
         confirmDeleteButton.addEventListener('click', handleDelete);
+
+        // Generic Action Confirmation Modal event listeners
+        confirmActionButton.addEventListener('click', async () => {
+            if (currentActionConfirmCallback) {
+                await currentActionConfirmCallback();
+            }
+            closeConfirmationModal();
+        });
+
+        cancelActionButton.addEventListener('click', () => {
+            closeConfirmationModal();
+        });
 
         // Photo related event listeners for Manage Member Details tab
         uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click()); // Trigger file input click
@@ -2127,6 +2261,9 @@
                 return;
             }
 
+            const memberId = existingMemberIdInput.value.trim();
+            const name = existingNameInput.value.trim();
+            const phoneNumber = existingPhoneNumberInput.value.trim();
             const membershipType = existingMembershipTypeInput.value;
             const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
 
@@ -2135,10 +2272,22 @@
                 return;
             }
 
+            if (!memberId || !name || !phoneNumber) {
+                showMessage('Member ID, Name, and Phone Number are required.', 'error');
+                return;
+            }
+
+            // Check for duplicate member
+            const isDuplicate = await checkDuplicateMember(name, phoneNumber, memberId);
+            if (isDuplicate) {
+                showMessage(`A member with this Name, Phone Number, and Member ID already exists. Please use unique details.`, 'error');
+                return;
+            }
+
             const memberData = {
-                memberId: existingMemberIdInput.value.trim(), // Get Member ID
-                name: existingNameInput.value.trim(),
-                phoneNumber: existingPhoneNumberInput.value.trim(), // Get Phone Number
+                memberId: memberId, // Get Member ID
+                name: name,
+                phoneNumber: phoneNumber, // Get Phone Number
                 membershipType: membershipType,
                 startDate: existingStartDateInput.value,
                 dueDate: calculatedDueDateInput.value, // Use the calculated due date
@@ -2149,14 +2298,10 @@
                 createdBy: currentUserId,
             };
 
-            if (!memberData.memberId) {
-                showMessage('Member ID is required.', 'error');
-                return;
-            }
-
             try {
                 let photoURL = null;
                 if (existingPhotoBase64) {
+                    showMessage('Uploading photo...', 'success'); // Provide feedback
                     photoURL = await uploadImageToCloudinary(existingPhotoBase64);
                     if (!photoURL) {
                         showMessage('Failed to upload photo to Cloudinary. Member not added.', 'error');
@@ -2204,60 +2349,59 @@
         addPhotoEnlargeListeners(existingPhotoPreview);
 
 
-        // Add Payment Form Event Listeners (formerly Advance Payment)
-        addPaymentMemberSearchInput.addEventListener('input', (e) => { // Updated ID
-            populateAddPaymentMemberSelect(e.target.value); // Updated function call
+        // Add Payment Form Event Listeners
+        addPaymentMemberSearchInput.addEventListener('input', (e) => {
+            populateAddPaymentMemberSelect(e.target.value);
             // Clear details if search changes
             addPaymentMemberSelect.value = '';
             addPaymentCurrentDueDateInput.value = '';
             addPaymentNewDueDateInput.value = '';
         });
 
-        addPaymentMemberSelect.addEventListener('change', () => { // Updated ID
-            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
+        addPaymentMemberSelect.addEventListener('change', () => {
+            const selectedMemberId = addPaymentMemberSelect.value;
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
-                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted // Updated ID
+                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted
                 // If member is overdue, use the special calculation for new due date
-                if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
+                if (isOverdueOrDueToday(selectedMember.dueDate)) { // Use new check for overdue or due today
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate));
                 } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
                 }
             } else {
-                addPaymentCurrentDueDateInput.value = ''; // Updated ID
-                addPaymentNewDueDateInput.value = ''; // Updated ID
+                addPaymentNewDueDateInput.value = '';
             }
         });
 
-        addPaymentMembershipTypeInput.addEventListener('change', () => { // Updated ID
-            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
+        addPaymentMembershipTypeInput.addEventListener('change', () => {
+            const selectedMemberId = addPaymentMemberSelect.value;
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
                 // Calculate new due date based on current due date and selected payment type
                 // If member is overdue, use the special calculation for new due date
-                if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
+                if (isOverdueOrDueToday(selectedMember.dueDate)) { // Use new check for overdue or due today
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate));
                 } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
                 }
             } else {
-                addPaymentNewDueDateInput.value = ''; // Updated ID
+                addPaymentNewDueDateInput.value = '';
             }
         });
 
-        addPaymentForm.addEventListener('submit', async (e) => { // Updated ID
+        addPaymentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
-            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
-            const newMembershipType = addPaymentMembershipTypeInput.value; // Updated ID
-            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value;
+            const newMembershipType = addPaymentMembershipTypeInput.value;
+            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (!selectedMemberId || !newDueDate || !selectedMember) {
@@ -2287,11 +2431,11 @@
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
                 });
-                showMessage('Payment processed and due date updated successfully!', 'success'); // Updated message
-                clearAddPaymentForm(); // Updated function call
+                showMessage('Payment processed and due date updated successfully!', 'success');
+                clearAddPaymentForm();
             } catch (error) {
-                console.error("Error processing payment:", error); // Updated message
-                showMessage('Failed to process payment. Please try again.', 'error'); // Updated message
+                console.error("Error processing payment:", error);
+                showMessage('Failed to process payment. Please try again.', 'error');
             }
         });
 
