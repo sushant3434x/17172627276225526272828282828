@@ -1144,26 +1144,35 @@
         }
 
         /**
-         * Checks if a member with the given memberId already exists.
-         * @param {string} memberId - The member ID to check.
+         * Checks if a member with the given name, phone number, and member ID already exists.
+         * @param {string} name - The member's name.
+         * @param {string} phoneNumber - The member's phone number.
+         * @param {string} memberId - The member's ID.
          * @param {string|null} excludeDocId - Optional. If provided, excludes the document with this ID from the check (for update scenarios).
          * @returns {Promise<boolean>} True if a duplicate exists, false otherwise.
          */
-        async function checkDuplicateMemberId(memberId, excludeDocId = null) {
+        async function checkDuplicateMember(name, phoneNumber, memberId, excludeDocId = null) {
             if (!db) {
                 console.error("Firestore DB not initialized.");
                 return true; // Treat as duplicate to prevent issues
             }
             const membersRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
-            const q = query(membersRef, where("memberId", "==", memberId));
+
+            // Query for exact matches on all three fields
+            const q = query(
+                membersRef,
+                where("name", "==", name.trim()),
+                where("phoneNumber", "==", phoneNumber.trim()),
+                where("memberId", "==", memberId.trim())
+            );
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                return false; // No member with this ID
+                return false; // No member with this combination
             }
 
             if (excludeDocId) {
-                // If we are editing, check if the found duplicate is *not* the current document
+                // If we are editing, check if the found duplicate is *not* the current document being edited
                 return querySnapshot.docs.some(doc => doc.id !== excludeDocId);
             } else {
                 // If adding new, any match means it's a duplicate
@@ -1491,6 +1500,7 @@
                 deleteModalContent.classList.remove('scale-95', 'opacity-0');
                 deleteModalContent.classList.add('scale-100', 'opacity-100');
             }, 10); // Small delay to allow 'hidden' to apply first
+            console.log("Confirm delete modal shown for member:", memberToDelete.id);
         }
 
         /**
@@ -1500,10 +1510,12 @@
         async function handleDelete() {
             if (!db || !memberToDelete) {
                 showMessage('Database not ready or no member selected for deletion.', 'error');
+                console.error("Delete failed: DB not ready or memberToDelete is null.", { dbInitialized: !!db, memberToDelete });
                 return;
             }
 
             try {
+                console.log("Attempting to delete member with ID:", memberToDelete.id);
                 // Delete member document from Firestore
                 // This deletion will trigger the Cloud Function to delete the associated photo.
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
@@ -1512,6 +1524,7 @@
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
+                console.log("Member deletion initiated successfully in Firestore.");
             } catch (error) {
                 console.error("Error deleting member:", error);
                 showMessage('Failed to delete member. Please try again.', 'error');
@@ -1712,7 +1725,7 @@
          */
         async function handleSwitchCamera(cameraFeedElement, cameraStreamVar, setCameraStreamCallback, setFacingModeCallback, currentFacingModeParam, previewElement, viewLinkElement) {
             stopCamera(cameraFeedElement, cameraStreamVar);
-            const newFacingMode = currentFacingModeParam === 'user' ? 'environment' : 'user';
+            const newFacingMode = currentCameraFacingMode === 'user' ? 'environment' : 'user'; // Use global currentCameraFacingMode
             setFacingModeCallback(newFacingMode); // Update the facing mode
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacingMode } });
             if (stream) {
@@ -2097,6 +2110,8 @@
             }
 
             const memberId = memberIdInput.value.trim();
+            const name = nameInput.value.trim();
+            const phoneNumber = phoneNumberInput.value.trim();
             const membershipType = membershipTypeInput.value;
             const calculatedDueDate = addDurationToDate(startDateInput.value, membershipType);
             const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
@@ -2106,25 +2121,23 @@
                 return;
             }
 
-            if (!memberId) {
-                showMessage('Member ID is required.', 'error');
+            if (!memberId || !name || !phoneNumber) {
+                showMessage('Member ID, Name, and Phone Number are required.', 'error');
                 return;
             }
 
-            // Check for duplicate member ID if adding a new member or if the memberId is being changed during edit
-            if (!editingMemberId || (editingMemberId && memberId !== allMembers.find(m => m.id === editingMemberId)?.memberId)) {
-                const isDuplicate = await checkDuplicateMemberId(memberId, editingMemberId);
-                if (isDuplicate) {
-                    showMessage(`Member with ID "${memberId}" already exists. Please use a unique ID.`, 'error');
-                    return;
-                }
+            // Check for duplicate member (name, phone, memberId combination)
+            const isDuplicate = await checkDuplicateMember(name, phoneNumber, memberId, editingMemberId);
+            if (isDuplicate) {
+                showMessage(`A member with this Name, Phone Number, and Member ID already exists. Please use unique details.`, 'error');
+                return;
             }
 
 
             let memberData = {
                 memberId: memberId,
-                name: nameInput.value.trim(),
-                phoneNumber: phoneNumberInput.value.trim(),
+                name: name,
+                phoneNumber: phoneNumber,
                 membershipType: membershipType,
                 startDate: startDateInput.value,
                 dueDate: calculatedDueDate,
@@ -2192,6 +2205,7 @@
         cancelDeleteButton.addEventListener('click', () => {
             deleteModal.classList.add('hidden');
             deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
+            memberToDelete = null; // Clear the memberToDelete reference
         });
         confirmDeleteButton.addEventListener('click', handleDelete);
 
@@ -2245,6 +2259,8 @@
             }
 
             const memberId = existingMemberIdInput.value.trim();
+            const name = existingNameInput.value.trim();
+            const phoneNumber = existingPhoneNumberInput.value.trim();
             const membershipType = existingMembershipTypeInput.value;
             const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
 
@@ -2253,22 +2269,22 @@
                 return;
             }
 
-            if (!memberId) {
-                showMessage('Member ID is required.', 'error');
+            if (!memberId || !name || !phoneNumber) {
+                showMessage('Member ID, Name, and Phone Number are required.', 'error');
                 return;
             }
 
-            // Check for duplicate member ID
-            const isDuplicate = await checkDuplicateMemberId(memberId);
+            // Check for duplicate member
+            const isDuplicate = await checkDuplicateMember(name, phoneNumber, memberId);
             if (isDuplicate) {
-                showMessage(`Member with ID "${memberId}" already exists. Please use a unique ID.`, 'error');
+                showMessage(`A member with this Name, Phone Number, and Member ID already exists. Please use unique details.`, 'error');
                 return;
             }
 
             const memberData = {
                 memberId: memberId, // Get Member ID
-                name: existingNameInput.value.trim(),
-                phoneNumber: existingPhoneNumberInput.value.trim(), // Get Phone Number
+                name: name,
+                phoneNumber: phoneNumber, // Get Phone Number
                 membershipType: membershipType,
                 startDate: existingStartDateInput.value,
                 dueDate: calculatedDueDateInput.value, // Use the calculated due date
