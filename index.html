@@ -673,8 +673,11 @@
     <div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden p-4">
         <div class="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl max-w-xs sm:max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="delete-modal-content">
             <h3 class="text-xl sm:text-2xl font-bold text-white mb-4 text-center">Confirm Deletion</h3>
+            <p class="text-red-400 font-bold text-center mb-4 text-sm sm:text-base">
+                WARNING: This action is permanent and cannot be undone!
+            </p>
             <p class="text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base text-center">
-                Are you sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-indigo-400"></span>"? This action cannot be undone.
+                Are you absolutely sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-indigo-400"></span>"?
             </p>
             <div class="flex justify-center space-x-3 sm:space-x-4">
                 <button
@@ -687,7 +690,23 @@
                     id="confirm-delete-button"
                     class="px-5 py-2 sm:px-6 sm:py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base"
                 >
-                    Delete
+                    Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Action Confirmation Modal -->
+    <div id="action-confirmation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl max-w-xs sm:max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="action-confirmation-content">
+            <h3 id="action-confirmation-title" class="text-xl sm:text-2xl font-bold text-white mb-4 text-center"></h3>
+            <p id="action-confirmation-message" class="text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base text-center"></p>
+            <div class="flex justify-center space-x-3 sm:space-x-4">
+                <button id="cancel-action-button" class="px-5 py-2 sm:px-6 sm:py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base">
+                    Cancel
+                </button>
+                <button id="confirm-action-button" class="px-5 py-2 sm:px-6 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out shadow-md text-sm sm:text-base">
+                    Confirm
                 </button>
             </div>
         </div>
@@ -852,6 +871,15 @@
         const memberToDeleteName = document.getElementById('member-to-delete-name'); // Re-enabled
         const cancelDeleteButton = document.getElementById('cancel-delete-button'); // Re-enabled
         const confirmDeleteButton = document.getElementById('confirm-delete-button'); // Re-enabled
+
+        // Generic Action Confirmation Modal elements
+        const actionConfirmationModal = document.getElementById('action-confirmation-modal');
+        const actionConfirmationContent = document.getElementById('action-confirmation-content');
+        const actionConfirmationTitle = document.getElementById('action-confirmation-title');
+        const actionConfirmationMessage = document.getElementById('action-confirmation-message');
+        const cancelActionButton = document.getElementById('cancel-action-button');
+        const confirmActionButton = document.getElementById('confirm-action-button');
+        let currentActionConfirmCallback = null; // To store the callback for the generic modal
 
         // Overdue Members specific DOM elements (now removed from HTML, but variables kept for logic)
         // const countOverdueMembers = document.getElementById('count-overdue-members'); // This element is removed from HTML
@@ -1339,8 +1367,11 @@
                         const currentMember = allMembers.find(m => m.id === id);
                         if (currentMember) {
                             const newStatus = (currentMember.status === 'Active' || currentMember.status === 'Overdue') ? 'Inactive' : 'Active';
-                            console.log(`Toggle Status button clicked. Member ID: ${id}, new status: ${newStatus}`); // Debug log
-                            handlePauseToggle(id, newStatus);
+                            const actionTitle = newStatus === 'Inactive' ? 'Confirm Pause' : 'Confirm Activation';
+                            const actionMessage = `Are you sure you want to set ${currentMember.name}'s membership status to '${newStatus}'?`;
+                            showConfirmationModal(actionTitle, actionMessage, async () => {
+                                await handlePauseToggle(id, newStatus);
+                            }, 'Confirm');
                         } else {
                             console.warn("Member not found for status toggle with ID:", id);
                             showMessage('Member not found for status update.', 'error');
@@ -1498,6 +1529,7 @@
 
         /**
          * Handles pausing/activating a member's membership.
+         * This function is now called after confirmation.
          * @param {string} memberId - The ID of the member to update.
          * @param {string} newStatus - The new status to set ('Active' or 'Inactive').
          */
@@ -1566,6 +1598,35 @@
                 console.error("Error deleting member:", error);
                 showMessage('Failed to delete member. Please try again.', 'error');
             }
+        }
+
+        /**
+         * Displays the generic action confirmation modal.
+         * @param {string} title - The title of the confirmation modal.
+         * @param {string} message - The message to display in the modal.
+         * @param {Function} onConfirmCallback - The callback function to execute if confirmed.
+         * @param {string} [confirmButtonText='Confirm'] - Text for the confirm button.
+         */
+        function showConfirmationModal(title, message, onConfirmCallback, confirmButtonText = 'Confirm') {
+            actionConfirmationTitle.textContent = title;
+            actionConfirmationMessage.textContent = message;
+            confirmActionButton.textContent = confirmButtonText;
+            currentActionConfirmCallback = onConfirmCallback; // Store the callback
+
+            actionConfirmationModal.classList.remove('hidden');
+            setTimeout(() => {
+                actionConfirmationContent.classList.remove('scale-95', 'opacity-0');
+                actionConfirmationContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        /**
+         * Closes the generic action confirmation modal.
+         */
+        function closeConfirmationModal() {
+            actionConfirmationModal.classList.add('hidden');
+            actionConfirmationContent.classList.add('scale-95', 'opacity-0');
+            currentActionConfirmCallback = null; // Clear the callback
         }
 
         /**
@@ -2221,7 +2282,8 @@
                     showMessage('Member added successfully!', 'success');
                 }
                 clearMainForm();
-            } catch (error) {
+            }
+            catch (error) {
                 console.error("Error adding/updating member or uploading photo:", error);
                 showMessage('Failed to save member. Please try again.', 'error');
             }
@@ -2246,6 +2308,18 @@
             console.log("Delete modal cancelled. memberToDelete cleared."); // Debug log
         });
         confirmDeleteButton.addEventListener('click', handleDelete);
+
+        // Generic Action Confirmation Modal event listeners
+        confirmActionButton.addEventListener('click', async () => {
+            if (currentActionConfirmCallback) {
+                await currentActionConfirmCallback();
+            }
+            closeConfirmationModal();
+        });
+
+        cancelActionButton.addEventListener('click', () => {
+            closeConfirmationModal();
+        });
 
         // Photo related event listeners for Manage Member Details tab
         uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click()); // Trigger file input click
