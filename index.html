@@ -125,13 +125,16 @@
 </head>
 <body class="bg-gray-900 text-gray-200 antialiased">
 
+    <!-- Splash Screen -->
     <div id="splashScreen" class="splash-screen">
         <h1 class="text-6xl font-extrabold text-white mb-4 animate-pulse">Gym Manager</h1>
         <p class="text-lg text-gray-400">Made by ~ SUSHANT SINGH</p>
     </div>
 
+    <!-- Message Display -->
     <div id="messageDisplay" class="message-display"></div>
 
+    <!-- Authentication Section -->
     <div id="authSection" class="min-h-screen flex items-center justify-center bg-gray-900 hidden">
         <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
             <h2 class="text-3xl font-bold mb-6 text-gray-100">Welcome to Gym Dashboard</h2>
@@ -146,6 +149,7 @@
         </div>
     </div>
 
+    <!-- Password Entry Modal -->
     <div id="passwordEntryModal" class="password-entry-modal">
         <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center">
             <h2 class="text-2xl font-bold mb-4 text-gray-100">Enter Password</h2>
@@ -155,6 +159,7 @@
         </div>
     </div>
 
+    <!-- Main Gym Application -->
     <div id="gymApp" class="container mx-auto p-4 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl mb-6">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4">
@@ -177,6 +182,7 @@
                 </nav>
             </div>
 
+            <!-- Manage Member Details Tab -->
             <div id="manageMemberSection" class="tab-content">
                 <h2 class="text-2xl font-bold mb-4 text-gray-100">Manage Member Details</h2>
                 <form id="memberForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -234,6 +240,7 @@
                 </form>
             </div>
 
+            <!-- Add Existing Member Tab -->
             <div id="addExistingMemberSection" class="tab-content hidden">
                 <h2 class="text-2xl font-bold mb-4 text-gray-100">Add Existing Member (with new plan/details)</h2>
                 <form id="existingMemberForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -273,6 +280,7 @@
                 </form>
             </div>
 
+            <!-- Add Payment Tab -->
             <div id="addPaymentSection" class="tab-content hidden">
                 <h2 class="text-2xl font-bold mb-4 text-gray-100">Add Payment</h2>
                 <div class="mb-4">
@@ -308,6 +316,7 @@
                 </form>
             </div>
 
+            <!-- ID Card View Tab -->
             <div id="idCardViewSection" class="tab-content hidden">
                 <h2 class="text-2xl font-bold mb-4 text-gray-100">View ID Card</h2>
                 <div class="mb-4">
@@ -336,6 +345,7 @@
                 </div>
             </div>
 
+            <!-- Members List Section -->
             <div class="col-span-12 xl:col-span-8 bg-gray-900 shadow-lg rounded-sm border border-gray-800 mt-6">
                 <header class="px-5 py-4 border-b border-gray-800">
                     <h2 class="font-semibold text-gray-200">Members List</h2>
@@ -378,7 +388,8 @@
                                 </tr>
                             </thead>
                             <tbody class="text-sm divide-y divide-gray-800" id="membersTableBody">
-                                </tbody>
+                                <!-- Members will be loaded here by JavaScript -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -387,10 +398,12 @@
         </div>
     </div>
 
+    <!-- Photo View Modal -->
     <div id="photoViewModal" class="photo-view-modal">
         <img id="modalPhoto" src="" class="photo-view-modal-content">
     </div>
 
+    <!-- Delete Confirmation Modal -->
     <div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
         <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center">
             <h3 class="text-xl font-bold mb-4 text-gray-100">Confirm Deletion</h3>
@@ -402,27 +415,35 @@
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where, getDocs, getDoc, Timestamp, FieldValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadString, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
 
-    <script>
-        // Your Firebase config (replace with your actual config)
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
+            authDomain: "alpha-core-fitness-data.firebaseapp.com",
+            projectId: "alpha-core-fitness-data",
+            storageBucket: "alpha-core-fitness-data.firebasestorage.app",
+            messagingSenderId: "311733734225",
+            appId: "1:311733734225:web:697ef2dc197ebb2e662170",
+            measurementId: "G-C5EKPN2K2J"
         };
 
+        // Access global appId and initialAuthToken provided by the environment
+        const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
         // DOM Elements
         const splashScreen = document.getElementById('splashScreen');
@@ -514,7 +535,7 @@
         // Combined Members List Table Body
         const membersTableBody = document.getElementById('membersTableBody');
 
-        let currentMemberId = null;
+        let currentMemberDocId = null; // Renamed to avoid confusion with memberId (the field)
         let photoFile = null;
         let currentStream = null;
         let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back camera
@@ -522,10 +543,10 @@
         const IN_APP_PASSWORD = "2003"; // Hardcoded in-app password
 
         const MEMBERSHIP_PLANS = {
-            "Monthly": { months: 1, fee: 500 },
-            "Quarterly": { months: 3, fee: 1400 },
-            "HalfYearly": { months: 6, fee: 2700 },
-            "Annual": { months: 12, fee: 5000 }
+            "Monthly": { months: 1, fee: 700.00 },
+            "Quarterly": { months: 3, fee: 2000.00 },
+            "HalfYearly": { months: 6, fee: 3500.00 },
+            "Annual": { months: 12, fee: 6000.00 }
         };
 
         // --- Utility Functions ---
@@ -607,7 +628,7 @@
         updateDateTime(); // Initial call
 
         // --- Authentication ---
-        auth.onAuthStateChanged((user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userIdDisplay.textContent = `User ID: ${user.uid}`;
                 splashScreen.style.opacity = '0';
@@ -617,6 +638,7 @@
                     authSection.classList.add('hidden');
                     gymApp.classList.add('hidden');
                     passwordEntryModal.style.display = 'flex';
+                    inAppPasswordInput.focus(); // Explicitly focus for keyboard
                 } else {
                     authSection.classList.add('hidden');
                     passwordEntryModal.style.display = 'none';
@@ -630,14 +652,31 @@
                 authSection.classList.remove('hidden');
                 passwordEntryModal.style.display = 'none';
                 sessionStorage.removeItem('appUnlocked');
+                emailInput.focus(); // Explicitly focus for keyboard
             }
         });
+
+        // Initial sign-in attempt
+        window.onload = async () => {
+            if (!auth.currentUser) {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Initial sign-in error:", error);
+                    showMessage('Failed to automatically sign in. Please use the options below.', 'error');
+                }
+            }
+        };
 
         signInBtn.addEventListener('click', async () => {
             const email = emailInput.value;
             const password = passwordInput.value;
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Signed in successfully!', 'success');
             } catch (error) {
                 authError.textContent = error.message;
@@ -650,7 +689,7 @@
             const email = emailInput.value;
             const password = passwordInput.value;
             try {
-                await auth.createUserWithEmailAndPassword(email, password);
+                await createUserWithEmailAndPassword(auth, email, password);
                 showMessage('Signed up and logged in successfully!', 'success');
             } catch (error) {
                 authError.textContent = error.message;
@@ -661,7 +700,7 @@
 
         anonymousSignInBtn.addEventListener('click', async () => {
             try {
-                await auth.signInAnonymously();
+                await signInAnonymously(auth);
                 showMessage('Signed in anonymously!', 'info');
             } catch (error) {
                 authError.textContent = error.message;
@@ -672,9 +711,14 @@
 
         signOutBtn.addEventListener('click', async () => {
             try {
-                await auth.signOut();
+                await signOut(auth);
                 showMessage('Signed out successfully!', 'info');
                 sessionStorage.removeItem('appUnlocked'); // Lock the app again on sign out
+                clearForm('memberForm');
+                clearForm('existingMemberForm');
+                clearForm('paymentForm');
+                // Clear members list table
+                membersTableBody.innerHTML = '';
             } catch (error) {
                 showMessage(`Sign-out error: ${error.message}`, 'error');
             }
@@ -711,7 +755,7 @@
             clearForm('memberForm');
             clearForm('existingMemberForm');
             clearForm('paymentForm');
-            clearForm('idCardForm'); // Assuming a conceptual ID card form clear function
+            // No specific clear for ID card view as it's display-only
         }
 
         tabManageMember.addEventListener('click', () => switchTab(tabManageMember, manageMemberSection));
@@ -719,9 +763,8 @@
         tabAddPayment.addEventListener('click', () => switchTab(tabAddPayment, addPaymentSection));
         tabIDCardView.addEventListener('click', () => switchTab(tabIDCardView, idCardViewSection));
 
-        // Initial tab load
-        switchTab(tabManageMember, manageMemberSection);
-
+        // Initial tab load (after auth check)
+        // This will be handled by onAuthStateChanged and unlockAppBtn logic
 
         // --- Member Management (Manage Member Details Tab) ---
         startDateInput.addEventListener('change', () => {
@@ -833,30 +876,30 @@
                 name: nameInput.value,
                 phoneNo: phoneNoInput.value,
                 membershipType: membershipTypeSelect.value,
-                startDate: firebase.firestore.Timestamp.fromDate(new Date(startDateInput.value)),
-                dueDate: firebase.firestore.Timestamp.fromDate(new Date(dueDateInput.value)),
+                startDate: Timestamp.fromDate(new Date(startDateInput.value)),
+                dueDate: Timestamp.fromDate(new Date(dueDateInput.value)),
                 fee: MEMBERSHIP_PLANS[membershipTypeSelect.value]?.fee || 0,
                 photoURL: '', // Will be updated after upload
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: FieldValue.serverTimestamp()
             };
 
             // Photo Upload Logic
             if (photoFile) {
-                const storageRef = storage.ref(`member_photos/${memberData.memberId}`);
-                let uploadTask;
+                const storageRef = ref(storage, `member_photos/${memberData.memberId}`);
+                let uploadPromise;
 
                 if (typeof photoFile === 'string' && photoFile.startsWith('data:image')) {
                     // If it's a base64 string from canvas
-                    uploadTask = storageRef.putString(photoFile, 'data_url');
+                    uploadPromise = uploadString(storageRef, photoFile, 'data_url');
                 } else if (photoFile instanceof File) {
                     // If it's a File object from input
-                    uploadTask = storageRef.put(photoFile);
+                    uploadPromise = uploadBytes(storageRef, photoFile);
                 }
 
-                if (uploadTask) {
+                if (uploadPromise) {
                     try {
-                        const snapshot = await uploadTask;
-                        memberData.photoURL = await snapshot.ref.getDownloadURL();
+                        const snapshot = await uploadPromise;
+                        memberData.photoURL = await getDownloadURL(snapshot.ref);
                     } catch (error) {
                         showMessage(`Error uploading photo: ${error.message}`, 'error');
                         return; // Stop if photo upload fails
@@ -865,17 +908,17 @@
             }
 
             try {
-                if (currentMemberId) {
+                if (currentMemberDocId) {
                     // Update existing member
-                    await db.collection('members').doc(currentMemberId).update(memberData);
+                    await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, currentMemberDocId), memberData);
                     showMessage('Member updated successfully!', 'success');
                 } else {
                     // Add new member
-                    await db.collection('members').add(memberData);
+                    await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
                     showMessage('Member added successfully!', 'success');
                 }
                 clearForm('memberForm');
-                currentMemberId = null; // Reset current member for next add
+                currentMemberDocId = null; // Reset current member for next add
                 getMembers(); // Refresh the list
             } catch (error) {
                 showMessage(`Error saving member: ${error.message}`, 'error');
@@ -884,10 +927,11 @@
 
         // Edit Member (handled by dynamic buttons in getMembers)
         async function editMember(id) {
-            const doc = await db.collection('members').doc(id).get();
-            if (doc.exists) {
-                const member = doc.data();
-                currentMemberId = id; // Set the ID of the member being edited
+            const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, id);
+            const docSnap = await getDoc(memberDocRef);
+            if (docSnap.exists()) {
+                const member = docSnap.data();
+                currentMemberDocId = id; // Set the ID of the member being edited
 
                 // Populate form fields
                 memberIdInput.value = member.memberId;
@@ -896,7 +940,7 @@
                 membershipTypeSelect.value = member.membershipType;
                 startDateInput.value = formatDate(member.startDate.toDate());
                 dueDateInput.value = formatDate(member.dueDate.toDate());
-                photoPreview.src = member.photoURL;
+                photoPreview.src = member.photoURL || '';
                 photoPreview.classList.remove('hidden');
                 photoFile = member.photoURL; // Pre-fill photo if exists
 
@@ -914,43 +958,49 @@
 
         cancelEditBtn.addEventListener('click', () => {
             clearForm('memberForm');
-            currentMemberId = null;
+            currentMemberDocId = null;
         });
 
         // Delete Member (handled by dynamic buttons in getMembers)
-        let memberToDeleteId = null;
+        let memberToDeleteDocId = null;
         function deleteMember(id) {
-            memberToDeleteId = id;
+            memberToDeleteDocId = id;
             deleteConfirmationModal.classList.remove('hidden');
         }
 
         confirmDeleteBtn.addEventListener('click', async () => {
-            if (memberToDeleteId) {
+            if (memberToDeleteDocId) {
                 try {
                     // Delete photo from storage if it exists
-                    const memberDoc = await db.collection('members').doc(memberToDeleteId).get();
-                    if (memberDoc.exists && memberDoc.data().photoURL) {
-                        const photoRef = storage.refFromURL(memberDoc.data().photoURL);
-                        await photoRef.delete().catch((error) => {
+                    const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDeleteDocId);
+                    const memberDocSnap = await getDoc(memberDocRef);
+
+                    if (memberDocSnap.exists() && memberDocSnap.data().photoURL) {
+                        const photoUrl = memberDocSnap.data().photoURL;
+                        try {
+                            const photoRef = ref(storage, photoUrl); // Create ref from URL
+                            await deleteObject(photoRef);
+                        } catch (error) {
                             // Handle error if photo doesn't exist or permission denied, but don't stop member deletion
-                            console.warn("Could not delete photo from storage:", error.message);
-                        });
+                            console.error("Error deleting photo from storage:", error.message);
+                            showMessage("Could not delete photo from storage. It might not exist or permissions are insufficient.", "error");
+                        }
                     }
 
-                    await db.collection('members').doc(memberToDeleteId).delete();
+                    await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDeleteDocId));
                     showMessage('Member deleted successfully!', 'success');
                     getMembers(); // Refresh the list
                 } catch (error) {
                     showMessage(`Error deleting member: ${error.message}`, 'error');
                 } finally {
-                    memberToDeleteId = null;
+                    memberToDeleteDocId = null;
                     deleteConfirmationModal.classList.add('hidden');
                 }
             }
         });
 
         cancelDeleteBtn.addEventListener('click', () => {
-            memberToDeleteId = null;
+            memberToDeleteDocId = null;
             deleteConfirmationModal.classList.add('hidden');
         });
 
@@ -971,26 +1021,25 @@
                 name: existingNameInput.value,
                 phoneNo: existingPhoneNoInput.value,
                 membershipType: existingMembershipTypeSelect.value,
-                startDate: firebase.firestore.Timestamp.fromDate(new Date(existingStartDateInput.value)),
-                dueDate: firebase.firestore.Timestamp.fromDate(new Date(existingDueDateInput.value)),
+                startDate: Timestamp.fromDate(new Date(existingStartDateInput.value)),
+                dueDate: Timestamp.fromDate(new Date(existingDueDateInput.value)),
                 fee: MEMBERSHIP_PLANS[existingMembershipTypeSelect.value]?.fee || 0,
-                // Assuming photoURL is not directly updated here, or fetched from existing record
-                // For simplicity, we'll just add/update other details.
-                createdAt: firebase.firestore.FieldValue.serverTimestamp() // This will update createdAt on existing, which might not be desired. Use update() if you only want to change specific fields.
+                createdAt: FieldValue.serverTimestamp()
             };
 
             try {
                 // Check if member already exists by memberId (this is a simplified check)
-                const existingMembers = await db.collection('members').where('memberId', '==', memberData.memberId).get();
+                const q = query(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), where('memberId', '==', memberData.memberId));
+                const querySnapshot = await getDocs(q);
 
-                if (!existingMembers.empty) {
+                if (!querySnapshot.empty) {
                     // Member with this ID exists, update it
-                    const docId = existingMembers.docs[0].id;
-                    await db.collection('members').doc(docId).update(memberData);
+                    const docId = querySnapshot.docs[0].id;
+                    await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, docId), memberData);
                     showMessage('Existing member details updated successfully!', 'success');
                 } else {
                     // No member with this ID, add as new
-                    await db.collection('members').add(memberData);
+                    await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
                     showMessage('New member added successfully!', 'success');
                 }
                 clearForm('existingMemberForm');
@@ -1009,10 +1058,20 @@
             paymentMemberSearchResults.innerHTML = '';
             if (searchTerm.length < 2) return;
 
-            const membersRef = db.collection('members');
-            const snapshot = await membersRef.orderBy('name').startAt(searchTerm).endAt(searchTerm + '\uf8ff').get();
+            const membersRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+            // Note: Firestore orderBy and startAt/endAt require an index. For simplicity,
+            // fetching all and filtering in memory for small datasets.
+            const q = query(membersRef); // Removed orderBy for simplicity and to avoid index issues
+            const snapshot = await getDocs(q);
 
-            snapshot.docs.forEach(doc => {
+            const filteredMembers = snapshot.docs.filter(doc => {
+                const member = doc.data();
+                return (member.name && member.name.toLowerCase().includes(searchTerm)) ||
+                       (member.memberId && member.memberId.toLowerCase().includes(searchTerm));
+            });
+
+
+            filteredMembers.forEach(doc => {
                 const member = doc.data();
                 const resultDiv = document.createElement('div');
                 resultDiv.className = 'p-2 cursor-pointer hover:bg-gray-600 border-b border-gray-600 last:border-b-0';
@@ -1021,7 +1080,7 @@
                     selectedMemberForPayment = { id: doc.id, ...member };
                     selectedMemberNameSpan.textContent = member.name;
                     selectedMemberIdSpan.textContent = member.memberId;
-                    currentDueDateInput.value = formatDate(member.dueDate.toDate());
+                    currentDueDateInput.value = formatDate(selectedMemberForPayment.dueDate.toDate());
                     paymentForm.classList.remove('hidden');
                     paymentMemberSearchResults.innerHTML = '';
                     searchMemberPaymentInput.value = ''; // Clear search input
@@ -1060,10 +1119,10 @@
             const feePaid = MEMBERSHIP_PLANS[paymentPlanTypeSelect.value]?.fee || 0;
 
             try {
-                await db.collection('members').doc(selectedMemberForPayment.id).update({
-                    dueDate: firebase.firestore.Timestamp.fromDate(newDueDate),
+                await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberForPayment.id), {
+                    dueDate: Timestamp.fromDate(newDueDate),
                     membershipType: paymentPlanTypeSelect.value, // Update membership type as well if it changed
-                    fee: firebase.firestore.FieldValue.increment(feePaid) // Add to existing fee
+                    fee: FieldValue.increment(feePaid) // Add to existing fee
                 });
                 showMessage('Payment processed and due date updated!', 'success');
                 clearForm('paymentForm');
@@ -1084,10 +1143,19 @@
             idCardDisplay.classList.add('hidden'); // Hide ID card when searching
             if (searchTerm.length < 2) return;
 
-            const membersRef = db.collection('members');
-            const snapshot = await membersRef.orderBy('name').startAt(searchTerm).endAt(searchTerm + '\uf8ff').get();
+            const membersRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+            // Note: Firestore orderBy and startAt/endAt require an index. For simplicity,
+            // fetching all and filtering in memory for small datasets.
+            const q = query(membersRef); // Removed orderBy for simplicity and to avoid index issues
+            const snapshot = await getDocs(q);
 
-            snapshot.docs.forEach(doc => {
+            const filteredMembers = snapshot.docs.filter(doc => {
+                const member = doc.data();
+                return (member.name && member.name.toLowerCase().includes(searchTerm)) ||
+                       (member.memberId && member.memberId.toLowerCase().includes(searchTerm));
+            });
+
+            filteredMembers.forEach(doc => {
                 const member = doc.data();
                 const resultDiv = document.createElement('div');
                 resultDiv.className = 'p-2 cursor-pointer hover:bg-gray-600 border-b border-gray-600 last:border-b-0';
@@ -1103,14 +1171,14 @@
         });
 
         function displayIDCard(member) {
-            idCardPhoto.src = member.photoURL || 'https://via.placeholder.com/80';
+            idCardPhoto.src = member.photoURL || 'https://placehold.co/80x80/4a5568/cbd5e0?text=👤';
             idCardName.textContent = member.name;
             idCardMemberId.textContent = `ID: ${member.memberId}`;
             idCardPhoneNo.textContent = member.phoneNo;
             idCardMembershipType.textContent = member.membershipType;
             idCardStartDate.textContent = formatDate(member.startDate.toDate());
             idCardDueDate.textContent = formatDate(member.dueDate.toDate());
-            idCardFee.textContent = `₹${member.fee}`;
+            idCardFee.textContent = `₹${member.fee.toFixed(2)}`;
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -1142,14 +1210,19 @@
 
         // --- Combined Members List (Dynamic Population) ---
         const getMembers = () => {
-            onSnapshot(db.collection("members").orderBy("dueDate"), (snapshot) => {
+            // Use onSnapshot for real-time updates
+            onSnapshot(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), (snapshot) => {
                 membersTableBody.innerHTML = ''; // Clear existing rows
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
 
-                snapshot.docs.forEach((doc) => {
-                    const member = doc.data();
-                    const memberId = doc.id; // Firestore document ID
+                // Sort members by due date in JavaScript after fetching
+                const sortedMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                                                 .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate());
+
+
+                sortedMembers.forEach((member) => {
+                    const memberId = member.id; // Firestore document ID
                     const memberDueDate = member.dueDate.toDate(); // Convert Firestore Timestamp to Date object
                     memberDueDate.setHours(0, 0, 0, 0); // Normalize member's due date to start of day
 
@@ -1157,28 +1230,28 @@
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Calculate difference in days
 
                     let statusText = "";
-                    let rowClass = ""; // To apply different styling if needed to the row
+                    let rowTextColorClass = ""; // To apply different styling to the row text
 
                     if (diffDays <= 0) { // Due today (0) or overdue (< 0)
                         statusText = `${Math.abs(diffDays)} Days Overdue`;
                         if (diffDays === 0) {
-                            statusText = `Due Today`; // Specific text for due today
+                            statusText = `Due Today`;
                         }
-                        rowClass = "text-red-400"; // Example class for overdue/due today
+                        rowTextColorClass = "text-red-400"; // Red for overdue/due today
                     } else { // Current members
                         statusText = `${diffDays} Days Left`;
-                        rowClass = "text-green-400"; // Example class for current members
+                        rowTextColorClass = "text-green-400"; // Green for current
                     }
 
                     const row = document.createElement('tr');
                     // Apply conditional text color to the entire row if it's overdue/due today
-                    row.className = `border-b border-gray-700 ${diffDays <= 0 ? 'text-red-400' : ''}`;
+                    row.className = `border-b border-gray-700 ${rowTextColorClass}`;
 
                     row.innerHTML = `
                         <td class="p-2 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 flex-shrink-0 mr-2 sm:mr-3">
-                                    <img class="rounded-full w-full h-full object-cover cursor-pointer" src="${member.photoURL || 'https://via.placeholder.com/40'}" width="40" height="40" alt="${member.name}" data-photo-url="${member.photoURL}">
+                                    <img class="rounded-full w-full h-full object-cover cursor-pointer" src="${member.photoURL || 'https://placehold.co/40x40/4a5568/cbd5e0?text=👤'}" width="40" height="40" alt="${member.name}" data-photo-url="${member.photoURL || 'https://placehold.co/40x40/4a5568/cbd5e0?text=👤'}">
                                 </div>
                             </div>
                         </td>
@@ -1188,7 +1261,7 @@
                         <td class="p-2 whitespace-nowrap"><div class="text-left">${member.membershipType}</div></td>
                         <td class="p-2 whitespace-nowrap"><div class="text-left">${new Date(member.startDate.toDate()).toLocaleDateString('en-CA')}</div></td>
                         <td class="p-2 whitespace-nowrap"><div class="text-left">${new Date(member.dueDate.toDate()).toLocaleDateString('en-CA')}</div></td>
-                        <td class="p-2 whitespace-nowrap"><div class="text-left">₹${member.fee}</div></td>
+                        <td class="p-2 whitespace-nowrap"><div class="text-left">₹${member.fee.toFixed(2)}</div></td>
                         <td class="p-2 whitespace-nowrap"><div class="text-left font-bold">${statusText}</div></td>
                         <td class="p-2 whitespace-nowrap text-right">
                             <div class="text-sm">
@@ -1221,4 +1294,4 @@
 
     </script>
 </body>
-    </html>
+</html>
