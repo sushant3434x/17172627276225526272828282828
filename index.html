@@ -1,14 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Management Dashboard</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gym Management Dashboard</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(to bottom right, #1a202c, #2d3748);
@@ -110,534 +111,373 @@
         }
     </style>
 </head>
-<body class="min-h-screen p-6 flex flex-col items-center justify-center">
-
-    <!-- Message Display -->
-    <div id="message-display" class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
-
-    <!-- Authentication Section (Re-introduced) -->
-    <div id="auth-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md mb-8 hidden border border-gray-700">
-        <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Gym Manager</h1>
-        <p class="text-gray-300 text-center mb-8 text-lg">Sign in or sign up to access your dashboard.</p>
-
-        <div class="space-y-5">
-            <div>
-                <label for="auth-email" class="block text-sm font-medium text-gray-300">Email Address</label>
-                <input type="email" id="auth-email" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400" placeholder="your@example.com">
-            </div>
-            <div>
-                <label for="auth-password" class="block text-sm font-medium text-gray-300">Password</label>
-                <input type="password" id="auth-password" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400" placeholder="••••••••">
-            </div>
-
-            <div class="flex flex-col space-y-4 pt-2">
-                <button id="signin-button" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
+<body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed">
+<!-- Message Display -->
+<div class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="message-display"></div>
+<!-- Authentication Section (Re-introduced) -->
+<div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md mb-8 hidden border border-gray-700" id="auth-section">
+<h1 class="text-4xl font-extrabold text-white mb-6 text-center text-lg">Gym Manager</h1>
+<p class="text-gray-300 text-center mb-8 text-lg">Sign in or sign up to access your dashboard.</p>
+<div class="space-y-5">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="auth-email">Email Address</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400 mb-3" id="auth-email" placeholder="your@example.com" type="email"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="auth-password">Password</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out bg-gray-700 text-white placeholder-gray-400 mb-3" id="auth-password" placeholder="••••••••" type="password"/>
+</div>
+<div class="flex flex-col space-y-4 pt-2">
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mb-3" id="signin-button">
                     Sign In
                 </button>
-                <button id="signup-button" class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
+<button class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mb-3" id="signup-button">
                     Sign Up
                 </button>
-                <div class="text-center text-gray-400 text-sm">— OR —</div>
-                <button id="anonymous-signin-button" class="w-full py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg">
+<div class="text-center text-gray-400 text-sm">— OR —</div>
+<button class="w-full py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mb-3" id="anonymous-signin-button">
                     Continue Anonymously
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Password Entry Modal -->
-    <div id="password-entry-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-        <div id="password-entry-content" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700">
-            <h2 class="text-3xl font-bold text-white mb-6 text-center">Enter App Password</h2>
-            <input type="password" id="app-password-input" class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl" placeholder="••••" maxlength="4">
-            <button id="submit-app-password" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6">
+</div>
+</div>
+</div>
+<!-- Password Entry Modal -->
+<div class="fixed inset-0 flex items-center justify-center z-50 hidden" id="password-entry-modal">
+<div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700" id="password-entry-content">
+<h2 class="text-3xl font-bold text-white mb-6 text-center text-lg">Enter App Password</h2>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl mb-3" id="app-password-input" maxlength="4" placeholder="••••" type="password"/>
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6 mb-3" id="submit-app-password">
                 Unlock App
             </button>
-        </div>
-    </div>
-
-
-    <!-- Main Gym App Section -->
-    <div id="main-app-section" class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-extrabold text-white">Gym Dashboard</h1>
-            <!-- Date, Time, Day Display -->
-            <div id="datetime-display" class="text-right text-gray-400 text-sm font-medium">
-                <div id="current-time" class="text-xl font-semibold text-gray-200"></div>
-                <div id="current-date"></div>
-                <div id="current-day"></div>
-            </div>
-            <button id="signout-button" class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out">
+</div>
+</div>
+<!-- Main Gym App Section -->
+<div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
+<div class="flex justify-between items-center mb-8">
+<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+<!-- Date, Time, Day Display -->
+<div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
+<div class="text-xl font-semibold text-gray-200" id="current-time"></div>
+<div id="current-date"></div>
+<div id="current-day"></div>
+</div>
+<button class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out w-full mb-3" id="signout-button">
                 Sign Out
             </button>
-        </div>
-
-        <!-- User ID Display for collaborative environment -->
-        <div id="user-id-display" class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600">
-            Your User ID: <span id="user-id-value" class="font-mono text-gray-200 font-semibold"></span>
-        </div>
-
-        <!-- Tabs for Member Forms -->
-        <div class="flex border-b border-gray-700 mb-8">
-            <button id="tab-manage-member" class="py-3 px-6 text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out">
+</div>
+<!-- User ID Display for collaborative environment -->
+<div class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600" id="user-id-display">
+            Your User ID: <span class="font-mono text-gray-200 font-semibold" id="user-id-value"></span>
+</div>
+<!-- Tabs for Member Forms -->
+<div class="flex border-b border-gray-700 mb-8">
+<button class="py-3 px-6 text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-manage-member">
                 Manage Member Details
             </button>
-            <button id="tab-add-existing" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-add-existing">
                 Add Existing Member
             </button>
-            <button id="tab-add-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-add-payment">
                 Add Payment
             </button>
-            <button id="tab-id-card" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
+<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-id-card">
                 ID Card View
             </button>
-        </div>
-
-        <!-- Tab Content: Manage Member Details (Existing Form) -->
-        <div id="content-manage-member" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Manage Member Details</h2>
-            <form id="member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="member-id" class="block text-sm font-medium text-gray-300">Member ID</label>
-                    <input
-                        type="text"
-                        id="member-id"
-                        name="memberId"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="Unique Member ID"
-                        required
-                    />
-                </div>
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-300">Member Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="Full Name"
-                        required
-                    />
-                </div>
-                <div>
-                    <label for="phone-number" class="block text-sm font-medium text-gray-300">Phone Number</label>
-                    <input
-                        type="tel"
-                        id="phone-number"
-                        name="phoneNumber"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="e.g., 123-456-7890"
-                    />
-                </div>
-                <div>
-                    <label for="membershipType" class="block text-sm font-medium text-gray-300">Membership Type</label>
-                    <select
-                        id="membershipType"
-                        name="membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                        required
-                    >
-                        <option value="Monthly">Monthly</option>
-                        <option value="Quarterly">Quarterly</option>
-                        <option value="HalfYearly">Half Yearly</option>
-                        <option value="Annual">Annual</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="startDate" class="block text-sm font-medium text-gray-300">Start Date</label>
-                    <input
-                        type="date"
-                        id="startDate"
-                        name="startDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                        required
-                    />
-                </div>
-                <div>
-                    <label for="dueDate" class="block text-sm font-medium text-gray-300">Calculated Due Date</label>
-                    <input
-                        type="date"
-                        id="dueDate"
-                        name="dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
-                        readonly
-                        required
-                    />
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <input type="file" id="photo-upload" accept="image/*" class="hidden">
-                        <button type="button" id="upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+</div>
+<!-- Tab Content: Manage Member Details (Existing Form) -->
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Manage Member Details</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="member-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-id" name="memberId" placeholder="Unique Member ID" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="name">Member Name</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="name" name="name" placeholder="Full Name" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="phone-number">Phone Number</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="phone-number" name="phoneNumber" placeholder="e.g., 123-456-7890" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="membershipType">Membership Type</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="membershipType" name="membershipType" required="">
+<option value="Monthly">Monthly</option>
+<option value="Quarterly">Quarterly</option>
+<option value="HalfYearly">Half Yearly</option>
+<option value="Annual">Annual</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="startDate">Start Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="startDate" name="startDate" required="" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="dueDate">Calculated Due Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="dueDate" name="dueDate" readonly="" required="" type="date"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
+<div class="flex flex-wrap items-center gap-3 mb-4">
+<input accept="image/*" class="hidden w-full mb-3" id="photo-upload" type="file"/>
+<button class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="upload-photo-btn" type="button">
                             Upload Photo
                         </button>
-                        <button type="button" id="take-photo-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+<button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="take-photo-btn" type="button">
                             Take Photo
                         </button>
-                        <button type="button" id="switch-camera-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+<button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="switch-camera-btn" type="button">
                             Switch Camera
                         </button>
-                        <button type="button" id="clear-photo-btn" class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+<button class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="clear-photo-btn" type="button">
                             Clear Photo
                         </button>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <img id="photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
-                        <video id="camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" autoplay playsinline></video>
-                        <canvas id="camera-canvas" class="hidden"></canvas>
-                    </div>
-                    <a id="view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" target="_blank">View Photo Preview</a>
-                    <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
-                </div>
-
-                <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
-                    <button
-                        type="submit"
-                        id="submit-button"
-                        class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
-                    >
+</div>
+<div class="flex items-center space-x-4">
+<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" id="camera-feed" playsinline=""></video>
+<canvas class="hidden" id="camera-canvas"></canvas>
+</div>
+<a class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" id="view-photo-link" target="_blank">View Photo Preview</a>
+<p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
+</div>
+<div class="md:col-span-2 flex justify-end space-x-3 pt-4">
+<button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" id="submit-button" type="submit">
                         Add Member
                     </button>
-                    <button
-                        type="button"
-                        id="cancel-edit-button"
-                        class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden"
-                    >
+<button class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden w-full mb-3" id="cancel-edit-button" type="button">
                         Cancel Edit
                     </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Tab Content: Add Existing Member (New Form) -->
-        <div id="content-add-existing" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Add Existing Member</h2>
-            <form id="existing-member-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="existing-member-id" class="block text-sm font-medium text-gray-300">Member ID</label>
-                    <input
-                        type="text"
-                        id="existing-member-id"
-                        name="memberId"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="Unique Member ID"
-                        required
-                    />
-                </div>
-                <div>
-                    <label for="existing-name" class="block text-sm font-medium text-gray-300">Member Name</label>
-                    <input
-                        type="text"
-                        id="existing-name"
-                        name="name"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="Full Name"
-                        required
-                    />
-                </div>
-                <div>
-                    <label for="existing-phone-number" class="block text-sm font-medium text-gray-300">Phone Number</label>
-                    <input
-                        type="tel"
-                        id="existing-phone-number"
-                        name="phoneNumber"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="e.g., 123-456-7890"
-                    />
-                </div>
-                <div>
-                    <label for="existing-membershipType" class="block text-sm font-medium text-gray-300">Membership Type</label>
-                    <select
-                        id="existing-membershipType"
-                        name="membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                        required
-                    >
-                        <option value="Monthly">Monthly</option>
-                        <option value="Quarterly">Quarterly</option>
-                        <option value="HalfYearly">Half Yearly</option>
-                        <option value="Annual">Annual</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="existing-startDate" class="block text-sm font-medium text-gray-300">Joining Date</label>
-                    <input
-                        type="date"
-                        id="existing-startDate"
-                        name="startDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                        required
-                    />
-                </div>
-                <div>
-                    <label for="calculated-dueDate" class="block text-sm font-medium text-gray-300">Calculated Due Date</label>
-                    <input
-                        type="date"
-                        id="calculated-dueDate"
-                        name="dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
-                        readonly
-                        required
-                    />
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <input type="file" id="existing-photo-upload" accept="image/*" class="hidden">
-                        <button type="button" id="existing-upload-photo-btn" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+</div>
+</form>
+</div>
+<!-- Tab Content: Add Existing Member (New Form) -->
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-existing">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Add Existing Member</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="existing-member-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="existing-member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="existing-member-id" name="memberId" placeholder="Unique Member ID" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="existing-name">Member Name</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="existing-name" name="name" placeholder="Full Name" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="existing-phone-number">Phone Number</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="existing-phone-number" name="phoneNumber" placeholder="e.g., 123-456-7890" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="existing-membershipType">Membership Type</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="existing-membershipType" name="membershipType" required="">
+<option value="Monthly">Monthly</option>
+<option value="Quarterly">Quarterly</option>
+<option value="HalfYearly">Half Yearly</option>
+<option value="Annual">Annual</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="existing-startDate">Joining Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="existing-startDate" name="startDate" required="" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="calculated-dueDate">Calculated Due Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="calculated-dueDate" name="dueDate" readonly="" required="" type="date"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
+<div class="flex flex-wrap items-center gap-3 mb-4">
+<input accept="image/*" class="hidden w-full mb-3" id="existing-photo-upload" type="file"/>
+<button class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="existing-upload-photo-btn" type="button">
                             Upload Photo
                         </button>
-                        <button type="button" id="existing-take-photo-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+<button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="existing-take-photo-btn" type="button">
                             Take Photo
                         </button>
-                        <button type="button" id="existing-switch-camera-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+<button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="existing-switch-camera-btn" type="button">
                             Switch Camera
                         </button>
-                        <button type="button" id="existing-clear-photo-btn" class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden">
+<button class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="existing-clear-photo-btn" type="button">
                             Clear Photo
                         </button>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <img id="existing-photo-preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo" alt="Photo Preview">
-                        <video id="existing-camera-feed" class="w-28 h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" autoplay playsinline></video>
-                        <canvas id="existing-camera-canvas" class="hidden"></canvas>
-                    </div>
-                    <a id="existing-view-photo-link" class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" target="_blank">View Photo Preview</a>
-                    <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
-                </div>
-
-                <div class="md:col-span-2 flex justify-end pt-4">
-                    <button
-                        type="submit"
-                        class="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
-                    >
+</div>
+<div class="flex items-center space-x-4">
+<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="existing-photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" id="existing-camera-feed" playsinline=""></video>
+<canvas class="hidden" id="existing-camera-canvas"></canvas>
+</div>
+<a class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" id="existing-view-photo-link" target="_blank">View Photo Preview</a>
+<p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
+</div>
+<div class="md:col-span-2 flex justify-end pt-4">
+<button class="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" type="submit">
                         Add Existing Member
                     </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Tab Content: Add Payment -->
-        <div id="content-add-payment" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Process Payment</h2>
-            <form id="add-payment-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="md:col-span-2">
-                    <label for="add-payment-member-search" class="block text-sm font-medium text-gray-300">Search Member</label>
-                    <input
-                        type="text"
-                        id="add-payment-member-search"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                        placeholder="Type name or ID to search..."
-                    />
-                </div>
-                <div>
-                    <label for="add-payment-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
-                    <select
-                        id="add-payment-member-select"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                        required
-                    >
-                        <option value="">-- Select a Member --</option>
-                        <!-- Options populated by JavaScript -->
-                    </select>
-                </div>
-                <div>
-                    <label for="add-payment-current-dueDate" class="block text-sm font-medium text-gray-300">Current Due Date</label>
-                    <input
-                        type="text"
-                        id="add-payment-current-dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
-                        readonly
-                    />
-                </div>
-                <div>
-                    <label for="add-payment-membershipType" class="block text-sm font-medium text-gray-300">Payment Plan Type</label>
-                    <select
-                        id="add-payment-membershipType"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                        required
-                    >
-                        <option value="Monthly">Monthly</option>
-                        <option value="Quarterly">Quarterly</option>
-                        <option value="HalfYearly">Half Yearly</option>
-                        <option value="Annual">Annual</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="add-payment-new-dueDate" class="block text-sm font-medium text-gray-300">New Due Date (Calculated)</label>
-                    <input
-                        type="text"
-                        id="add-payment-new-dueDate"
-                        class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed"
-                        readonly
-                    />
-                </div>
-                <div class="md:col-span-2 flex justify-end pt-4">
-                    <button
-                        type="submit"
-                        class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg"
-                    >
+</div>
+</form>
+</div>
+<!-- Tab Content: Add Payment -->
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-payment">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Process Payment</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="add-payment-form">
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-300" for="add-payment-member-search">Search Member</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="add-payment-member-search" placeholder="Type name or ID to search..." type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="add-payment-member-select">Select Member</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="add-payment-member-select" required="">
+<option value="">-- Select a Member --</option>
+<!-- Options populated by JavaScript -->
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="add-payment-current-dueDate">Current Due Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="add-payment-current-dueDate" readonly="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="add-payment-membershipType">Payment Plan Type</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="add-payment-membershipType" required="">
+<option value="Monthly">Monthly</option>
+<option value="Quarterly">Quarterly</option>
+<option value="HalfYearly">Half Yearly</option>
+<option value="Annual">Annual</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="add-payment-new-dueDate">New Due Date (Calculated)</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="add-payment-new-dueDate" readonly="" type="text"/>
+</div>
+<div class="md:col-span-2 flex justify-end pt-4">
+<button class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" type="submit">
                         Process Payment
                     </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Tab Content: ID Card View (New Tab) -->
-        <div id="content-id-card" class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600">
-            <h2 class="text-2xl font-bold text-white mb-6">Member ID Card View</h2>
-            <div class="mb-6">
-                <label for="id-card-member-search" class="block text-sm font-medium text-gray-300">Search Member</label>
-                <input
-                    type="text"
-                    id="id-card-member-search"
-                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-                    placeholder="Type name or ID to search..."
-                />
-            </div>
-            <div class="mb-6">
-                <label for="id-card-member-select" class="block text-sm font-medium text-gray-300">Select Member</label>
-                <select
-                    id="id-card-member-select"
-                    class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-                >
-                    <option value="">-- Select a Member --</option>
-                </select>
-            </div>
-
-            <div id="id-card-display" class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-6 hidden">
-                <div class="flex-shrink-0">
-                    <img id="id-card-photo" class="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo" alt="Member Photo">
-                </div>
-                <div class="flex-grow text-white">
-                    <h3 id="id-card-name" class="text-3xl font-bold mb-2"></h3>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Member ID:</span> <span id="id-card-member-id"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Phone:</span> <span id="id-card-phone"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Membership Type:</span> <span id="id-card-membership-type"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Start Date:</span> <span id="id-card-start-date"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Due Date:</span> <span id="id-card-due-date"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Fee:</span> <span id="id-card-fee"></span></p>
-                    <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Status:</span> <span id="id-card-status"></span></p>
-                </div>
-            </div>
-            <p id="no-id-card-selected-message" class="text-gray-400 text-center p-6">Select a member to view their ID card.</p>
-        </div>
-
-
-        <!-- Search and Filter -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
-            <input
-                type="text"
-                id="search-input"
-                placeholder="Search by Name or Member ID..."
-                class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400"
-            />
-            <select
-                id="filter-status"
-                class="p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
-            >
-                <option value="All">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Overdue">Overdue</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Paid">Paid</option>
-            </select>
-        </div>
-
-        <!-- Overdue Members List (Moved Up) -->
-        <h2 class="text-2xl font-bold text-red-500 mb-4 mt-8">Overdue Members</h2>
-        <div id="overdue-members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-red-800">
-            <table class="min-w-full divide-y divide-red-800">
-                <thead class="bg-red-900">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Photo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Member ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Phone Number</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Start Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Due Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Fee</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Days Overdue</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="overdue-members-table-body" class="bg-gray-800 divide-y divide-gray-700">
-                    <!-- Overdue member rows will be inserted here by JavaScript -->
-                </tbody>
-            </table>
-            <p id="no-overdue-members-message" class="text-gray-400 text-center p-6 hidden">No members are currently overdue. Great job!</p>
-        </div>
-
-        <!-- Members List (Moved Down) -->
-        <h2 class="text-2xl font-bold text-white mb-4 mt-8">Current Members (<span id="total-members-count">0</span>)</h2>
-        <div id="members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-gray-700">
-            <table class="min-w-full divide-y divide-gray-700">
-                <thead class="bg-indigo-900">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Photo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Member ID</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Phone Number</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Start Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Due Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Fee</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Days Left</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="members-table-body" class="bg-gray-800 divide-y divide-gray-700">
-                    <!-- Member rows will be inserted here by JavaScript -->
-                </tbody>
-            </table>
-            <p id="no-members-message" class="text-gray-400 text-center p-6 hidden">No members found. Add a new member above!</p>
-        </div>
-
-
-        <!-- Credits -->
-        <div class="mt-10 text-center text-gray-500 text-sm">
+</div>
+</form>
+</div>
+<!-- Tab Content: ID Card View (New Tab) -->
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-id-card">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Member ID Card View</h2>
+<div class="mb-6">
+<label class="block text-sm font-medium text-gray-300" for="id-card-member-search">Search Member</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="id-card-member-search" placeholder="Type name or ID to search..." type="text"/>
+</div>
+<div class="mb-6">
+<label class="block text-sm font-medium text-gray-300" for="id-card-member-select">Select Member</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="id-card-member-select">
+<option value="">-- Select a Member --</option>
+</select>
+</div>
+<div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-6 hidden" id="id-card-display">
+<div class="flex-shrink-0">
+<img alt="Member Photo" class="id-card-photo" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
+</div>
+<div class="flex-grow text-white">
+<h3 class="text-3xl font-bold mb-2 text-lg" id="id-card-name"></h3>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Member ID:</span> <span id="id-card-member-id"></span></p>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Phone:</span> <span id="id-card-phone"></span></p>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Membership Type:</span> <span id="id-card-membership-type"></span></p>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Start Date:</span> <span id="id-card-start-date"></span></p>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Due Date:</span> <span id="id-card-due-date"></span></p>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Fee:</span> <span id="id-card-fee"></span></p>
+<p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Status:</span> <span id="id-card-status"></span></p>
+</div>
+</div>
+<p class="text-gray-400 text-center p-6" id="no-id-card-selected-message">Select a member to view their ID card.</p>
+</div>
+<!-- Search and Filter -->
+<div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
+<input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full mb-3" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
+<select class="p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white w-full mb-3" id="filter-status">
+<option value="All">All Statuses</option>
+<option value="Active">Active</option>
+<option value="Overdue">Overdue</option>
+<option value="Inactive">Inactive</option>
+<option value="Paid">Paid</option>
+</select>
+</div>
+<!-- Overdue Members List (Moved Up) -->
+<h2 class="text-2xl font-bold text-red-500 mb-4 mt-8 text-lg">Overdue Members</h2>
+<div class="overflow-x-auto rounded-xl shadow-lg border border-red-800" id="overdue-members-list-container">
+<table class="min-w-full divide-y divide-red-800 w-full block overflow-auto text-sm">
+<thead class="bg-red-900">
+<tr>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Photo</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Member ID</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Name</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Phone Number</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Type</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Start Date</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Due Date</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Fee</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Days Overdue</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-red-200 uppercase tracking-wider" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="overdue-members-table-body">
+<!-- Overdue member rows will be inserted here by JavaScript -->
+</tbody>
+</table>
+<p class="text-gray-400 text-center p-6 hidden" id="no-overdue-members-message">No members are currently overdue. Great job!</p>
+</div>
+<!-- Members List (Moved Down) -->
+<h2 class="text-2xl font-bold text-white mb-4 mt-8 text-lg">Current Members (<span id="total-members-count">0</span>)</h2>
+<div class="overflow-x-auto rounded-xl shadow-lg border border-gray-700" id="members-list-container">
+<table class="min-w-full divide-y divide-gray-700 w-full block overflow-auto text-sm">
+<thead class="bg-indigo-900">
+<tr>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Photo</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Member ID</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Name</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Phone Number</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Type</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Start Date</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Due Date</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Fee</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Days Left</th>
+<th class="px-6 py-3 text-left text-xs font-medium text-indigo-200 uppercase tracking-wider" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="members-table-body">
+<!-- Member rows will be inserted here by JavaScript -->
+</tbody>
+</table>
+<p class="text-gray-400 text-center p-6 hidden" id="no-members-message">No members found. Add a new member above!</p>
+</div>
+<!-- Credits -->
+<div class="mt-10 text-center text-gray-500 text-sm">
             Built with ❤️ by <span class="font-semibold text-indigo-400">Sushant Singh</span>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="delete-modal-content">
-            <h3 class="text-2xl font-bold text-white mb-4 text-center">Confirm Deletion</h3>
-            <p class="text-gray-300 mb-8 text-center">
-                Are you sure you want to delete member "<span id="member-to-delete-name" class="font-semibold text-indigo-400"></span>"? This action cannot be undone.
+</div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden" id="delete-modal">
+<div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="delete-modal-content">
+<h3 class="text-2xl font-bold text-white mb-4 text-center text-lg">Confirm Deletion</h3>
+<p class="text-gray-300 mb-8 text-center">
+                Are you sure you want to delete member "<span class="font-semibold text-indigo-400" id="member-to-delete-name"></span>"? This action cannot be undone.
             </p>
-            <div class="flex justify-center space-x-4">
-                <button
-                    id="cancel-delete-button"
-                    class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md"
-                >
+<div class="flex justify-center space-x-4">
+<button class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out shadow-md w-full mb-3" id="cancel-delete-button">
                     Cancel
                 </button>
-                <button
-                    id="confirm-delete-button"
-                    class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 ease-in-out shadow-md"
-                >
+<button class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 ease-in-out shadow-md w-full mb-3" id="confirm-delete-button">
                     Delete
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Photo View Modal -->
-    <div id="photo-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden">
-        <div id="photo-view-content" class="relative bg-gray-800 p-4 rounded-xl shadow-2xl max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0 border border-gray-700">
-            <button id="close-photo-modal-btn" class="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold focus:outline-none">
-                &times;
+</div>
+</div>
+</div>
+<!-- Photo View Modal -->
+<div class="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-50 hidden" id="photo-view-modal">
+<div class="relative bg-gray-800 p-4 rounded-xl shadow-2xl max-w-2xl max-h-[90vh] w-full flex flex-col items-center justify-center transform transition-all duration-300 scale-95 opacity-0 border border-gray-700" id="photo-view-content">
+<button class="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold focus:outline-none w-full mb-3" id="close-photo-modal-btn">
+                ×
             </button>
-            <img id="enlarged-photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" src="" alt="Enlarged Member Photo">
-        </div>
-    </div>
-
-
-    <!-- Firebase SDK -->
-    <script type="module">
+<img alt="Enlarged Member Photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" id="enlarged-photo" src=""/>
+</div>
+</div>
+<!-- Firebase SDK -->
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -2318,5 +2158,9 @@ const filteredAndSortedMembers = allMembers.filter(member => {
         });
 
     </script>
-</body>
+<div class="fixed bottom-0 inset-x-0 bg-gray-900 text-white flex justify-around items-center py-3 border-t border-gray-700 z-50" id="bottom-nav"><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-manage-member').click()">🏠
+Dashboard</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-existing').click()">📋
+Existing</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-payment').click()">💳
+Payment</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-id-card').click()">🆔
+ID Card</button></div><button class="fixed bottom-16 right-4 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 z-50 text-sm font-semibold" id="sticky-add-member" onclick="document.getElementById('tab-manage-member').click()">+ Add Member</button></body>
 </html>
