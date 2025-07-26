@@ -12,7 +12,6 @@
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(to bottom right, #1a202c, #2d3748);
-            overflow: hidden; /* Hide scrollbar initially for splash screen */
         }
         ::-webkit-scrollbar {
             width: 8px;
@@ -109,44 +108,9 @@
             transform: translateY(0);
             opacity: 1;
         }
-        /* Splash Screen Styles */
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom right, #1a202c, #2d3748);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            color: white;
-            font-size: 2.5rem;
-            font-weight: 700;
-            opacity: 1;
-            transition: opacity 1s ease-out;
-        }
-        #splash-screen.fade-out {
-            opacity: 0;
-            pointer-events: none; /* Disable interaction during fade-out */
-        }
-        #splash-screen p {
-            margin-top: 1rem;
-            font-size: 1.2rem;
-            font-weight: 400;
-            color: #cbd5e0;
-        }
     </style>
 </head>
 <body class="min-h-screen p-6 flex flex-col items-center justify-center">
-
-    <!-- Splash Screen -->
-    <div id="splash-screen">
-        <h1 class="text-6xl font-extrabold text-indigo-400 animate-pulse">Gym Manager</h1>
-        <p>Made by ~ SUSHANT SINGH</p>
-    </div>
 
     <!-- Message Display -->
     <div id="message-display" class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden"></div>
@@ -216,16 +180,16 @@
         <!-- Tabs for Member Forms -->
         <div class="flex border-b border-gray-700 mb-8">
             <button id="tab-manage-member" class="py-3 px-6 text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out">
-                Manage Member Details <span id="count-manage-member" class="text-gray-400 text-sm ml-1"></span>
+                Manage Member Details
             </button>
             <button id="tab-add-existing" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                Add Existing Member <span id="count-add-existing" class="text-gray-400 text-sm ml-1"></span>
+                Add Existing Member
             </button>
             <button id="tab-add-payment" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                Add Payment <span id="count-add-payment" class="text-gray-400 text-sm ml-1"></span>
+                Add Payment
             </button>
             <button id="tab-id-card" class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out">
-                ID Card View <span id="count-id-card" class="text-gray-400 text-sm ml-1"></span>
+                ID Card View
             </button>
         </div>
 
@@ -581,7 +545,7 @@
         </div>
 
         <!-- Overdue Members List (Moved Up) -->
-        <h2 class="text-2xl font-bold text-red-500 mb-4 mt-8">Overdue Members <span id="count-overdue-members" class="text-red-300 text-xl ml-2"></span></h2>
+        <h2 class="text-2xl font-bold text-red-500 mb-4 mt-8">Overdue Members</h2>
         <div id="overdue-members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-red-800">
             <table class="min-w-full divide-y divide-red-800">
                 <thead class="bg-red-900">
@@ -606,7 +570,7 @@
         </div>
 
         <!-- Members List (Moved Down) -->
-        <h2 class="text-2xl font-bold text-white mb-4 mt-8">Current Members <span id="count-current-members" class="text-gray-400 text-xl ml-2"></span></h2>
+        <h2 class="text-2xl font-bold text-white mb-4 mt-8">Current Members (<span id="total-members-count">0</span>)</h2>
         <div id="members-list-container" class="overflow-x-auto rounded-xl shadow-lg border border-gray-700">
             <table class="min-w-full divide-y divide-gray-700">
                 <thead class="bg-indigo-900">
@@ -676,7 +640,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
         // Global variables for Firebase instances
@@ -715,18 +679,12 @@
         };
 
         // Cloudinary Configuration
-        // IMPORTANT: Cloudinary API Secret should NEVER be exposed in client-side code.
-        // Photo deletion will be handled by a Firebase Cloud Function for security.
         const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2';
         const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset';
-
 
         // Access global appId and initialAuthToken provided by the environment
         const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // DOM Elements for Splash Screen
-        const splashScreen = document.getElementById('splash-screen');
 
         // DOM Elements for Authentication
         const authSection = document.getElementById('auth-section');
@@ -749,19 +707,12 @@
         // Tab Buttons and Content
         const tabManageMember = document.getElementById('tab-manage-member');
         const tabAddExisting = document.getElementById('tab-add-existing');
-        const tabAddPayment = document.getElementById('tab-add-payment');
+        const tabAddPayment = document.getElementById('tab-add-payment'); // Renamed ID and text
         const tabIdCard = document.getElementById('tab-id-card');
         const contentManageMember = document.getElementById('content-manage-member');
         const contentAddExisting = document.getElementById('content-add-existing');
-        const contentAddPayment = document.getElementById('content-add-payment');
+        const contentAddPayment = document.getElementById('content-add-payment'); // Renamed ID
         const contentIdCard = document.getElementById('content-id-card');
-
-        // Tab Count Spans
-        const countManageMember = document.getElementById('count-manage-member');
-        const countAddExisting = document.getElementById('count-add-existing');
-        const countAddPayment = document.getElementById('count-add-payment');
-        const countIdCard = document.getElementById('count-id-card');
-
 
         // Main Member Form (Manage Member Details)
         const memberForm = document.getElementById('member-form');
@@ -783,13 +734,13 @@
         const existingStartDateInput = document.getElementById('existing-startDate');
         const calculatedDueDateInput = document.getElementById('calculated-dueDate');
 
-        // Add Payment Form
-        const addPaymentForm = document.getElementById('add-payment-form');
-        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search');
-        const addPaymentMemberSelect = document.getElementById('add-payment-member-select');
-        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate');
-        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType');
-        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate');
+        // Add Payment Form (formerly Advance Payment)
+        const addPaymentForm = document.getElementById('add-payment-form'); // Renamed ID
+        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search'); // Renamed ID
+        const addPaymentMemberSelect = document.getElementById('add-payment-member-select'); // Renamed ID
+        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate'); // Renamed ID
+        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType'); // Renamed ID
+        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate'); // Renamed ID
 
         // ID Card Tab Elements
         const idCardMemberSearchInput = document.getElementById('id-card-member-search');
@@ -824,8 +775,6 @@
         // Overdue Members specific DOM elements
         const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
         const noOverdueMembersMessage = document.getElementById('no-overdue-members-message');
-        const countOverdueMembers = document.getElementById('count-overdue-members');
-        const countCurrentMembers = document.getElementById('count-current-members');
 
         // Date & Time Display elements
         const currentTimeDisplay = document.getElementById('current-time');
@@ -1126,38 +1075,10 @@
             }
         }
 
-        /**
-         * Checks if a member with the given memberId already exists.
-         * @param {string} memberId - The member ID to check.
-         * @param {string|null} excludeDocId - Optional. If provided, excludes the document with this ID from the check (for update scenarios).
-         * @returns {Promise<boolean>} True if a duplicate exists, false otherwise.
-         */
-        async function checkDuplicateMemberId(memberId, excludeDocId = null) {
-            if (!db) {
-                console.error("Firestore DB not initialized.");
-                return true; // Treat as duplicate to prevent issues
-            }
-            const membersRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
-            const q = query(membersRef, where("memberId", "==", memberId));
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-                return false; // No member with this ID
-            }
-
-            if (excludeDocId) {
-                // If we are editing, check if the found duplicate is *not* the current document
-                return querySnapshot.docs.some(doc => doc.id !== excludeDocId);
-            } else {
-                // If adding new, any match means it's a duplicate
-                return true;
-            }
-        }
-
 
         /**
          * Renders the list of members in the table.
-         * Also updates the counts for tabs and sections.
+         * Applies search and filter criteria.
          */
         function renderMembers() {
             membersTableBody.innerHTML = ''; // Clear existing current members rows
@@ -1166,7 +1087,10 @@
             const searchTerm = searchInput.value.toLowerCase();
             const filterStatus = filterStatusSelect.value;
 
-            const filteredAndSortedMembers = allMembers.filter(member => {
+            
+    document.getElementById('total-members-count').textContent = allMembers.length;
+
+const filteredAndSortedMembers = allMembers.filter(member => {
                 const matchesSearch = (member.name && member.name.toLowerCase().includes(searchTerm)) ||
                                       (member.memberId && member.memberId.toLowerCase().includes(searchTerm)) ||
                                       (member.phoneNumber && member.phoneNumber.toLowerCase().includes(searchTerm)) ||
@@ -1182,8 +1106,6 @@
 
 
             let hasOverdueMembers = false;
-            let currentMembersCount = 0;
-            let overdueMembersCount = 0;
 
             if (filteredAndSortedMembers.length === 0) {
                 noMembersMessage.classList.remove('hidden');
@@ -1193,8 +1115,7 @@
                 noMembersMessage.classList.add('hidden');
                 filteredAndSortedMembers.forEach(member => {
                     const row = membersTableBody.insertRow();
-                    const isMemberOverdue = isOverdue(member.dueDate) && member.status !== 'Paid';
-                    const overdueClass = isMemberOverdue ? 'bg-red-900' : 'bg-gray-800'; // Darker overdue row
+                    const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-900' : 'bg-gray-800'; // Darker overdue row
                     row.className = `${overdueClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; // Hover effect
 
                     const daysLeftText = getDaysLeft(member.dueDate);
@@ -1214,7 +1135,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             ${formatToDDMMYYYY(member.dueDate) || 'N/A'}
-                            ${isMemberOverdue ? `
+                            ${isOverdue(member.dueDate) && member.status !== 'Paid' ? `
                                 <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-700 text-red-100">
                                     Overdue
                                 </span>` : ''}
@@ -1261,9 +1182,8 @@
 
 
                     // Populate Overdue Members table
-                    if (isMemberOverdue) {
+                    if ((isOverdue(member.dueDate) || getDaysLeft(member.dueDate) === "Due Today") && member.status !== 'Paid') {
                         hasOverdueMembers = true;
-                        overdueMembersCount++;
                         const overdueRow = overdueMembersTableBody.insertRow();
                         const today = new Date();
                         today.setHours(0,0,0,0);
@@ -1309,8 +1229,6 @@
                         if (photoElementInOverdueRow) {
                             addPhotoEnlargeListeners(photoElementInOverdueRow);
                         }
-                    } else {
-                        currentMembersCount++;
                     }
                 });
 
@@ -1352,14 +1270,6 @@
             } else {
                 noOverdueMembersMessage.classList.remove('hidden');
             }
-
-            // Update counts on tabs and sections
-            countManageMember.textContent = `(${allMembers.length})`;
-            countAddExisting.textContent = `(${allMembers.length})`;
-            countAddPayment.textContent = `(${allMembers.length})`;
-            countIdCard.textContent = `(${allMembers.length})`;
-            countOverdueMembers.textContent = `(${overdueMembersCount})`;
-            countCurrentMembers.textContent = `(${currentMembersCount})`;
         }
 
         /**
@@ -1408,7 +1318,7 @@
         /**
          * Clears the add payment form inputs.
          */
-        function clearAddPaymentForm() {
+        function clearAddPaymentForm() { // Renamed function
             addPaymentMemberSearchInput.value = ''; // Clear search input
             addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>'; // Clear and reset options
             addPaymentCurrentDueDateInput.value = '';
@@ -1516,7 +1426,7 @@
 
         /**
          * Handles the deletion of a member from Firestore.
-         * This will also trigger a Firebase Cloud Function to delete the photo from Cloudinary.
+         * Note: Photo deletion from Cloudinary is not handled client-side for security.
          */
         async function handleDelete() {
             if (!db || !memberToDelete) {
@@ -1526,10 +1436,9 @@
 
             try {
                 // Delete member document from Firestore
-                // This deletion will trigger the Cloud Function to delete the associated photo.
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
 
-                showMessage('Member deleted successfully! (Photo deletion from Cloudinary will be handled by backend.)', 'success');
+                showMessage('Member deleted successfully! (Note: Associated photo on Cloudinary is not deleted from the app for security reasons.)', 'success');
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
@@ -1713,7 +1622,7 @@
             if (memberId) {
                 try {
                     await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
-                    showMessage('Photo link removed from member. (Image remains on Cloudinary until backend deletion)', 'success');
+                    showMessage('Photo link removed from member. (Image remains on Cloudinary)', 'success');
                 } catch (error) {
                     console.error("Error removing photoURL from Firestore:", error);
                     showMessage('Failed to clear photo link from member. Please try again.', 'error');
@@ -1752,7 +1661,7 @@
          * Populates the member select dropdown in the Add Payment tab.
          * Filters based on search input.
          */
-        function populateAddPaymentMemberSelect(searchTerm = '') {
+        function populateAddPaymentMemberSelect(searchTerm = '') { // Renamed function
             addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>';
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
@@ -1825,12 +1734,12 @@
          */
         function showTab(tabId) {
             // Deactivate all tabs and hide all content
-            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard].forEach(tab => {
+            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard].forEach(tab => { // Updated tab ID
                 tab.classList.remove('tab-active');
                 tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
             });
 
-            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard].forEach(content => {
+            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard].forEach(content => { // Updated content ID
                 content.classList.add('hidden');
             });
 
@@ -1840,7 +1749,7 @@
                 tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentManageMember.classList.remove('hidden');
                 clearExistingMemberForm(); // Clear other forms
-                clearAddPaymentForm();
+                clearAddPaymentForm(); // Updated function call
                 clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(existingCameraFeed, existingCameraStream);
@@ -1849,18 +1758,18 @@
                 tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddExisting.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
-                clearAddPaymentForm();
+                clearAddPaymentForm(); // Updated function call
                 clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
-            } else if (tabId === 'add-payment') {
-                tabAddPayment.classList.add('tab-active');
+            } else if (tabId === 'add-payment') { // Updated tab ID
+                tabAddPayment.classList.add('tab-active'); // Updated tab ID
                 tabAddPayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
-                contentAddPayment.classList.remove('hidden');
+                contentAddPayment.classList.remove('hidden'); // Updated content ID
                 clearMainForm(); // Clear other forms
                 clearExistingMemberForm();
-                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
-                clearAddPaymentForm(); // Clear the add payment form itself
+                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
+                clearAddPaymentForm(); // Clear the add payment form itself (updated function call)
                 clearIdCardDisplay(); // Clear ID card display
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
@@ -1871,8 +1780,8 @@
                 contentIdCard.classList.remove('hidden');
                 clearMainForm();
                 clearExistingMemberForm();
-                clearAddPaymentForm();
-                populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                clearAddPaymentForm(); // Updated function call
+                populateIdCardMemberSelect(idCardMemberSearchInput.value); // Populate member dropdown for ID card
                 displayIdCard(null); // Clear displayed ID card
                 // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
@@ -1902,90 +1811,82 @@
 
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
-            // Show splash screen and then fade out
-            setTimeout(() => {
-                splashScreen.classList.add('fade-out');
-                document.body.style.overflow = 'auto'; // Re-enable scrolling
-            }, 2000); // Display splash for 2 seconds
-            setTimeout(async () => {
-                splashScreen.style.display = 'none'; // Completely hide after fade-out
-                try {
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                } catch (error) {
-                    console.error("Failed to initialize Firebase:", error);
-                    showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
-                    return;
-                }
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            } catch (error) {
+                console.error("Failed to initialize Firebase:", error);
+                showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
+                return;
+            }
 
-                // Start updating date/time immediately and then every second
-                updateDateTime();
-                setInterval(updateDateTime, 1000);
+            // Start updating date/time immediately and then every second
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
 
-                // Listen for authentication state changes (Firebase login)
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        userIdValue.textContent = currentUserId;
-                        authSection.classList.add('hidden'); // Hide Firebase auth section
-                        passwordEntryModal.classList.remove('hidden'); // Show in-app password modal
-                        passwordEntryModal.classList.add('flex');
-                        appPasswordInput.value = ''; // Clear input
-                        appPasswordInput.focus();
+            // Listen for authentication state changes (Firebase login)
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    userIdValue.textContent = currentUserId;
+                    authSection.classList.add('hidden'); // Hide Firebase auth section
+                    passwordEntryModal.classList.remove('hidden'); // Show in-app password modal
+                    passwordEntryModal.classList.add('flex');
+                    appPasswordInput.value = ''; // Clear input
+                    appPasswordInput.focus();
 
-                        // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
-                        const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
-                        onSnapshot(membersCollectionRef, (snapshot) => {
-                            allMembers = snapshot.docs.map(doc => ({
-                                id: doc.id,
-                                ...doc.data()
-                            }));
-                            renderMembers(); // Re-render whenever data changes
-                            // If add payment tab is active, re-populate member select
-                            if (!contentAddPayment.classList.contains('hidden')) {
-                                 populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
-                            }
-                            // If ID card tab is active, re-populate member select
-                            if (!contentIdCard.classList.contains('hidden')) {
-                                populateIdCardMemberSelect(idCardMemberSearchInput.value);
-                                // If a member was selected, re-display their card
-                                if (idCardMemberSelect.value) {
-                                    displayIdCard(idCardMemberSelect.value);
-                                }
-                            }
-                        }, (error) => {
-                            console.error("Error fetching members:", error);
-                            showMessage('Failed to load members. Check your internet connection.', 'error');
-                        });
-
-                    } else {
-                        currentUserId = null;
-                        userIdValue.textContent = ''; // Clear user ID
-                        mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
-                        passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
-                        authSection.classList.remove('hidden'); // Show Firebase auth section
-                        // Clear members list if not authenticated
-                        allMembers = [];
-                        renderMembers(); // Update counts to 0
-                    }
-                });
-
-                // Initial sign-in attempt with custom token if available, otherwise anonymously
-                // This happens first to establish Firebase auth, then the in-app password takes over
-                if (!auth.currentUser) {
-                    try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
+                    // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
+                    const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+                    onSnapshot(membersCollectionRef, (snapshot) => {
+                        allMembers = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        renderMembers(); // Re-render whenever data changes
+                        // If add payment tab is active, re-populate member select
+                        if (!contentAddPayment.classList.contains('hidden')) { // Updated content ID
+                             populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
                         }
-                    } catch (error) {
-                        console.error("Initial sign-in error:", error);
-                        showMessage('Failed to automatically sign in to backend. Please use the options below.', 'error');
-                    }
+                        // If ID card tab is active, re-populate member select
+                        if (!contentIdCard.classList.contains('hidden')) {
+                            populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                            // If a member was selected, re-display their card
+                            if (idCardMemberSelect.value) {
+                                displayIdCard(idCardMemberSelect.value);
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Error fetching members:", error);
+                        showMessage('Failed to load members. Check your internet connection.', 'error');
+                    });
+
+                } else {
+                    currentUserId = null;
+                    userIdValue.textContent = ''; // Clear user ID
+                    mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
+                    passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
+                    authSection.classList.remove('hidden'); // Show Firebase auth section
+                    // Clear members list if not authenticated
+                    allMembers = [];
+                    renderMembers();
                 }
-            }, 3000); // Start app initialization after 3 seconds (2s fade + 1s buffer)
+            });
+
+            // Initial sign-in attempt with custom token if available, otherwise anonymously
+            // This happens first to establish Firebase auth, then the in-app password takes over
+            if (!auth.currentUser) {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Initial sign-in error:", error);
+                    showMessage('Failed to automatically sign in to backend. Please use the options below.', 'error');
+                }
+            }
         };
 
         // Authentication Event Listeners
@@ -2069,7 +1970,7 @@
                 showMessage('Signed out successfully! Please log in again.', 'success');
                 clearMainForm();
                 clearExistingMemberForm();
-                clearAddPaymentForm();
+                clearAddPaymentForm(); // Updated function call
                 clearIdCardDisplay();
                 // onAuthStateChanged will handle showing authSection and hiding mainAppSection/passwordEntryModal
             } catch (error) {
@@ -2081,7 +1982,7 @@
         // Tab Event Listeners
         tabManageMember.addEventListener('click', () => showTab('manage-member'));
         tabAddExisting.addEventListener('click', () => showTab('add-existing'));
-        tabAddPayment.addEventListener('click', () => showTab('add-payment'));
+        tabAddPayment.addEventListener('click', () => showTab('add-payment')); // Updated ID
         tabIdCard.addEventListener('click', () => showTab('id-card'));
 
 
@@ -2093,7 +1994,6 @@
                 return;
             }
 
-            const memberId = memberIdInput.value.trim();
             const membershipType = membershipTypeInput.value;
             const calculatedDueDate = addDurationToDate(startDateInput.value, membershipType);
             const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
@@ -2103,23 +2003,8 @@
                 return;
             }
 
-            if (!memberId) {
-                showMessage('Member ID is required.', 'error');
-                return;
-            }
-
-            // Check for duplicate member ID if adding a new member or if the memberId is being changed during edit
-            if (!editingMemberId || (editingMemberId && memberId !== allMembers.find(m => m.id === editingMemberId)?.memberId)) {
-                const isDuplicate = await checkDuplicateMemberId(memberId, editingMemberId);
-                if (isDuplicate) {
-                    showMessage(`Member with ID "${memberId}" already exists. Please use a unique ID.`, 'error');
-                    return;
-                }
-            }
-
-
             let memberData = {
-                memberId: memberId,
+                memberId: memberIdInput.value.trim(),
                 name: nameInput.value.trim(),
                 phoneNumber: phoneNumberInput.value.trim(),
                 membershipType: membershipType,
@@ -2130,6 +2015,11 @@
                 updatedAt: serverTimestamp(),
                 createdBy: currentUserId,
             };
+
+            if (!memberData.memberId) {
+                showMessage('Member ID is required.', 'error');
+                return;
+            }
 
             try {
                 let docRef;
@@ -2240,7 +2130,6 @@
                 return;
             }
 
-            const memberId = existingMemberIdInput.value.trim();
             const membershipType = existingMembershipTypeInput.value;
             const feeAmount = defaultPlanAmounts[membershipType]; // Get fee from hardcoded default plans
 
@@ -2249,20 +2138,8 @@
                 return;
             }
 
-            if (!memberId) {
-                showMessage('Member ID is required.', 'error');
-                return;
-            }
-
-            // Check for duplicate member ID
-            const isDuplicate = await checkDuplicateMemberId(memberId);
-            if (isDuplicate) {
-                showMessage(`Member with ID "${memberId}" already exists. Please use a unique ID.`, 'error');
-                return;
-            }
-
             const memberData = {
-                memberId: memberId, // Get Member ID
+                memberId: existingMemberIdInput.value.trim(), // Get Member ID
                 name: existingNameInput.value.trim(),
                 phoneNumber: existingPhoneNumberInput.value.trim(), // Get Phone Number
                 membershipType: membershipType,
@@ -2274,6 +2151,11 @@
                 updatedAt: serverTimestamp(),
                 createdBy: currentUserId,
             };
+
+            if (!memberData.memberId) {
+                showMessage('Member ID is required.', 'error');
+                return;
+            }
 
             try {
                 let photoURL = null;
@@ -2325,59 +2207,60 @@
         addPhotoEnlargeListeners(existingPhotoPreview);
 
 
-        // Add Payment Form Event Listeners
-        addPaymentMemberSearchInput.addEventListener('input', (e) => {
-            populateAddPaymentMemberSelect(e.target.value);
+        // Add Payment Form Event Listeners (formerly Advance Payment)
+        addPaymentMemberSearchInput.addEventListener('input', (e) => { // Updated ID
+            populateAddPaymentMemberSelect(e.target.value); // Updated function call
             // Clear details if search changes
             addPaymentMemberSelect.value = '';
             addPaymentCurrentDueDateInput.value = '';
             addPaymentNewDueDateInput.value = '';
         });
 
-        addPaymentMemberSelect.addEventListener('change', () => {
-            const selectedMemberId = addPaymentMemberSelect.value;
+        addPaymentMemberSelect.addEventListener('change', () => { // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
-                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted
+                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted // Updated ID
                 // If member is overdue, use the special calculation for new due date
                 if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
                 } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
                 }
             } else {
-                addPaymentNewDueDateInput.value = '';
+                addPaymentCurrentDueDateInput.value = ''; // Updated ID
+                addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
 
-        addPaymentMembershipTypeInput.addEventListener('change', () => {
-            const selectedMemberId = addPaymentMemberSelect.value;
+        addPaymentMembershipTypeInput.addEventListener('change', () => { // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
                 // Calculate new due date based on current due date and selected payment type
                 // If member is overdue, use the special calculation for new due date
                 if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
                 } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
                 }
             } else {
-                addPaymentNewDueDateInput.value = '';
+                addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
 
-        addPaymentForm.addEventListener('submit', async (e) => {
+        addPaymentForm.addEventListener('submit', async (e) => { // Updated ID
             e.preventDefault();
             if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
-            const selectedMemberId = addPaymentMemberSelect.value;
-            const newMembershipType = addPaymentMembershipTypeInput.value;
-            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
+            const newMembershipType = addPaymentMembershipTypeInput.value; // Updated ID
+            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (!selectedMemberId || !newDueDate || !selectedMember) {
@@ -2407,11 +2290,11 @@
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
                 });
-                showMessage('Payment processed and due date updated successfully!', 'success');
-                clearAddPaymentForm();
+                showMessage('Payment processed and due date updated successfully!', 'success'); // Updated message
+                clearAddPaymentForm(); // Updated function call
             } catch (error) {
-                console.error("Error processing payment:", error);
-                showMessage('Failed to process payment. Please try again.', 'error');
+                console.error("Error processing payment:", error); // Updated message
+                showMessage('Failed to process payment. Please try again.', 'error'); // Updated message
             }
         });
 
@@ -2436,4 +2319,4 @@
 
     </script>
 </body>
-    </html>
+</html>
