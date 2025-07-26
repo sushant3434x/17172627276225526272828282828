@@ -187,10 +187,10 @@
                 padding: 0.75rem 0.5rem;
             }
             /* Make action buttons smaller on mobile */
-            .edit-btn, .pause-btn, .activate-btn { /* Delete button removed from here */
+            .edit-btn, .pause-btn, .activate-btn, .delete-btn {
                 padding: 0.25rem;
             }
-            .edit-btn svg, .pause-btn svg, .activate-btn svg { /* Delete button removed from here */
+            .edit-btn svg, .pause-btn svg, .activate-btn svg, .delete-btn svg {
                 width: 1rem;
                 height: 1rem;
             }
@@ -717,20 +717,12 @@
         let auth;
         let currentUserId = null;
         let editingMemberId = null;
-        let memberToDelete = null;
+        let memberToDelete = null; // Re-introduced for delete functionality
         let allMembers = []; // To store all members fetched from Firestore
         let currentPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL for main form
         let existingPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL for existing member form
 
         let currentCameraFacingMode = 'user'; // 'user' for front, 'environment' for back
-
-        // Variables for tap and hold delete
-        let holdTimer = null;
-        let isHolding = false;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        const HOLD_DURATION = 1000; // 1 second
-        const MOVE_THRESHOLD = 10; // Pixels for touch/mouse move to cancel hold
 
         // Hardcoded default plan amounts
         const defaultPlanAmounts = {
@@ -855,14 +847,14 @@
         const filterStatusSelect = document.getElementById('filter-status');
         const membersTableBody = document.getElementById('members-table-body');
         const noMembersMessage = document.getElementById('no-members-message');
-        const deleteModal = document.getElementById('delete-modal');
-        const deleteModalContent = document.getElementById('delete-modal-content');
-        const memberToDeleteName = document.getElementById('member-to-delete-name');
-        const cancelDeleteButton = document.getElementById('cancel-delete-button');
-        const confirmDeleteButton = document.getElementById('confirm-delete-button');
+        const deleteModal = document.getElementById('delete-modal'); // Re-enabled
+        const deleteModalContent = document.getElementById('delete-modal-content'); // Re-enabled
+        const memberToDeleteName = document.getElementById('member-to-delete-name'); // Re-enabled
+        const cancelDeleteButton = document.getElementById('cancel-delete-button'); // Re-enabled
+        const confirmDeleteButton = document.getElementById('confirm-delete-button'); // Re-enabled
 
         // Overdue Members specific DOM elements (now removed from HTML, but variables kept for logic)
-        const countOverdueMembers = document.getElementById('count-overdue-members'); // This will now count both overdue and due today
+        // const countOverdueMembers = document.getElementById('count-overdue-members'); // This element is removed from HTML
         const countCurrentMembers = document.getElementById('count-current-members'); // This will now count all members
 
         // Date & Time Display elements
@@ -1356,9 +1348,27 @@
                     });
                     actionsCell.appendChild(toggleStatusButton);
 
-                    // Attach tap-and-hold listener to the entire row for deletion
-                    row.dataset.id = member.id; // Store member ID on the row
-                    addTapAndHoldListener(row, member);
+                    // Delete Button (Re-introduced)
+                    const deleteButton = document.createElement('button');
+                    deleteButton.dataset.id = member.id;
+                    deleteButton.className = "delete-btn text-red-500 hover:text-red-300 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                    deleteButton.title = "Delete Member";
+                    deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
+                    </svg>`;
+                    deleteButton.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        console.log("Delete button clicked. Member ID:", id); // Debug log
+                        const memberToDeleteFound = allMembers.find(m => m.id === id);
+                        if (memberToDeleteFound) {
+                            console.log("Member found for deletion:", memberToDeleteFound.name); // Debug log
+                            confirmDelete(memberToDeleteFound);
+                        } else {
+                            console.warn("Member not found for deletion with ID:", id); // Debug log
+                            showMessage('Member not found for deletion.', 'error');
+                        }
+                    });
+                    actionsCell.appendChild(deleteButton);
                 });
             }
 
@@ -1367,7 +1377,6 @@
             countAddExisting.textContent = `(${allMembers.length})`;
             countAddPayment.textContent = `(${allMembers.length})`;
             countIdCard.textContent = `(${allMembers.length})`;
-            // countOverdueMembers.textContent = `(${overdueOrDueTodayCount})`; // This element is removed from HTML
             countCurrentMembers.textContent = `(${totalMembersCount})`; // This is total members
         }
 
@@ -2483,79 +2492,6 @@
                 closePhotoModal();
             }
         });
-
-        /**
-         * Adds tap and hold listener to an element for deletion.
-         * @param {HTMLElement} element - The DOM element to attach listeners to (e.g., a table row).
-         * @param {object} member - The member object associated with this element.
-         */
-        function addTapAndHoldListener(element, member) {
-            let startX, startY;
-
-            const startHold = (e) => {
-                // Only start hold if it's a primary button (left click) or single touch
-                if (e.type === 'mousedown' && e.button !== 0) return;
-                if (e.type === 'touchstart' && e.touches.length > 1) return;
-
-                console.log(`Hold started on member: ${member.id}`);
-                isHolding = true;
-                if (e.type === 'touchstart') {
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                } else { // mousedown
-                    startX = e.clientX;
-                    startY = e.clientY;
-                }
-
-                holdTimer = setTimeout(() => {
-                    if (isHolding) {
-                        console.log(`Hold duration met for member: ${member.id}`);
-                        confirmDelete(member);
-                    }
-                }, HOLD_DURATION);
-            };
-
-            const cancelHold = (e) => {
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-                isHolding = false;
-                console.log(`Hold cancelled for member: ${member.id}`);
-            };
-
-            const checkMove = (e) => {
-                if (!isHolding) return;
-
-                let currentX, currentY;
-                if (e.type === 'touchmove') {
-                    currentX = e.touches[0].clientX;
-                    currentY = e.touches[0].clientY;
-                } else { // mousemove
-                    currentX = e.clientX;
-                    currentY = e.clientY;
-                }
-
-                const deltaX = Math.abs(currentX - startX);
-                const deltaY = Math.abs(currentY - startY);
-
-                if (deltaX > MOVE_THRESHOLD || deltaY > MOVE_THRESHOLD) {
-                    cancelHold();
-                }
-            };
-
-            // Desktop events
-            element.addEventListener('mousedown', startHold);
-            element.addEventListener('mouseup', cancelHold);
-            element.addEventListener('mouseleave', cancelHold); // If mouse leaves the element while holding
-            element.addEventListener('mousemove', checkMove);
-
-            // Mobile touch events
-            element.addEventListener('touchstart', startHold);
-            element.addEventListener('touchend', cancelHold);
-            element.addEventListener('touchcancel', cancelHold); // If touch is interrupted
-            element.addEventListener('touchmove', checkMove);
-        }
 
     </script>
 </body>
