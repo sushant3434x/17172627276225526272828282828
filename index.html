@@ -150,6 +150,9 @@
         .overdue-row {
             background-color: #4a0e1e; /* Darker red for overdue/due today rows */
         }
+        .overdue-row:hover {
+            background-color: #5c142b; /* Slightly lighter on hover */
+        }
 
         /* Table specific styles for better mobile experience */
         #members-list-container table {
@@ -184,10 +187,10 @@
                 padding: 0.75rem 0.5rem;
             }
             /* Make action buttons smaller on mobile */
-            .edit-btn, .pause-btn, .activate-btn, .delete-btn {
+            .edit-btn, .pause-btn, .activate-btn { /* Delete button removed from here */
                 padding: 0.25rem;
             }
-            .edit-btn svg, .pause-btn svg, .activate-btn svg, .delete-btn svg {
+            .edit-btn svg, .pause-btn svg, .activate-btn svg { /* Delete button removed from here */
                 width: 1rem;
                 height: 1rem;
             }
@@ -721,6 +724,14 @@
 
         let currentCameraFacingMode = 'user'; // 'user' for front, 'environment' for back
 
+        // Variables for tap and hold delete
+        let holdTimer = null;
+        let isHolding = false;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const HOLD_DURATION = 1000; // 1 second
+        const MOVE_THRESHOLD = 10; // Pixels for touch/mouse move to cancel hold
+
         // Hardcoded default plan amounts
         const defaultPlanAmounts = {
             Monthly: 700.00,
@@ -1246,63 +1257,108 @@
                     const nameClass = member.status === 'Inactive' ? 'line-through-name' : '';
                     const photoSrc = member.photoURL || "https://placehold.co/40x40/4a5568/cbd5e0?text=👤"; // Use actual photo or generic placeholder
 
-                    row.innerHTML = `
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm font-medium text-gray-200">
-                            <a href="${photoSrc}" target="_blank" class="block">
-                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
-                            </a>
-                        </td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm font-medium text-gray-200 ${nameClass}">${member.name || 'N/A'}</td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm text-gray-300">${member.phoneNumber || 'N/A'}</td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm text-gray-300">${member.membershipType || 'N/A'}</td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm text-gray-300">
-                            ${formatToDDMMYYYY(member.dueDate) || 'N/A'}
-                            ${isMemberOverdueOrDueToday ? `
-                                <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${daysLeftText.includes('overdue') ? 'bg-red-700 text-red-100' : 'bg-yellow-700 text-yellow-100'}">
-                                    ${daysLeftText.includes('overdue') ? 'OVERDUE' : 'DUE TODAY'}
-                                </span>` : ''}
-                        </td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-sm text-gray-300">
-                            ${daysLeftText.includes('overdue') ? `
-                                <span class="text-red-500 font-semibold">${daysLeftText}</span>
-                            ` : daysLeftText === 'Due Today' ? `
-                                <span class="text-yellow-500 font-semibold">${daysLeftText}</span>
-                            ` : daysLeftText}
-                        </td>
-                        <td class="px-4 py-2 sm:px-6 sm:py-3 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-1 sm:space-x-2">
-                            <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200 p-1 rounded-md hover:bg-gray-700 transition-colors" title="Edit Member">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
-                                </svg>
-                            </button>
-                            ${member.status === 'Active' || member.status === 'Overdue' ? `
-                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300 p-1 rounded-md hover:bg-gray-700 transition-colors" title="Pause Membership">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            ` : `
-                                <button data-id="${member.id}" class="activate-btn text-green-500 hover:text-green-300 p-1 rounded-md hover:bg-gray-700 transition-colors" title="Activate Membership">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            `}
-                            <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300 p-1 rounded-md hover:bg-gray-700 transition-colors" title="Delete Member">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </td>
-                    `;
-                    // Attach double-tap/click listener to the photo in the row (on the <img> inside <a>)
-                    const photoElementInRow = row.querySelector('.member-photo');
-                    if (photoElementInRow) {
-                        addPhotoEnlargeListeners(photoElementInRow);
+                    // Create cells and append content programmatically
+                    const photoCell = row.insertCell();
+                    photoCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "font-medium", "text-gray-200");
+                    photoCell.innerHTML = `<a href="${photoSrc}" target="_blank" class="block"><img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';"></a>`;
+                    addPhotoEnlargeListeners(photoCell.querySelector('.member-photo')); // Attach listener to the photo
+
+                    const memberIdCell = row.insertCell();
+                    memberIdCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "font-medium", "text-gray-200");
+                    memberIdCell.textContent = member.memberId || 'N/A';
+
+                    const nameCell = row.insertCell();
+                    nameCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "font-medium", "text-gray-200", nameClass);
+                    nameCell.textContent = member.name || 'N/A';
+
+                    const phoneCell = row.insertCell();
+                    phoneCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    phoneCell.textContent = member.phoneNumber || 'N/A';
+
+                    const typeCell = row.insertCell();
+                    typeCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    typeCell.textContent = member.membershipType || 'N/A';
+
+                    const startDateCell = row.insertCell();
+                    startDateCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    startDateCell.textContent = formatToDDMMYYYY(member.startDate) || 'N/A';
+
+                    const dueDateCell = row.insertCell();
+                    dueDateCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    dueDateCell.innerHTML = `${formatToDDMMYYYY(member.dueDate) || 'N/A'} ${isMemberOverdueOrDueToday ? `
+                        <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${daysLeftText.includes('overdue') ? 'bg-red-700 text-red-100' : 'bg-yellow-700 text-yellow-100'}">
+                            ${daysLeftText.includes('overdue') ? 'OVERDUE' : 'DUE TODAY'}
+                        </span>` : ''}`;
+
+                    const feeCell = row.insertCell();
+                    feeCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    feeCell.textContent = `$${(member.feeAmount || 0).toFixed(2)}`;
+
+                    const daysLeftCell = row.insertCell();
+                    daysLeftCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-sm", "text-gray-300");
+                    daysLeftCell.innerHTML = daysLeftText.includes('overdue') ? `
+                        <span class="text-red-500 font-semibold">${daysLeftText}</span>
+                    ` : daysLeftText === 'Due Today' ? `
+                        <span class="text-yellow-500 font-semibold">${daysLeftText}</span>
+                    ` : daysLeftText;
+
+                    const actionsCell = row.insertCell();
+                    actionsCell.classList.add("px-4", "py-2", "sm:px-6", "sm:py-3", "whitespace-nowrap", "text-right", "text-sm", "font-medium", "flex", "items-center", "space-x-1", "sm:space-x-2");
+
+                    // Edit Button
+                    const editButton = document.createElement('button');
+                    editButton.dataset.id = member.id;
+                    editButton.className = "edit-btn text-blue-400 hover:text-blue-200 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                    editButton.title = "Edit Member";
+                    editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
+                    </svg>`;
+                    editButton.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        console.log("Edit button clicked. Member ID:", id); // Debug log
+                        const memberToEdit = allMembers.find(m => m.id === id);
+                        if (memberToEdit) {
+                            handleEdit(memberToEdit);
+                        } else {
+                            console.warn("Member not found for edit with ID:", id); // Debug log
+                            showMessage('Member not found for editing.', 'error');
+                        }
+                    });
+                    actionsCell.appendChild(editButton);
+
+                    // Pause/Activate Button
+                    const toggleStatusButton = document.createElement('button');
+                    toggleStatusButton.dataset.id = member.id;
+                    if (member.status === 'Active' || member.status === 'Overdue') {
+                        toggleStatusButton.className = "pause-btn text-yellow-500 hover:text-yellow-300 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                        toggleStatusButton.title = "Pause Membership";
+                        toggleStatusButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>`;
+                    } else {
+                        toggleStatusButton.className = "activate-btn text-green-500 hover:text-green-300 p-1 rounded-md hover:bg-gray-700 transition-colors";
+                        toggleStatusButton.title = "Activate Membership";
+                        toggleStatusButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>`;
                     }
+                    toggleStatusButton.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        const currentMember = allMembers.find(m => m.id === id);
+                        if (currentMember) {
+                            const newStatus = (currentMember.status === 'Active' || currentMember.status === 'Overdue') ? 'Inactive' : 'Active';
+                            console.log(`Toggle Status button clicked. Member ID: ${id}, new status: ${newStatus}`); // Debug log
+                            handlePauseToggle(id, newStatus);
+                        } else {
+                            console.warn("Member not found for status toggle with ID:", id);
+                            showMessage('Member not found for status update.', 'error');
+                        }
+                    });
+                    actionsCell.appendChild(toggleStatusButton);
+
+                    // Attach tap-and-hold listener to the entire row for deletion
+                    row.dataset.id = member.id; // Store member ID on the row
+                    addTapAndHoldListener(row, member);
                 });
             }
 
@@ -1311,53 +1367,8 @@
             countAddExisting.textContent = `(${allMembers.length})`;
             countAddPayment.textContent = `(${allMembers.length})`;
             countIdCard.textContent = `(${allMembers.length})`;
-            countOverdueMembers.textContent = `(${overdueOrDueTodayCount})`; // This now represents overdue + due today
+            // countOverdueMembers.textContent = `(${overdueOrDueTodayCount})`; // This element is removed from HTML
             countCurrentMembers.textContent = `(${totalMembersCount})`; // This is total members
-
-            // Attach event listeners to new buttons (for the single table)
-            // This block is crucial and must run AFTER new rows are added to the DOM.
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    console.log("Edit button clicked. Member ID:", id); // Debug log
-                    const member = allMembers.find(m => m.id === id);
-                    if (member) {
-                        console.log("Member found for edit:", member.name); // Debug log
-                        handleEdit(member);
-                    } else {
-                        console.warn("Member not found for edit with ID:", id); // Debug log
-                        showMessage('Member not found for editing.', 'error');
-                    }
-                });
-            });
-            document.querySelectorAll('.pause-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    console.log("Pause button clicked. Member ID:", id); // Debug log
-                    handlePauseToggle(id, 'Inactive');
-                });
-            });
-            document.querySelectorAll('.activate-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    console.log("Activate button clicked. Member ID:", id); // Debug log
-                    handlePauseToggle(id, 'Active');
-                });
-            });
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    console.log("Delete button clicked. Member ID:", id); // Debug log
-                    const member = allMembers.find(m => m.id === id);
-                    if (member) {
-                        console.log("Member found for deletion:", member.name); // Debug log
-                        confirmDelete(member);
-                    } else {
-                        console.warn("Member not found for deletion with ID:", id); // Debug log
-                        showMessage('Member not found for deletion.', 'error');
-                    }
-                });
-            });
         }
 
         /**
@@ -2472,6 +2483,79 @@
                 closePhotoModal();
             }
         });
+
+        /**
+         * Adds tap and hold listener to an element for deletion.
+         * @param {HTMLElement} element - The DOM element to attach listeners to (e.g., a table row).
+         * @param {object} member - The member object associated with this element.
+         */
+        function addTapAndHoldListener(element, member) {
+            let startX, startY;
+
+            const startHold = (e) => {
+                // Only start hold if it's a primary button (left click) or single touch
+                if (e.type === 'mousedown' && e.button !== 0) return;
+                if (e.type === 'touchstart' && e.touches.length > 1) return;
+
+                console.log(`Hold started on member: ${member.id}`);
+                isHolding = true;
+                if (e.type === 'touchstart') {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                } else { // mousedown
+                    startX = e.clientX;
+                    startY = e.clientY;
+                }
+
+                holdTimer = setTimeout(() => {
+                    if (isHolding) {
+                        console.log(`Hold duration met for member: ${member.id}`);
+                        confirmDelete(member);
+                    }
+                }, HOLD_DURATION);
+            };
+
+            const cancelHold = (e) => {
+                if (holdTimer) {
+                    clearTimeout(holdTimer);
+                    holdTimer = null;
+                }
+                isHolding = false;
+                console.log(`Hold cancelled for member: ${member.id}`);
+            };
+
+            const checkMove = (e) => {
+                if (!isHolding) return;
+
+                let currentX, currentY;
+                if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX;
+                    currentY = e.touches[0].clientY;
+                } else { // mousemove
+                    currentX = e.clientX;
+                    currentY = e.clientY;
+                }
+
+                const deltaX = Math.abs(currentX - startX);
+                const deltaY = Math.abs(currentY - startY);
+
+                if (deltaX > MOVE_THRESHOLD || deltaY > MOVE_THRESHOLD) {
+                    cancelHold();
+                }
+            };
+
+            // Desktop events
+            element.addEventListener('mousedown', startHold);
+            element.addEventListener('mouseup', cancelHold);
+            element.addEventListener('mouseleave', cancelHold); // If mouse leaves the element while holding
+            element.addEventListener('mousemove', checkMove);
+
+            // Mobile touch events
+            element.addEventListener('touchstart', startHold);
+            element.addEventListener('touchend', cancelHold);
+            element.addEventListener('touchcancel', cancelHold); // If touch is interrupted
+            element.addEventListener('touchmove', checkMove);
+        }
 
     </script>
 </body>
