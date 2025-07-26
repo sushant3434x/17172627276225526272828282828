@@ -1315,33 +1315,46 @@
             countCurrentMembers.textContent = `(${totalMembersCount})`; // This is total members
 
             // Attach event listeners to new buttons (for the single table)
+            // This block is crucial and must run AFTER new rows are added to the DOM.
             document.querySelectorAll('.edit-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
+                    console.log("Edit button clicked. Member ID:", id); // Debug log
                     const member = allMembers.find(m => m.id === id);
                     if (member) {
+                        console.log("Member found for edit:", member.name); // Debug log
                         handleEdit(member);
+                    } else {
+                        console.warn("Member not found for edit with ID:", id); // Debug log
+                        showMessage('Member not found for editing.', 'error');
                     }
                 });
             });
             document.querySelectorAll('.pause-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
+                    console.log("Pause button clicked. Member ID:", id); // Debug log
                     handlePauseToggle(id, 'Inactive');
                 });
             });
             document.querySelectorAll('.activate-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
+                    console.log("Activate button clicked. Member ID:", id); // Debug log
                     handlePauseToggle(id, 'Active');
                 });
             });
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
+                    console.log("Delete button clicked. Member ID:", id); // Debug log
                     const member = allMembers.find(m => m.id === id);
                     if (member) {
+                        console.log("Member found for deletion:", member.name); // Debug log
                         confirmDelete(member);
+                    } else {
+                        console.warn("Member not found for deletion with ID:", id); // Debug log
+                        showMessage('Member not found for deletion.', 'error');
                     }
                 });
             });
@@ -1427,6 +1440,7 @@
          * @param {object} member - The member object to edit.
          */
         function handleEdit(member) {
+            console.log("handleEdit called for member:", member.id); // Debug log
             // Switch to the "Manage Member Details" tab
             showTab('manage-member');
 
@@ -1468,6 +1482,7 @@
          * @param {string} newStatus - The new status to set ('Active' or 'Inactive').
          */
         async function handlePauseToggle(memberId, newStatus) {
+            console.log(`handlePauseToggle called for member ID: ${memberId}, new status: ${newStatus}`); // Debug log
             if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
@@ -1481,6 +1496,7 @@
                     updatedBy: currentUserId,
                 });
                 showMessage(`Member status updated to '${newStatus}' successfully!`, 'success');
+                console.log(`Member ${memberId} status updated to ${newStatus} in Firestore.`); // Debug log
             } catch (error) {
                 console.error("Error updating member status:", error);
                 showMessage('Failed to update member status. Please try again.', 'error');
@@ -1492,6 +1508,7 @@
          * @param {object} member - The member object to be deleted.
          */
         function confirmDelete(member) {
+            console.log("Entering confirmDelete for member:", member.id); // Debug log
             memberToDelete = member;
             memberToDeleteName.textContent = member.name || member.memberId || 'this member';
             deleteModal.classList.remove('hidden');
@@ -1514,8 +1531,8 @@
                 return;
             }
 
+            console.log("Attempting to delete member with ID:", memberToDelete.id); // Debug log
             try {
-                console.log("Attempting to delete member with ID:", memberToDelete.id);
                 // Delete member document from Firestore
                 // This deletion will trigger the Cloud Function to delete the associated photo.
                 await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
@@ -1524,7 +1541,7 @@
                 deleteModal.classList.add('hidden');
                 deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
                 memberToDelete = null;
-                console.log("Member deletion initiated successfully in Firestore.");
+                console.log("Member deletion initiated successfully in Firestore."); // Debug log
             } catch (error) {
                 console.error("Error deleting member:", error);
                 showMessage('Failed to delete member. Please try again.', 'error');
@@ -2206,6 +2223,7 @@
             deleteModal.classList.add('hidden');
             deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
             memberToDelete = null; // Clear the memberToDelete reference
+            console.log("Delete modal cancelled. memberToDelete cleared."); // Debug log
         });
         confirmDeleteButton.addEventListener('click', handleDelete);
 
