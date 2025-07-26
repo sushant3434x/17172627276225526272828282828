@@ -230,7 +230,6 @@
                 <div id="current-date" class="text-xs sm:text-sm"></div>
                 <div id="current-day" class="text-xs sm:text-sm"></div>
             </div>
-            <!-- Sign Out Button Removed -->
         </div>
 
         <!-- User ID Display for collaborative environment -->
@@ -757,7 +756,6 @@
 
         // DOM Elements for Main App
         const mainAppSection = document.getElementById('main-app-section');
-        // Sign out button removed from HTML, no corresponding JS variable needed
 
         // Tab Buttons and Content
         const tabManageMember = document.getElementById('tab-manage-member');
@@ -883,7 +881,6 @@
         const photoViewContent = document.getElementById('photo-view-content');
 
         // Double tap detection variables
-        let lastTap = 0;
         const TAP_THRESHOLD = 300; // milliseconds
 
         /**
@@ -1147,6 +1144,7 @@
                 console.error("Firestore DB not initialized.");
                 return true; // Treat as duplicate to prevent issues
             }
+            // Use the hardcoded path for the public collection
             const membersRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
 
             // Query for exact matches on all three fields
@@ -1952,62 +1950,54 @@
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
             console.log("Window loaded. Starting splash screen fade out.");
-            // Show splash screen and then fade out
+            // Start splash screen fade out immediately
             setTimeout(() => {
                 splashScreen.classList.add('fade-out');
-                document.body.style.overflowX = 'hidden'; // Keep horizontal overflow hidden
-                document.body.style.overflowY = 'auto'; // Re-enable vertical scrolling
+                document.body.style.overflowX = 'hidden';
+                document.body.style.overflowY = 'auto';
                 console.log("Splash screen fade-out started.");
-            }, 2000); // Display splash for 2 seconds
+            }, 2000); // Splash visible for 2 seconds
 
-            // After splash screen fades, initialize the app
+            // After splash fades, show password modal and start Firebase init
             setTimeout(async () => {
-                splashScreen.style.display = 'none'; // Completely hide after fade-out
-                console.log("Splash screen hidden. Initializing Firebase.");
+                splashScreen.style.display = 'none'; // Hide splash completely
 
+                // Always show the app password modal after splash screen
+                passwordEntryModal.classList.remove('hidden');
+                passwordEntryModal.classList.add('flex');
+                appPasswordInput.value = ''; // Clear input
+                appPasswordInput.focus();
+                console.log("Splash screen hidden. Showing app password modal.");
+
+                // Initialize Firebase
                 try {
                     app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     auth = getAuth(app);
                     console.log("Firebase initialized successfully.");
+
+                    // Perform anonymous sign-in silently
+                    await signInAnonymously(auth);
+                    console.log("Silently signed in anonymously to Firebase.");
+
                 } catch (error) {
-                    console.error("Failed to initialize Firebase:", error);
-                    showMessage('Failed to initialize Firebase. Check your internet connection and Firebase project settings.', 'error');
-                    // If Firebase initialization fails, stop here.
-                    return;
+                    console.error("Firebase initialization or anonymous sign-in error:", error);
+                    showMessage('Failed to connect to backend. Please check your internet connection and console for details.', 'error');
+                    return; // Stop further execution if Firebase fails
                 }
 
                 // Start updating date/time immediately and then every second
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
 
-                // Perform anonymous sign-in silently
-                try {
-                    await signInAnonymously(auth);
-                    console.log("Silently signed in anonymously to Firebase.");
-                } catch (error) {
-                    console.error("Anonymous sign-in error:", error);
-                    showMessage('Failed to connect to backend. Please check your internet connection.', 'error');
-                    // If anonymous sign-in fails, the app cannot proceed with Firestore access
-                    return;
-                }
-
                 // Listen for authentication state changes (Firebase login)
-                onAuthStateChanged(auth, async (user) => {
+                onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUserId = user.uid;
                         userIdValue.textContent = currentUserId;
-                        // Directly show the app password modal after anonymous sign-in
-                        passwordEntryModal.classList.remove('hidden');
-                        passwordEntryModal.classList.add('flex');
-                        appPasswordInput.value = ''; // Clear input
-                        appPasswordInput.focus();
-                        console.log("User authenticated (anonymously). Showing app password modal.");
+                        console.log("User authenticated (anonymously). User ID set.");
 
-                        // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
-                        // and when the app password is correctly entered later.
-                        // This listener is set up here, but data will only be rendered once the main app section is visible.
-                        // Use the hardcoded path for the public collection
+                        // Start listening to Firestore for gym members
                         const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
                         onSnapshot(membersCollectionRef, (snapshot) => {
                             allMembers = snapshot.docs.map(doc => ({
@@ -2018,14 +2008,11 @@
                             // Only render members if the main app section is visible (i.e., after app password)
                             if (!mainAppSection.classList.contains('hidden')) {
                                 renderMembers(); // Re-render whenever data changes
-                                // If add payment tab is active, re-populate member select
                                 if (!contentAddPayment.classList.contains('hidden')) {
                                      populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
                                 }
-                                // If ID card tab is active, re-populate member select
                                 if (!contentIdCard.classList.contains('hidden')) {
                                     populateIdCardMemberSelect(idCardMemberSearchInput.value);
-                                    // If a member was selected, re-display their card
                                     if (idCardMemberSelect.value) {
                                         displayIdCard(idCardMemberSelect.value);
                                     }
@@ -2040,10 +2027,8 @@
                         currentUserId = null;
                         userIdValue.textContent = ''; // Clear user ID
                         mainAppSection.classList.add('hidden', 'scale-95', 'opacity-0'); // Hide main app
-                        passwordEntryModal.classList.add('hidden'); // Ensure in-app password modal is hidden
-                        // No auth section to show as it's removed
+                        // The password modal should already be visible, so no need to explicitly show auth section.
                         console.log("User not authenticated. App will remain locked.");
-                        // Clear members list if not authenticated
                         allMembers = [];
                         renderMembers(); // Update counts to 0
                     }
