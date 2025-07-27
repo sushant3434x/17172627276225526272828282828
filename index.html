@@ -17,7 +17,7 @@
         ::-webkit-scrollbar {
             width: 8px;
         }
-        ::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {\
             background: #4a5568;
             border-radius: 10px;
         }
@@ -154,7 +154,14 @@
 <!-- Main Gym App Section -->
 <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
 <div class="flex justify-between items-center mb-8">
-<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+    <div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
+        <!-- Data Usage Icon and Display -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-indigo-400">
+            <path fill-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" clip-rule="evenodd" />
+        </svg>
+        <span>Data Used: <span id="data-usage-display" class="font-semibold text-gray-200">0 KB</span></span>
+    </div>
+    <h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
 <!-- Date, Time, Day Display -->
 <div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
 <div class="text-xl font-semibold text-gray-200" id="current-time"></div>
@@ -626,6 +633,9 @@
         const currentDateDisplay = document.getElementById('current-date');
         const currentDayDisplay = document.getElementById('current-day');
 
+        // Data Usage Display elements
+        const dataUsageDisplay = document.getElementById('data-usage-display');
+
 
         // Photo related DOM elements for Manage Member Details tab
         const photoUploadInput = document.getElementById('photo-upload');
@@ -925,6 +935,67 @@
             }
         }
 
+        /**
+         * Estimates the size of a single Firestore document (rough client-side approximation).
+         * This is not the exact billable size but gives an idea of data volume.
+         * @param {object} doc - The Firestore document object.
+         * @returns {number} Estimated size in bytes.
+         */
+        function estimateDocumentSize(doc) {
+            let size = 0;
+            for (const key in doc) {
+                if (doc.hasOwnProperty(key)) {
+                    const value = doc[key];
+                    size += key.length; // Key name length
+
+                    if (typeof value === 'string') {
+                        size += value.length; // String value length
+                    } else if (typeof value === 'number') {
+                        size += 8; // Approximate for numbers (double precision float)
+                    } else if (typeof value === 'boolean') {
+                        size += 1; // Approximate for booleans
+                    } else if (value instanceof Date) {
+                        size += 12; // Approximate for Firestore Timestamps
+                    } else if (typeof value === 'object' && value !== null) {
+                        // For nested objects (if any), recursively estimate
+                        size += estimateDocumentSize(value);
+                    }
+                    // Add a small overhead for field type, etc. (very rough)
+                    size += 1;
+                }
+            }
+            return size;
+        }
+
+        /**
+         * Updates the displayed data usage based on the `allMembers` array.
+         * Displays in GB:MB format.
+         */
+        function updateDataUsageDisplay() {
+            let totalSizeInBytes = 0;
+            allMembers.forEach(member => {
+                totalSizeInBytes += estimateDocumentSize(member);
+            });
+
+            const MB = 1024 * 1024;
+            const GB = 1024 * MB;
+
+            let formattedSize;
+            if (totalSizeInBytes >= GB) {
+                const gbPart = Math.floor(totalSizeInBytes / GB);
+                const mbPart = Math.round((totalSizeInBytes % GB) / MB);
+                formattedSize = `${gbPart} GB : ${mbPart} MB`;
+            } else if (totalSizeInBytes >= MB) {
+                formattedSize = `${(totalSizeInBytes / MB).toFixed(2)} MB`;
+            } else if (totalSizeInBytes >= 1024) {
+                formattedSize = `${(totalSizeInBytes / 1024).toFixed(2)} KB`;
+            }
+            else {
+                formattedSize = `${totalSizeInBytes} Bytes`;
+            }
+            dataUsageDisplay.textContent = formattedSize;
+        }
+
 
         /**
          * Renders the list of members in the table.
@@ -945,6 +1016,9 @@
             } else {
                 toggleBtn.textContent = 'Hide Current Members';
             }
+
+            // Update data usage display
+            updateDataUsageDisplay();
 
 
             const filteredAndSortedMembers = allMembers.filter(member => {
@@ -1498,8 +1572,8 @@
          */
         async function handleSwitchCamera(cameraFeedElement, cameraStreamVar, setCameraStreamCallback, setFacingModeCallback, currentFacingModeParam, previewElement, viewLinkElement) {
             stopCamera(cameraFeedElement, cameraStreamVar);
-            const newFacingMode = currentFacingModeParam === 'user' ? 'environment' : 'user';
-            setFacingModeCallback(newFacingMode); // Update the facing mode
+            const newFacingMode = currentCameraFacingMode === 'user' ? 'environment' : 'user'; // Use global currentCameraFacingMode
+            setFacingModeCallback(newFacingMode); // Update the global facing mode
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacingMode } });
             if (stream) {
                 setCameraStreamCallback(stream);
