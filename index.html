@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-
+	
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -111,7 +111,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed">
+<body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed"><div class="fixed inset-0 bg-black flex items-center justify-center z-50 text-white text-4xl font-bold" id="splash-screen">Made by SUSHANT SINGH</div>
 <!-- Message Display -->
 <div class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="message-display"></div>
 <!-- Authentication Section (Re-introduced) -->
@@ -170,7 +170,7 @@
             Your User ID: <span class="font-mono text-gray-200 font-semibold" id="user-id-value"></span>
 </div>
 <!-- Tabs for Member Forms -->
-<div class="flex border-b border-gray-700 mb-8">
+<div class="flex justify-center flex-wrap gap-4 mb-8">
 <button class="py-3 px-6 text-base font-medium text-center text-gray-300 border-b-2 border-transparent hover:text-indigo-400 hover:border-indigo-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-manage-member">
                 Manage Member Details
             </button>
@@ -2162,5 +2162,12 @@ const filteredAndSortedMembers = allMembers.filter(member => {
 Dashboard</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-existing').click()">📋
 Existing</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-payment').click()">💳
 Payment</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-id-card').click()">🆔
-ID Card</button></div><button class="fixed bottom-16 right-4 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 z-50 text-sm font-semibold" id="sticky-add-member" onclick="document.getElementById('tab-manage-member').click()">+ Add Member</button></body>
+ID Card</button></div><button class="fixed bottom-16 right-4 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 z-50 text-sm font-semibold" id="sticky-add-member" onclick="document.getElementById('tab-manage-member').click()">+ Add Member</button><script>
+document.addEventListener('DOMContentLoaded', function() {
+    const splash = document.getElementById('splash-screen');
+    setTimeout(() => {
+        splash.classList.add('hidden');
+    }, 2000); // 2 seconds
+});
+</script></body>
 </html>
