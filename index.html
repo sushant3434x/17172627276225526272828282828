@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-	
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -2167,7 +2167,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('splash-screen');
     setTimeout(() => {
         splash.classList.add('hidden');
-    }, 2000); // 2 seconds
+    }, 2000);
+
+    // Toggle Member List
+    const toggleBtn = document.getElementById('toggle-members-btn');
+    const section = document.getElementById('collapsible-members');
+    if (toggleBtn && section) {
+        toggleBtn.addEventListener('click', function() {
+            section.classList.toggle('hidden');
+            if (section.classList.contains('hidden')) {
+                this.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
+            } else {
+                this.textContent = 'Hide Current Members';
+            }
+        });
+
+        // Set initial button text
+        toggleBtn.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
+    }
 });
 </script></body>
 </html>
