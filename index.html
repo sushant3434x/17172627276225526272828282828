@@ -17,7 +17,7 @@
         ::-webkit-scrollbar {
             width: 8px;
         }
-        ::-webkit-scrollbar-track {\
+        ::-webkit-scrollbar-track {
             background: #4a5568;
             border-radius: 10px;
         }
@@ -1048,6 +1048,7 @@
                     const row = membersTableBody.insertRow();
                     const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-900' : 'bg-gray-800'; // Darker overdue row
                     row.className = `${overdueClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; // Hover effect
+                    row.dataset.memberId = member.id; // Add data-member-id to the row for delegation
 
                     const daysLeftText = getDaysLeft(member.dueDate);
                     const nameClass = member.status === 'Inactive' ? 'line-through-name' : '';
@@ -1080,25 +1081,25 @@
                             ` : daysLeftText}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                            <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200" title="Edit Member">
+                            <button data-action="edit" data-id="${member.id}" class="text-blue-400 hover:text-blue-200" title="Edit Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
                                 </svg>
                             </button>
                             ${member.status === 'Active' || member.status === 'Overdue' ? `
-                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300" title="Pause Membership">
+                                <button data-action="pause" data-id="${member.id}" class="text-yellow-500 hover:text-yellow-300" title="Pause Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             ` : `
-                                <button data-id="${member.id}" class="activate-btn text-green-500 hover:text-green-300" title="Activate Membership">
+                                <button data-action="activate" data-id="${member.id}" class="text-green-500 hover:text-green-300" title="Activate Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             `}
-                            <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300" title="Delete Member">
+                            <button data-action="delete" data-id="${member.id}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
                                 </svg>
@@ -1116,6 +1117,7 @@
                     if ((isOverdue(member.dueDate) || getDaysLeft(member.dueDate) === "Due Today") && member.status !== 'Paid') {
                         hasOverdueMembers = true;
                         const overdueRow = overdueMembersTableBody.insertRow();
+                        overdueRow.dataset.memberId = member.id; // Add data-member-id to the row for delegation
                         const today = new Date();
                         today.setHours(0,0,0,0);
                         const dueDate = new Date(member.dueDate);
@@ -1138,17 +1140,17 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-semibold">${daysOverdue} days</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                                <button data-id="${member.id}" class="edit-btn text-blue-400 hover:text-blue-200" title="Edit Member">
+                                <button data-action="edit" data-id="${member.id}" class="text-blue-400 hover:text-blue-200" title="Edit Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
                                     </svg>
                                 </button>
-                                <button data-id="${member.id}" class="pause-btn text-yellow-500 hover:text-yellow-300" title="Pause Membership">
+                                <button data-action="pause" data-id="${member.id}" class="text-yellow-500 hover:text-yellow-300" title="Pause Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </button>
-                                <button data-id="${member.id}" class="delete-btn text-red-500 hover:text-red-300" title="Delete Member">
+                                <button data-action="delete" data-id="${member.id}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
                                     </svg>
@@ -1161,38 +1163,6 @@
                             addPhotoEnlargeListeners(photoElementInOverdueRow);
                         }
                     }
-                });
-
-                // Attach event listeners to new buttons (for both tables)
-                document.querySelectorAll('.edit-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        const member = allMembers.find(m => m.id === id);
-                        if (member) {
-                            handleEdit(member);
-                        }
-                    });
-                });
-                document.querySelectorAll('.pause-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        handlePauseToggle(id, 'Inactive');
-                    });
-                });
-                document.querySelectorAll('.activate-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        handlePauseToggle(id, 'Active');
-                    });
-                });
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        const member = allMembers.find(m => m.id === id);
-                        if (member) {
-                            confirmDelete(member);
-                        }
-                    });
                 });
             }
 
@@ -2243,6 +2213,69 @@
             // Close modal if clicking outside the enlarged image (on the overlay)
             if (e.target === photoViewModal) {
                 closePhotoModal();
+            }
+        });
+
+        // --- Event Delegation for Member Action Buttons ---
+        membersTableBody.addEventListener('click', (e) => {
+            const targetButton = e.target.closest('button[data-action]');
+            if (!targetButton) return; // Not an action button
+
+            const memberId = targetButton.dataset.id;
+            const action = targetButton.dataset.action;
+            const member = allMembers.find(m => m.id === memberId);
+
+            if (!member) {
+                console.warn(`Member with ID ${memberId} not found for action ${action}.`);
+                return;
+            }
+
+            switch (action) {
+                case 'edit':
+                    handleEdit(member);
+                    break;
+                case 'pause':
+                    handlePauseToggle(memberId, 'Inactive');
+                    break;
+                case 'activate':
+                    handlePauseToggle(memberId, 'Active');
+                    break;
+                case 'delete':
+                    confirmDelete(member);
+                    break;
+                default:
+                    console.warn(`Unknown action: ${action}`);
+            }
+        });
+
+        overdueMembersTableBody.addEventListener('click', (e) => {
+            const targetButton = e.target.closest('button[data-action]');
+            if (!targetButton) return; // Not an action button
+
+            const memberId = targetButton.dataset.id;
+            const action = targetButton.dataset.action;
+            const member = allMembers.find(m => m.id === memberId);
+
+            if (!member) {
+                console.warn(`Member with ID ${memberId} not found for action ${action}.`);
+                return;
+            }
+
+            switch (action) {
+                case 'edit':
+                    handleEdit(member);
+                    break;
+                case 'pause':
+                    handlePauseToggle(memberId, 'Inactive');
+                    break;
+                case 'activate':
+                    handlePauseToggle(memberId, 'Active');
+                    break;
+                case 'delete':
+                    confirmDelete(member);
+                    break;
+                default:
+                    console.warn(`Unknown action: ${action}`);
             }
         });
 
