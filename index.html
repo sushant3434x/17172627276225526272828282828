@@ -395,8 +395,11 @@
 </div>
 <!-- Search and Filter -->
 <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
-<input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full mb-3" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
-<select class="p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white w-full mb-3" id="filter-status">
+<input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
+<button class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm" id="clear-search-btn" type="button">
+    Clear
+</button>
+<select class="p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white w-full" id="filter-status">
 <option value="All">All Statuses</option>
 <option value="Active">Active</option>
 <option value="Overdue">Overdue</option>
@@ -615,6 +618,7 @@
         const userIdDisplay = document.getElementById('user-id-display');
         const userIdValue = document.getElementById('user-id-value');
         const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn'); // Added clear search button
         const filterStatusSelect = document.getElementById('filter-status');
         const membersTableBody = document.getElementById('members-table-body');
         const noMembersMessage = document.getElementById('no-members-message');
@@ -626,7 +630,7 @@
 
         // Overdue Members specific DOM elements
         const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
-        const overdueMembersListContainer = document.getElementById('overdue-members-list-container'); // Added this line
+        const overdueMembersListContainer = document.getElementById('overdue-members-list-container');
         const noOverdueMembersMessage = document.getElementById('no-overdue-members-message');
 
         // Date & Time Display elements
@@ -676,6 +680,8 @@
         // Toggle Member List
         const toggleBtn = document.getElementById('toggle-members-btn');
         const collapsibleMembersSection = document.getElementById('collapsible-members');
+        // New variable to store the user's last toggled state for "Current Members" list
+        let isCurrentMembersListHiddenByUser = true; // Starts hidden
 
 
         /**
@@ -1013,21 +1019,22 @@
             const isSearchActive = searchTerm.length > 0;
 
             if (isSearchActive) {
-                collapsibleMembersSection.classList.add('hidden');
-                overdueMembersListContainer.classList.add('hidden');
-                // Update toggle button text to reflect hidden state due to search
-                toggleBtn.textContent = `Show Current Members (${allMembers.length})`;
+                // When search is active, always show both lists
+                collapsibleMembersSection.classList.remove('hidden');
+                overdueMembersListContainer.classList.remove('hidden');
+                // Update toggle button text to reflect that current members are visible due to search
+                toggleBtn.textContent = `Hide Current Members`;
             } else {
-                // If search is inactive, restore visibility based on original toggle state
-                // Overdue list is always visible when no search is active
+                // When search is inactive (cleared)
+                // Overdue list is always visible
                 overdueMembersListContainer.classList.remove('hidden');
 
-                // For current members, we respect the toggle button's state
-                // The toggle button's click listener already handles adding/removing 'hidden'
-                // We just need to ensure its text is correct initially.
-                if (collapsibleMembersSection.classList.contains('hidden')) {
+                // Current members list reverts to its last user-toggled state
+                if (isCurrentMembersListHiddenByUser) {
+                    collapsibleMembersSection.classList.add('hidden');
                     toggleBtn.textContent = `Show Current Members (${allMembers.length})`;
                 } else {
+                    collapsibleMembersSection.classList.remove('hidden');
                     toggleBtn.textContent = 'Hide Current Members';
                 }
             }
@@ -1122,10 +1129,10 @@
                             <button data-action="delete" data-id="${member.id}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </td>
-                    `;
+                                    </svg>
+                                </button>
+                            </td>
+                        `;
                     // Attach double-tap/click listener to the photo in the row (on the <img> inside <a>)
                     const photoElementInRow = row.querySelector('.member-photo');
                     if (photoElementInRow) {
@@ -1992,8 +1999,13 @@
 
 
         cancelEditButton.addEventListener('click', clearMainForm);
-        searchInput.addEventListener('input', renderMembers);
-        filterStatusSelect.addEventListener('change', renderMembers);
+        searchInput.addEventListener('input', renderMembers); // Search input triggers re-render
+        filterStatusSelect.addEventListener('change', renderMembers); // Filter status triggers re-render
+        clearSearchBtn.addEventListener('click', () => { // New clear search button listener
+            searchInput.value = ''; // Clear the search input
+            renderMembers(); // Re-render to show all members based on last toggle state
+        });
+
         cancelDeleteButton.addEventListener('click', () => {
             deleteModal.classList.add('hidden');
             deleteModalContent.classList.add('scale-95', 'opacity-0'); // Reset for next time
@@ -2316,6 +2328,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const section = document.getElementById('collapsible-members');
     if (toggleBtn && section) {
         toggleBtn.addEventListener('click', function() {
+            // Update the user's preferred visibility state
+            isCurrentMembersListHiddenByUser = !section.classList.contains('hidden');
             section.classList.toggle('hidden');
             if (section.classList.contains('hidden')) {
                 this.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
