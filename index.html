@@ -159,7 +159,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-indigo-400">
             <path fill-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" clip-rule="evenodd" />
         </svg>
-        <span>Data Used (Primary Firestore): <span id="data-usage-display" class="font-semibold text-gray-200">0 KB</span></span>
+        <span>Data Used: <span id="data-usage-display" class="font-semibold text-gray-200">0 KB</span></span>
     </div>
     <h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
 <!-- Date, Time, Day Display -->
@@ -189,9 +189,6 @@
             </button>
 <button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-id-card">
                 ID Card View
-            </button>
-<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-add-storage">
-                Add Storage
             </button>
 </div>
 <!-- Tab Content: Manage Member Details (Existing Form) -->
@@ -396,88 +393,6 @@
 </div>
 <p class="text-gray-400 text-center p-6" id="no-id-card-selected-message">Select a member to view their ID card.</p>
 </div>
-
-<!-- Tab Content: Add Storage (New Tab) -->
-<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-storage">
-    <h2 class="text-2xl font-bold text-white mb-6 text-lg">Add New Cloud Storage Configuration</h2>
-    <p class="text-gray-400 mb-6">You can add additional Firebase projects and Cloudinary accounts here to expand your app's storage. All member data will be combined from all active Firebase projects.</p>
-
-    <div class="bg-gray-800 p-5 rounded-xl mb-6 border border-gray-600">
-        <h3 class="text-xl font-semibold text-white mb-4">Firebase Configuration</h3>
-        <form id="add-firebase-config-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-config-name">Configuration Name</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-config-name" placeholder="e.g., Secondary Firebase" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-api-key">API Key</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-api-key" placeholder="Your Firebase API Key" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-auth-domain">Auth Domain</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-auth-domain" placeholder="your-project.firebaseapp.com" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-project-id">Project ID</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-project-id" placeholder="your-project-id" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-storage-bucket">Storage Bucket</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-storage-bucket" placeholder="your-project.appspot.com" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-messaging-sender-id">Messaging Sender ID</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-messaging-sender-id" placeholder="123456789012" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-app-id">App ID</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-app-id" placeholder="1:123456789012:web:abcdef1234567890abcdef" type="text" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="firebase-measurement-id">Measurement ID (Optional)</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="firebase-measurement-id" placeholder="G-XXXXXXXXXX" type="text">
-            </div>
-
-            <div class="md:col-span-2 mt-4">
-                <h3 class="text-xl font-semibold text-white mb-4">Cloudinary Configuration (for this Firebase project)</h3>
-                <div>
-                    <label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name">Cloud Name</label>
-                    <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="cloudinary-cloud-name" placeholder="Your Cloudinary Cloud Name" type="text" required>
-                </div>
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset">Upload Preset</label>
-                    <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white placeholder-gray-400" id="cloudinary-upload-preset" placeholder="Your Cloudinary Upload Preset" type="text" required>
-                </div>
-            </div>
-
-            <div class="md:col-span-2 flex justify-end pt-4">
-                <button class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full" type="submit">
-                    Save Storage Configuration
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div class="bg-gray-800 p-5 rounded-xl border border-gray-600">
-        <h3 class="text-xl font-semibold text-white mb-4">Active Cloud Storage Configurations</h3>
-        <p class="text-gray-400 text-sm mb-4">
-            Note: "Storage Left" cannot be accurately displayed client-side for security reasons. Please refer to your Firebase and Cloudinary dashboards for actual usage and quotas.
-        </p>
-        <div id="active-storage-configs-list" class="space-y-4">
-            <!-- Active configurations will be loaded here by JavaScript -->
-            <div class="bg-gray-700 p-4 rounded-lg flex items-center justify-between">
-                <div>
-                    <p class="font-semibold text-white">Primary Firebase & Cloudinary</p>
-                    <p class="text-gray-400 text-sm">Source ID: primary</p>
-                </div>
-                <button class="text-red-400 hover:text-red-200 opacity-50 cursor-not-allowed" disabled>
-                    Delete (Primary)
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Search and Filter -->
 <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
 <input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
@@ -580,20 +495,17 @@
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
         // Global variables for Firebase instances
-        // Changed to arrays/maps to hold multiple instances
-        let firebaseApps = []; // Stores initialized Firebase app instances
-        let firestoreDbs = {}; // Maps appName (sourceId) to Firestore db instance
-        let firebaseAuths = {}; // Maps appName (sourceId) to Auth instance
-        let activeCloudinaryConfigs = {}; // Maps appName (sourceId) to { cloudName, uploadPreset }
-
+        let app;
+        let db;
+        let auth;
         let currentUserId = null;
         let editingMemberId = null;
         let memberToDelete = null;
-        let allMembers = []; // To store all members fetched from all Firestore sources
+        let allMembers = []; // To store all members fetched from Firestore
         let currentPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL for main form
         let existingPhotoBase64 = null; // To store the base64 for temporary preview or existing photo URL for existing member form
 
@@ -610,8 +522,8 @@
         // The in-app password
         const APP_PASSWORD = "2003";
 
-        // Primary Firebase project details (initial config)
-        const primaryFirebaseConfig = {
+        // Firebase project details provided by the user
+        const firebaseConfig = {
             apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
             authDomain: "alpha-core-fitness-data.firebaseapp.com",
             projectId: "alpha-core-fitness-data",
@@ -621,11 +533,9 @@
             measurementId: "G-C5EKPN2K2J"
         };
 
-        // Primary Cloudinary Configuration (initial config)
-        const primaryCloudinaryConfig = {
-            cloudName: 'dbm2s6xd2',
-            uploadPreset: 'gym_member_photos_preset'
-        };
+        // Cloudinary Configuration
+        const CLOUDINARY_CLOUD_NAME = 'dbm2s6xd2';
+        const CLOUDINARY_UPLOAD_PRESET = 'gym_member_photos_preset';
 
         // Access global appId and initialAuthToken provided by the environment
         const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -652,14 +562,12 @@
         // Tab Buttons and Content
         const tabManageMember = document.getElementById('tab-manage-member');
         const tabAddExisting = document.getElementById('tab-add-existing');
-        const tabAddPayment = document.getElementById('tab-add-payment');
+        const tabAddPayment = document.getElementById('tab-add-payment'); // Renamed ID and text
         const tabIdCard = document.getElementById('tab-id-card');
-        const tabAddStorage = document.getElementById('tab-add-storage'); // New tab
         const contentManageMember = document.getElementById('content-manage-member');
         const contentAddExisting = document.getElementById('content-add-existing');
-        const contentAddPayment = document.getElementById('content-add-payment');
+        const contentAddPayment = document.getElementById('content-add-payment'); // Renamed ID
         const contentIdCard = document.getElementById('content-id-card');
-        const contentAddStorage = document.getElementById('content-add-storage'); // New tab content
 
         // Main Member Form (Manage Member Details)
         const memberForm = document.getElementById('member-form');
@@ -667,7 +575,6 @@
         const nameInput = document.getElementById('name');
         const phoneNumberInput = document.getElementById('phone-number');
         const membershipTypeInput = document.getElementById('membershipType');
-        // FIX: Corrected assignment from `document = document.getElementById(...)`
         const startDateInput = document.getElementById('startDate');
         const dueDateInput = document.getElementById('dueDate');
         const submitButton = document.getElementById('submit-button');
@@ -682,13 +589,13 @@
         const existingStartDateInput = document.getElementById('existing-startDate');
         const calculatedDueDateInput = document.getElementById('calculated-dueDate');
 
-        // Add Payment Form
-        const addPaymentForm = document.getElementById('add-payment-form');
-        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search');
-        const addPaymentMemberSelect = document.getElementById('add-payment-member-select');
-        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate');
-        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType');
-        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate');
+        // Add Payment Form (formerly Advance Payment)
+        const addPaymentForm = document.getElementById('add-payment-form'); // Renamed ID
+        const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search'); // Renamed ID
+        const addPaymentMemberSelect = document.getElementById('add-payment-member-select'); // Renamed ID
+        const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate'); // Renamed ID
+        const addPaymentMembershipTypeInput = document.getElementById('add-payment-membershipType'); // Renamed ID
+        const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate'); // Renamed ID
 
         // ID Card Tab Elements
         const idCardMemberSearchInput = document.getElementById('id-card-member-search');
@@ -705,27 +612,13 @@
         const idCardStatus = document.getElementById('id-card-status');
         const noIdCardSelectedMessage = document.getElementById('no-id-card-selected-message');
 
-        // Add Storage Tab Elements
-        const addFirebaseConfigForm = document.getElementById('add-firebase-config-form');
-        const firebaseConfigNameInput = document.getElementById('firebase-config-name');
-        const firebaseApiKeyInput = document.getElementById('firebase-api-key');
-        const firebaseAuthDomainInput = document.getElementById('firebase-auth-domain');
-        const firebaseProjectIdInput = document.getElementById('firebase-project-id');
-        const firebaseStorageBucketInput = document.getElementById('firebase-storage-bucket');
-        const firebaseMessagingSenderIdInput = document.getElementById('firebase-messaging-sender-id');
-        const firebaseAppIdInput = document.getElementById('firebase-app-id');
-        const firebaseMeasurementIdInput = document.getElementById('firebase-measurement-id');
-        const cloudinaryCloudNameInput = document.getElementById('cloudinary-cloud-name');
-        const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
-        const activeStorageConfigsList = document.getElementById('active-storage-configs-list');
-
 
         // Other DOM Elements
         const messageDisplay = document.getElementById('message-display');
         const userIdDisplay = document.getElementById('user-id-display');
         const userIdValue = document.getElementById('user-id-value');
         const searchInput = document.getElementById('search-input');
-        const clearSearchBtn = document.getElementById('clear-search-btn');
+        const clearSearchBtn = document.getElementById('clear-search-btn'); // Added clear search button
         const filterStatusSelect = document.getElementById('filter-status');
         const membersTableBody = document.getElementById('members-table-body');
         const noMembersMessage = document.getElementById('no-members-message');
@@ -789,245 +682,6 @@
         const collapsibleMembersSection = document.getElementById('collapsible-members');
         // New variable to store the user's last toggled state for "Current Members" list
         let isCurrentMembersListHiddenByUser = true; // Initially, the Current Members list is hidden by default.
-
-
-        // --- Multi-Storage Management ---
-        // Array to hold all active Firebase configurations
-        let allFirebaseConfigs = []; // Each element: { name: 'Primary', config: {...}, db: dbInstance, auth: authInstance, cloudinary: {...} }
-
-        /**
-         * Initializes a Firebase app instance and stores its db and auth.
-         * @param {object} config - Firebase config object.
-         * @param {string} name - A unique name for this Firebase app instance.
-         * @returns {object|null} An object containing { app, db, auth } or null if initialization fails.
-         */
-        function initializeFirebaseInstance(config, name) {
-            try {
-                console.log(`Attempting to initialize Firebase app: ${name}`);
-                const appInstance = initializeApp(config, name);
-                const dbInstance = getFirestore(appInstance);
-                const authInstance = getAuth(appInstance);
-                console.log(`Firebase app '${name}' initialized successfully.`);
-                return { app: appInstance, db: dbInstance, auth: authInstance };
-            } catch (error) {
-                console.error(`Error initializing Firebase app '${name}':`, error);
-                showMessage(`Failed to initialize Firebase app '${name}'. Check console for errors and config details.`, 'error');
-                return null;
-            }
-        }
-
-        /**
-         * Fetches additional cloud configurations from Firestore and initializes them.
-         * @param {Firestore} primaryDb - The primary Firestore instance.
-         */
-        async function loadAndInitializeAdditionalConfigs(primaryDb) {
-            if (!primaryDb || !currentUserId) {
-                console.warn("Primary DB or User ID not available to load additional configs.");
-                return;
-            }
-
-            console.log("Loading and initializing additional configs...");
-
-            // Clear previous dynamic configs, but keep the primary one
-            allFirebaseConfigs = [{
-                name: 'Primary Firebase',
-                id: 'primary',
-                config: primaryFirebaseConfig,
-                db: firestoreDbs['primary'], // Use the already initialized primary db
-                auth: firebaseAuths['primary'], // Use the already initialized primary auth
-                cloudinary: primaryCloudinaryConfig
-            }];
-            // Reset activeCloudinaryConfigs, then add primary
-            activeCloudinaryConfigs = { 'primary': primaryCloudinaryConfig };
-
-
-            try {
-                const configsRef = collection(primaryDb, `artifacts/${envAppId}/public/data/userCloudConfigs`);
-                const snapshot = await getDocs(configsRef);
-                console.log(`Found ${snapshot.docs.length} additional cloud configs in Firestore.`);
-
-                snapshot.forEach(doc => {
-                    const savedConfig = doc.data();
-                    const configId = doc.id; // Use Firestore doc ID as unique config ID
-                    const firebaseConf = savedConfig.firebaseConfig;
-                    const cloudinaryConf = savedConfig.cloudinaryConfig;
-                    const configName = savedConfig.name || `Secondary Firebase ${configId.substring(0, 4)}`;
-
-                    // Check if this config is already initialized to prevent duplicates
-                    if (!allFirebaseConfigs.some(c => c.id === configId)) {
-                        const initialized = initializeFirebaseInstance(firebaseConf, configId); // Use configId as app name
-                        if (initialized) {
-                            allFirebaseConfigs.push({
-                                name: configName,
-                                id: configId,
-                                config: firebaseConf,
-                                db: initialized.db,
-                                auth: initialized.auth,
-                                cloudinary: cloudinaryConf
-                            });
-                            firestoreDbs[configId] = initialized.db;
-                            firebaseAuths[configId] = initialized.auth;
-                            activeCloudinaryConfigs[configId] = cloudinaryConf;
-                            console.log(`Added config: ${configName} (Source ID: ${configId})`);
-                        }
-                    }
-                });
-                console.log("All Firebase configs after loading and initializing:", allFirebaseConfigs.map(c => c.name));
-                renderActiveStorageConfigs(); // Update UI list of configs
-                subscribeToAllMemberCollections(); // Re-subscribe to all member collections
-            } catch (error) {
-                console.error("Error loading additional configs:", error);
-                showMessage('Failed to load additional storage configurations. Ensure your primary Firebase security rules allow reading from `userCloudConfigs`.', 'error');
-            }
-        }
-
-        /**
-         * Subscribes to the gymMembers collection in all active Firestore databases.
-         * Merges results into `allMembers` and triggers `renderMembers`.
-         */
-        function subscribeToAllMemberCollections() {
-            console.log("Subscribing to all member collections...");
-            // Unsubscribe from previous listeners if any
-            if (window.unsubscribeListeners) {
-                console.log(`Unsubscribing from ${window.unsubscribeListeners.length} previous listeners.`);
-                window.unsubscribeListeners.forEach(unsub => unsub());
-            }
-            window.unsubscribeListeners = []; // Reset array of unsubscribe functions
-
-            let combinedMembers = [];
-            let sourcesLoadedCount = 0;
-            const totalSources = allFirebaseConfigs.length;
-
-            if (totalSources === 0) {
-                allMembers = [];
-                renderMembers();
-                console.log("No Firebase sources configured. Member list cleared.");
-                return;
-            }
-
-            allFirebaseConfigs.forEach(config => {
-                if (!config.db) {
-                    console.warn(`Skipping subscription for '${config.name}' as its DB instance is not available.`);
-                    sourcesLoadedCount++; // Count as loaded even if skipped
-                    if (sourcesLoadedCount === totalSources) {
-                        allMembers = combinedMembers;
-                        renderMembers();
-                    }
-                    return;
-                }
-
-                const membersCollectionRef = collection(config.db, `artifacts/${envAppId}/public/data/gymMembers`);
-                const unsubscribe = onSnapshot(membersCollectionRef, (snapshot) => {
-                    console.log(`Data received from '${config.name}' (${snapshot.docs.length} members).`);
-                    const membersFromThisDb = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        storageSourceId: config.id, // Add source ID to member data
-                        ...doc.data()
-                    }));
-
-                    // Remove old entries from this DB and add new ones
-                    combinedMembers = combinedMembers.filter(m => m.storageSourceId !== config.id);
-                    combinedMembers.push(...membersFromThisDb);
-
-                    // Sort combinedMembers by name for consistent display
-                    combinedMembers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-                    allMembers = combinedMembers; // Update global allMembers
-                    renderMembers(); // Re-render the UI
-                    console.log(`Total combined members: ${allMembers.length}`);
-
-                    sourcesLoadedCount++;
-                    if (sourcesLoadedCount === totalSources) {
-                        console.log("All Firebase sources have reported data.");
-                    }
-
-                    // If add payment tab is active, re-populate member select
-                    if (!contentAddPayment.classList.contains('hidden')) {
-                         populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
-                    }
-                    // If ID card tab is active, re-populate member select
-                    if (!contentIdCard.classList.contains('hidden')) {
-                        populateIdCardMemberSelect(idCardMemberSearchInput.value);
-                        // If a member was selected, re-display their card
-                        if (idCardMemberSelect.value) {
-                            displayIdCard(idCardMemberSelect.value);
-                        }
-                    }
-
-                }, (error) => {
-                    console.error(`Error fetching members from ${config.name}:`, error);
-                    showMessage(`Failed to load members from ${config.name}. Check your internet connection or Firebase security rules.`, 'error');
-                    sourcesLoadedCount++; // Still count as loaded to avoid infinite waiting
-                    if (sourcesLoadedCount === totalSources) {
-                        allMembers = combinedMembers; // Ensure UI updates even with errors
-                        renderMembers();
-                    }
-                });
-                window.unsubscribeListeners.push(unsubscribe); // Store unsubscribe function
-            });
-        }
-
-        /**
-         * Renders the list of active storage configurations in the "Add Storage" tab.
-         */
-        function renderActiveStorageConfigs() {
-            activeStorageConfigsList.innerHTML = ''; // Clear existing list
-
-            // Add primary config
-            const primaryDiv = document.createElement('div');
-            primaryDiv.className = "bg-gray-700 p-4 rounded-lg flex items-center justify-between";
-            primaryDiv.innerHTML = `
-                <div>
-                    <p class="font-semibold text-white">Primary Firebase & Cloudinary</p>
-                    <p class="text-gray-400 text-sm">Source ID: primary</p>
-                </div>
-                <button class="text-red-400 hover:text-red-200 opacity-50 cursor-not-allowed" disabled>
-                    Delete (Primary)
-                </button>
-            `;
-            activeStorageConfigsList.appendChild(primaryDiv);
-
-            // Add dynamically loaded configs
-            allFirebaseConfigs.filter(config => config.id !== 'primary').forEach(config => {
-                const div = document.createElement('div');
-                div.className = "bg-gray-700 p-4 rounded-lg flex items-center justify-between";
-                div.innerHTML = `
-                    <div>
-                        <p class="font-semibold text-white">${config.name}</p>
-                        <p class="text-gray-400 text-sm">Source ID: ${config.id}</p>
-                        <p class="text-gray-400 text-sm">Firebase Project ID: ${config.config.projectId}</p>
-                        <p class="text-gray-400 text-sm">Cloudinary Cloud Name: ${config.cloudinary.cloudName}</p>
-                    </div>
-                    <button data-config-id="${config.id}" class="delete-config-btn px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
-                        Delete
-                    </button>
-                `;
-                activeStorageConfigsList.appendChild(div);
-            });
-        }
-
-        /**
-         * Deletes a stored cloud configuration from Firestore.
-         * @param {string} configId - The Firestore document ID of the config to delete.
-         */
-        async function deleteCloudConfig(configId) {
-            if (!firestoreDbs['primary'] || !currentUserId) {
-                showMessage('Primary database not ready or user not authenticated.', 'error');
-                return;
-            }
-            try {
-                console.log(`Attempting to delete cloud config with ID: ${configId}`);
-                await deleteDoc(doc(firestoreDbs['primary'], `artifacts/${envAppId}/public/data/userCloudConfigs`, configId));
-                showMessage('Storage configuration deleted successfully!', 'success');
-                // Re-load and re-initialize configs after deletion
-                await loadAndInitializeAdditionalConfigs(firestoreDbs['primary']);
-            } catch (error) {
-                console.error("Error deleting cloud config:", error);
-                showMessage('Failed to delete storage configuration. Please try again.', 'error');
-            }
-        }
-
-        // --- End Multi-Storage Management ---
 
 
         /**
@@ -1242,22 +896,18 @@
 
         /**
          * Uploads an image file or data URL to Cloudinary.
-         * By default, uploads to the primary Cloudinary config.
          * @param {File|string} fileOrDataUrl - The File object or base64 data URL to upload.
          * @returns {Promise<string|null>} The secure Cloudinary URL, or null if upload fails.
          */
         async function uploadImageToCloudinary(fileOrDataUrl) {
-            // Use the primary cloudinary config for uploads
-            const cloudinaryConfig = activeCloudinaryConfigs['primary'];
-
-            if (!cloudinaryConfig || !cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
-                showMessage('Cloudinary credentials (primary) are not set. Cannot upload photo.', 'error');
+            if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+                showMessage('Cloudinary credentials are not set. Please update CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET in the code.', 'error');
                 return null;
             }
 
-            const url = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
+            const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
             const formData = new FormData();
-            formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
             if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.startsWith('data:')) {
                 // It's a base64 data URL
@@ -1330,9 +980,7 @@
          */
         function updateDataUsageDisplay() {
             let totalSizeInBytes = 0;
-            // Only calculate for members in the primary database for this display
-            const primaryDbMembers = allMembers.filter(member => member.storageSourceId === 'primary');
-            primaryDbMembers.forEach(member => {
+            allMembers.forEach(member => {
                 totalSizeInBytes += estimateDocumentSize(member);
             });
 
@@ -1373,7 +1021,7 @@
 
             const isSearchActive = searchTerm.length > 0;
 
-            // Overdue list should always be available and expanded by default
+            // Always show overdue list by default
             overdueMembersListContainer.classList.remove('hidden');
 
             if (isSearchActive) {
@@ -1398,6 +1046,7 @@
 
 
             // Update the total members count on the button (always update, even if hidden)
+            // Ensure total-members-count element exists before trying to access its textContent
             const totalMembersCountSpan = document.getElementById('total-members-count');
             if (totalMembersCountSpan) {
                 totalMembersCountSpan.textContent = allMembers.length;
@@ -1406,7 +1055,7 @@
             }
 
 
-            // Update data usage display (only for primary Firestore)
+            // Update data usage display
             updateDataUsageDisplay();
 
 
@@ -1440,7 +1089,6 @@
                     const overdueClass = isOverdue(member.dueDate) && member.status !== 'Paid' ? 'bg-red-900' : 'bg-gray-800'; // Darker overdue row
                     row.className = `${overdueClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; // Hover effect
                     row.dataset.memberId = member.id; // Add data-member-id to the row for delegation
-                    row.dataset.storageSourceId = member.storageSourceId; // Add storage source ID
 
                     const daysLeftText = getDaysLeft(member.dueDate);
                     const nameClass = member.status === 'Inactive' ? 'line-through-name' : '';
@@ -1473,25 +1121,25 @@
                             ` : daysLeftText}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                            <button data-action="edit" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-blue-400 hover:text-blue-200" title="Edit Member">
+                            <button data-action="edit" data-id="${member.id}" class="text-blue-400 hover:text-blue-200" title="Edit Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
                                 </svg>
                             </button>
                             ${member.status === 'Active' || member.status === 'Overdue' ? `
-                                <button data-action="pause" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-yellow-500 hover:text-yellow-300" title="Pause Membership">
+                                <button data-action="pause" data-id="${member.id}" class="text-yellow-500 hover:text-yellow-300" title="Pause Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             ` : `
-                                <button data-action="activate" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-green-500 hover:text-green-300" title="Activate Membership">
+                                <button data-action="activate" data-id="${member.id}" class="text-green-500 hover:text-green-300" title="Activate Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             `}
-                            <button data-action="delete" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-red-500 hover:text-red-300" title="Delete Member">
+                            <button data-action="delete" data-id="${member.id}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
                                     </svg>
@@ -1510,7 +1158,6 @@
                         hasOverdueMembers = true;
                         const overdueRow = overdueMembersTableBody.insertRow();
                         overdueRow.dataset.memberId = member.id; // Add data-member-id to the row for delegation
-                        overdueRow.dataset.storageSourceId = member.storageSourceId; // Add storage source ID
                         const today = new Date();
                         today.setHours(0,0,0,0);
                         const dueDate = new Date(member.dueDate);
@@ -1533,17 +1180,17 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${(member.feeAmount || 0).toFixed(2)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-semibold">${daysOverdue} days</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center space-x-2">
-                                <button data-action="edit" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-blue-400 hover:text-blue-200" title="Edit Member">
+                                <button data-action="edit" data-id="${member.id}" class="text-blue-400 hover:text-blue-200" title="Edit Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.586 3.586l-4 4V14h4l4-4L10 7.172z" />
                                     </svg>
                                 </button>
-                                <button data-action="pause" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-yellow-500 hover:text-yellow-300" title="Pause Membership">
+                                <button data-action="pause" data-id="${member.id}" class="text-yellow-500 hover:text-yellow-300" title="Pause Membership">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </button>
-                                <button data-action="delete" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-red-500 hover:text-red-300" title="Delete Member">
+                                <button data-action="delete" data-id="${member.id}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
                                     </svg>
@@ -1577,8 +1224,6 @@
             startDateInput.value = '';
             dueDateInput.value = ''; // Clear calculated due date
             editingMemberId = null;
-            // Clear the storageSourceId from the form's dataset
-            delete memberForm.dataset.storageSourceId;
             submitButton.textContent = 'Add Member';
             cancelEditButton.classList.add('hidden');
             currentPhotoBase64 = null; // Clear the temporary photo
@@ -1614,7 +1259,7 @@
         /**
          * Clears the add payment form inputs.
          */
-        function clearAddPaymentForm() {
+        function clearAddPaymentForm() { // Renamed function
             addPaymentMemberSearchInput.value = ''; // Clear search input
             addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>'; // Clear and reset options
             addPaymentCurrentDueDateInput.value = '';
@@ -1641,13 +1286,6 @@
         }
 
         /**
-         * Clears the Add Storage form inputs.
-         */
-        function clearAddStorageForm() {
-            addFirebaseConfigForm.reset(); // Resets all form fields
-        }
-
-        /**
          * Populates the main form with member data for editing.
          * @param {object} member - The member object to edit.
          */
@@ -1663,8 +1301,6 @@
             // When editing, the dueDate will be recalculated based on startDate and membershipType
             dueDateInput.value = addDurationToDate(member.startDate, membershipTypeInput.value); // Use form's membership type
             editingMemberId = member.id;
-            // Store the source ID for editing
-            memberForm.dataset.storageSourceId = member.storageSourceId;
             submitButton.textContent = 'Update Member';
             cancelEditButton.classList.remove('hidden');
 
@@ -1691,18 +1327,16 @@
         /**
          * Handles pausing/activating a member's membership.
          * @param {string} memberId - The ID of the member to update.
-         * @param {string} storageSourceId - The ID of the storage source (Firebase app) where the member resides.
          * @param {string} newStatus - The new status to set ('Active' or 'Inactive').
          */
-        async function handlePauseToggle(memberId, storageSourceId, newStatus) {
-            const dbInstance = firestoreDbs[storageSourceId];
-            if (!dbInstance || !currentUserId) {
+        async function handlePauseToggle(memberId, newStatus) {
+            if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
             try {
-                const memberDocRef = doc(dbInstance, `artifacts/${envAppId}/public/data/gymMembers`, memberId);
+                const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId);
                 await updateDoc(memberDocRef, {
                     status: newStatus,
                     updatedAt: serverTimestamp(),
@@ -1735,20 +1369,14 @@
          * Note: Photo deletion from Cloudinary is not handled client-side for security.
          */
         async function handleDelete() {
-            if (!firestoreDbs['primary'] || !memberToDelete) { // Ensure primary DB is available for general operations
+            if (!db || !memberToDelete) {
                 showMessage('Database not ready or no member selected for deletion.', 'error');
-                return;
-            }
-
-            const dbInstance = firestoreDbs[memberToDelete.storageSourceId];
-            if (!dbInstance) {
-                showMessage('Could not find the correct storage source for deletion.', 'error');
                 return;
             }
 
             try {
                 // Delete member document from Firestore
-                await deleteDoc(doc(dbInstance, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
+                await deleteDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberToDelete.id));
 
                 showMessage('Member deleted successfully! (Note: Associated photo on Cloudinary is not deleted from the app for security reasons.)', 'success');
                 deleteModal.classList.add('hidden');
@@ -1918,9 +1546,8 @@
          * @param {HTMLAnchorElement} viewLinkElement - The link element to update.
          * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
          * @param {string|null} memberId - The ID of the member if editing, null if adding new.
-         * @param {string|null} storageSourceId - The ID of the storage source if editing.
          */
-        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, viewLinkElement, setPhotoBase64Callback, memberId, storageSourceId) {
+        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, viewLinkElement, setPhotoBase64Callback, memberId) {
             setPhotoBase64Callback(null);
             previewElement.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
             clearBtn.classList.add('hidden');
@@ -1932,18 +1559,13 @@
             previewElement.classList.remove('hidden'); // Ensure preview is visible
 
             // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
-            if (memberId && storageSourceId) {
-                const dbInstance = firestoreDbs[storageSourceId];
-                if (dbInstance) {
-                    try {
-                        await updateDoc(doc(dbInstance, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
-                        showMessage('Photo link removed from member. (Image remains on Cloudinary)', 'success');
-                    } catch (error) {
-                        console.error("Error removing photoURL from Firestore:", error);
-                        showMessage('Failed to clear photo link from member. Please try again.', 'error');
-                    }
-                } else {
-                    console.warn(`Database instance for source ID ${storageSourceId} not found.`);
+            if (memberId) {
+                try {
+                    await updateDoc(doc(db, `artifacts/${envAppId}/public/data/gymMembers`, memberId), { photoURL: null });
+                    showMessage('Photo link removed from member. (Image remains on Cloudinary)', 'success');
+                } catch (error) {
+                    console.error("Error removing photoURL from Firestore:", error);
+                    showMessage('Failed to clear photo link from member. Please try again.', 'error');
                 }
             }
         }
@@ -1979,7 +1601,7 @@
          * Populates the member select dropdown in the Add Payment tab.
          * Filters based on search input.
          */
-        function populateAddPaymentMemberSelect(searchTerm = '') {
+        function populateAddPaymentMemberSelect(searchTerm = '') { // Renamed function
             addPaymentMemberSelect.innerHTML = '<option value="">-- Select a Member --</option>';
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
@@ -2048,16 +1670,16 @@
 
         /**
          * Handles tab switching.
-         * @param {string} tabId - The ID of the tab to show.
+         * @param {string} tabId - The ID of the tab to show ('manage-member', 'add-existing', 'add-payment', 'id-card').
          */
         function showTab(tabId) {
             // Deactivate all tabs and hide all content
-            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard, tabAddStorage].forEach(tab => {
+            [tabManageMember, tabAddExisting, tabAddPayment, tabIdCard].forEach(tab => { // Updated tab ID
                 tab.classList.remove('tab-active');
                 tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
             });
 
-            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard, contentAddStorage].forEach(content => {
+            [contentManageMember, contentAddExisting, contentAddPayment, contentIdCard].forEach(content => { // Updated content ID
                 content.classList.add('hidden');
             });
 
@@ -2067,29 +1689,29 @@
                 tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentManageMember.classList.remove('hidden');
                 clearExistingMemberForm(); // Clear other forms
-                clearAddPaymentForm();
-                clearIdCardDisplay();
-                clearAddStorageForm(); // Clear add storage form
+                clearAddPaymentForm(); // Updated function call
+                clearIdCardDisplay(); // Clear ID card display
+                // Ensure camera is stopped if active in other tabs
                 stopCamera(existingCameraFeed, existingCameraStream);
             } else if (tabId === 'add-existing') {
                 tabAddExisting.classList.add('tab-active');
                 tabAddExisting.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddExisting.classList.remove('hidden');
                 clearMainForm(); // Clear other forms
-                clearAddPaymentForm();
-                clearIdCardDisplay();
-                clearAddStorageForm(); // Clear add storage form
+                clearAddPaymentForm(); // Updated function call
+                clearIdCardDisplay(); // Clear ID card display
+                // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
-            } else if (tabId === 'add-payment') {
-                tabAddPayment.classList.add('tab-active');
+            } else if (tabId === 'add-payment') { // Updated tab ID
+                tabAddPayment.classList.add('tab-active'); // Updated tab ID
                 tabAddPayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
-                contentAddPayment.classList.remove('hidden');
+                contentAddPayment.classList.remove('hidden'); // Updated content ID
                 clearMainForm(); // Clear other forms
                 clearExistingMemberForm();
-                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
-                clearAddPaymentForm(); // Clear the add payment form itself
-                clearIdCardDisplay();
-                clearAddStorageForm(); // Clear add storage form
+                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
+                clearAddPaymentForm(); // Clear the add payment form itself (updated function call)
+                clearIdCardDisplay(); // Clear ID card display
+                // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
                 stopCamera(existingCameraFeed, existingCameraStream);
             } else if (tabId === 'id-card') {
@@ -2098,23 +1720,12 @@
                 contentIdCard.classList.remove('hidden');
                 clearMainForm();
                 clearExistingMemberForm();
-                clearAddPaymentForm();
-                populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                clearAddPaymentForm(); // Updated function call
+                populateIdCardMemberSelect(idCardMemberSearchInput.value); // Populate member dropdown for ID card
                 displayIdCard(null); // Clear displayed ID card
-                clearAddStorageForm(); // Clear add storage form
+                // Ensure camera is stopped if active in other tabs
                 stopCamera(cameraFeed, cameraStream);
                 stopCamera(existingCameraFeed, existingCameraStream);
-            } else if (tabId === 'add-storage') { // New tab logic
-                tabAddStorage.classList.add('tab-active');
-                tabAddStorage.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
-                contentAddStorage.classList.remove('hidden');
-                clearMainForm();
-                clearExistingMemberForm();
-                clearAddPaymentForm();
-                clearIdCardDisplay();
-                stopCamera(cameraFeed, cameraStream);
-                stopCamera(existingCameraFeed, existingCameraStream);
-                renderActiveStorageConfigs(); // Render the list of active configs
             }
         }
 
@@ -2142,18 +1753,10 @@
         window.onload = async function() {
             console.log('Window loaded. Initializing Firebase...');
             try {
-                // Initialize primary Firebase app
-                const primaryAppResult = initializeFirebaseInstance(primaryFirebaseConfig, 'primary');
-                if (primaryAppResult) {
-                    firebaseApps.push(primaryAppResult.app);
-                    firestoreDbs['primary'] = primaryAppResult.db;
-                    firebaseAuths['primary'] = primaryAppResult.auth;
-                } else {
-                    showMessage('Failed to initialize primary Firebase app. App will not function.', 'error');
-                    // If primary app fails, stop here as nothing else will work
-                    return;
-                }
-
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                console.log('Firebase initialized successfully.');
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
                 showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
@@ -2164,9 +1767,8 @@
             updateDateTime();
             setInterval(updateDateTime, 1000);
 
-            // Listen for authentication state changes (Firebase login) on the primary auth instance
-            onAuthStateChanged(firebaseAuths['primary'], async (user) => {
-                console.log("onAuthStateChanged triggered. User:", user ? user.uid : "null");
+            // Listen for authentication state changes (Firebase login)
+            onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     currentUserId = user.uid;
                     userIdValue.textContent = currentUserId;
@@ -2177,8 +1779,32 @@
                     appPasswordInput.focus();
                     console.log('User authenticated:', currentUserId, 'Showing password modal.');
 
-                    // Load and initialize additional configs after primary auth is ready
-                    await loadAndInitializeAdditionalConfigs(firestoreDbs['primary']);
+
+                    // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
+                    const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
+                    onSnapshot(membersCollectionRef, (snapshot) => {
+                        allMembers = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        console.log('Firestore data updated. Total members:', allMembers.length);
+                        renderMembers(); // Re-render whenever data changes
+                        // If add payment tab is active, re-populate member select
+                        if (!contentAddPayment.classList.contains('hidden')) { // Updated content ID
+                             populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); // Updated function call
+                        }
+                        // If ID card tab is active, re-populate member select
+                        if (!contentIdCard.classList.contains('hidden')) {
+                            populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                            // If a member was selected, re-display their card
+                            if (idCardMemberSelect.value) {
+                                displayIdCard(idCardMemberSelect.value);
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Error fetching members:", error);
+                        showMessage('Failed to load members. Check your internet connection.', 'error');
+                    });
 
                 } else {
                     currentUserId = null;
@@ -2195,14 +1821,14 @@
 
             // Initial sign-in attempt with custom token if available, otherwise anonymously
             // This happens first to establish Firebase auth, then the in-app password takes over
-            if (!firebaseAuths['primary'].currentUser) {
+            if (!auth.currentUser) {
                 try {
                     if (initialAuthToken) {
                         console.log('Attempting sign-in with custom token...');
-                        await signInWithCustomToken(firebaseAuths['primary'], initialAuthToken);
+                        await signInWithCustomToken(auth, initialAuthToken);
                     } else {
                         console.log('Attempting anonymous sign-in...');
-                        await signInAnonymously(firebaseAuths['primary']);
+                        await signInAnonymously(auth);
                     }
                 } catch (error) {
                     console.error("Initial sign-in error:", error);
@@ -2220,7 +1846,7 @@
                 return;
             }
             try {
-                await signInWithEmailAndPassword(firebaseAuths['primary'], email, password);
+                await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Signed in successfully!', 'success');
                 // onAuthStateChanged will handle showing passwordEntryModal
             } catch (error) {
@@ -2237,7 +1863,7 @@
                 return;
             }
             try {
-                await createUserWithEmailAndPassword(firebaseAuths['primary'], email, password);
+                await createUserWithEmailAndPassword(auth, email, password);
                 showMessage('Account created and signed in successfully!', 'success');
                 // onAuthStateChanged will handle showing passwordEntryModal
             } catch (error) {
@@ -2248,7 +1874,7 @@
 
         anonymousSignInButton.addEventListener('click', async () => {
             try {
-                await signInAnonymously(firebaseAuths['primary']);
+                await signInAnonymously(auth);
                 showMessage('Signed in anonymously!', 'success');
                 // onAuthStateChanged will handle showing passwordEntryModal
             } catch (error) {
@@ -2290,13 +1916,12 @@
         // Sign Out Button (logs out from Firebase and returns to Firebase login screen)
         signOutButton.addEventListener('click', async () => {
             try {
-                await signOut(firebaseAuths['primary']); // This signs out the Firebase user (anonymous or email/password)
+                await signOut(auth); // This signs out the Firebase user (anonymous or email/password)
                 showMessage('Signed out successfully! Please log in again.', 'success');
                 clearMainForm();
                 clearExistingMemberForm();
-                clearAddPaymentForm();
+                clearAddPaymentForm(); // Updated function call
                 clearIdCardDisplay();
-                clearAddStorageForm();
                 // Reset the user's preferred visibility state for current members
                 isCurrentMembersListHiddenByUser = true; // Default to hidden on sign out
                 console.log('Signed out. Resetting app state.');
@@ -2310,16 +1935,14 @@
         // Tab Event Listeners
         tabManageMember.addEventListener('click', () => showTab('manage-member'));
         tabAddExisting.addEventListener('click', () => showTab('add-existing'));
-        tabAddPayment.addEventListener('click', () => showTab('add-payment'));
+        tabAddPayment.addEventListener('click', () => showTab('add-payment')); // Updated ID
         tabIdCard.addEventListener('click', () => showTab('id-card'));
-        tabAddStorage.addEventListener('click', () => showTab('add-storage')); // New tab listener
 
 
         // Main Member Form Event Listener (for adding new or updating existing)
         memberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const targetDb = firestoreDbs[memberForm.dataset.storageSourceId || 'primary']; // Use source ID or primary
-            if (!targetDb || !currentUserId) {
+            if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
@@ -2375,15 +1998,14 @@
 
                 if (editingMemberId) {
                     // Update existing member
-                    const docRef = doc(targetDb, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId);
+                    docRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId);
                     await updateDoc(docRef, memberData);
                     showMessage('Member updated successfully!', 'success');
 
                 } else {
-                    // Add new member to the primary database
+                    // Add new member
                     memberData.createdAt = serverTimestamp(); // Set createdAt only for new members
-                    memberData.storageSourceId = 'primary'; // Assign to primary storage
-                    const docRef = await addDoc(collection(firestoreDbs['primary'], `artifacts/${envAppId}/public/data/gymMembers`), memberData);
+                    docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
                     showMessage('Member added successfully!', 'success');
                 }
                 clearMainForm();
@@ -2440,7 +2062,7 @@
         });
 
         // Clear photo button now only clears the link in Firestore
-        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data, editingMemberId, memberForm.dataset.storageSourceId));
+        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data, editingMemberId));
 
         // Add double-tap/click listener to the photo preview in the form
         addPhotoEnlargeListeners(photoPreview);
@@ -2461,7 +2083,7 @@
 
         existingMemberForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!firestoreDbs['primary'] || !currentUserId) {
+            if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
@@ -2486,7 +2108,6 @@
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 createdBy: currentUserId,
-                storageSourceId: 'primary', // Assign to primary storage
             };
 
             if (!memberData.memberId) {
@@ -2507,7 +2128,7 @@
                     memberData.photoURL = null;
                 }
 
-                const docRef = await addDoc(collection(firestoreDbs['primary'], `artifacts/${envAppId}/public/data/gymMembers`), memberData);
+                const docRef = await addDoc(collection(db, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
                 showMessage('Existing member added successfully!', 'success');
                 clearExistingMemberForm();
             } catch (error) {
@@ -2538,66 +2159,66 @@
             }
         });
 
-        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, existingViewPhotoLink, (data) => existingPhotoBase64 = data, null, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
+        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, existingViewPhotoLink, (data) => existingPhotoBase64 = data, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
 
         // Add double-tap/click listener to the photo preview in the existing form
         addPhotoEnlargeListeners(existingPhotoPreview);
 
 
-        // Add Payment Form Event Listeners
-        addPaymentMemberSearchInput.addEventListener('input', (e) => {
-            populateAddPaymentMemberSelect(e.target.value);
+        // Add Payment Form Event Listeners (formerly Advance Payment)
+        addPaymentMemberSearchInput.addEventListener('input', (e) => { // Updated ID
+            populateAddPaymentMemberSelect(e.target.value); // Updated function call
             // Clear details if search changes
             addPaymentMemberSelect.value = '';
             addPaymentCurrentDueDateInput.value = '';
             addPaymentNewDueDateInput.value = '';
         });
 
-        addPaymentMemberSelect.addEventListener('change', () => {
-            const selectedMemberId = addPaymentMemberSelect.value;
+        addPaymentMemberSelect.addEventListener('change', () => { // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
-                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted
+                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); // Display formatted // Updated ID
                 // If member is overdue, use the special calculation for new due date
                 if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
                 } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
                 }
             } else {
-                addPaymentCurrentDueDateInput.value = '';
-                addPaymentNewDueDateInput.value = '';
+                addPaymentCurrentDueDateInput.value = ''; // Updated ID
+                addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
 
-        addPaymentMembershipTypeInput.addEventListener('change', () => {
-            const selectedMemberId = addPaymentMemberSelect.value;
+        addPaymentMembershipTypeInput.addEventListener('change', () => { // Updated ID
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (selectedMember) {
                 // Calculate new due date based on current due date and selected payment type
                 // If member is overdue, use the special calculation for new due date
                 if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(addPaymentMembershipTypeInput.value, selectedMember.dueDate)); // Updated ID
                 } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value));
+                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
                 }
             } else {
-                addPaymentNewDueDateInput.value = '';
+                addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
 
-        addPaymentForm.addEventListener('submit', async (e) => {
+        addPaymentForm.addEventListener('submit', async (e) => { // Updated ID
             e.preventDefault();
-            if (!firestoreDbs['primary'] || !currentUserId) { // Ensure primary DB is available for general operations
+            if (!db || !currentUserId) {
                 showMessage('Database not ready or user not authenticated. Please sign in.', 'error');
                 return;
             }
 
-            const selectedMemberId = addPaymentMemberSelect.value;
-            const newMembershipType = addPaymentMembershipTypeInput.value;
-            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY
+            const selectedMemberId = addPaymentMemberSelect.value; // Updated ID
+            const newMembershipType = addPaymentMembershipTypeInput.value; // Updated ID
+            let newDueDate = addPaymentNewDueDateInput.value; // This is already formatted as DD-MM-YYYY // Updated ID
             const selectedMember = allMembers.find(m => m.id === selectedMemberId);
 
             if (!selectedMemberId || !newDueDate || !selectedMember) {
@@ -2615,14 +2236,9 @@
             const parts = newDueDate.split('-');
             const newDueDateForFirestore = `${parts[2]}-${parts[1]}-${parts[0]}`;
 
-            const dbInstance = firestoreDbs[selectedMember.storageSourceId];
-            if (!dbInstance) {
-                showMessage('Could not find the correct storage source for updating member.', 'error');
-                return;
-            }
 
             try {
-                const memberDocRef = doc(dbInstance, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberId);
+                const memberDocRef = doc(db, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberId);
 
                 await updateDoc(memberDocRef, {
                     dueDate: newDueDateForFirestore, // Store in YYYY-MM-DD
@@ -2632,11 +2248,11 @@
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
                 });
-                showMessage('Payment processed and due date updated successfully!', 'success');
-                clearAddPaymentForm();
+                showMessage('Payment processed and due date updated successfully!', 'success'); // Updated message
+                clearAddPaymentForm(); // Updated function call
             } catch (error) {
-                console.error("Error processing payment:", error);
-                showMessage('Failed to process payment. Please try again.', 'error');
+                console.error("Error processing payment:", error); // Updated message
+                showMessage('Failed to process payment. Please try again.', 'error'); // Updated message
             }
         });
 
@@ -2665,12 +2281,11 @@
             if (!targetButton) return; // Not an action button
 
             const memberId = targetButton.dataset.id;
-            const storageSourceId = targetButton.dataset.sourceId; // Get storage source ID
             const action = targetButton.dataset.action;
-            const member = allMembers.find(m => m.id === memberId && m.storageSourceId === storageSourceId);
+            const member = allMembers.find(m => m.id === memberId);
 
             if (!member) {
-                console.warn(`Member with ID ${memberId} from source ${storageSourceId} not found for action ${action}.`);
+                console.warn(`Member with ID ${memberId} not found for action ${action}.`);
                 return;
             }
 
@@ -2679,10 +2294,10 @@
                     handleEdit(member);
                     break;
                 case 'pause':
-                    handlePauseToggle(memberId, storageSourceId, 'Inactive');
+                    handlePauseToggle(memberId, 'Inactive');
                     break;
                 case 'activate':
-                    handlePauseToggle(memberId, storageSourceId, 'Active');
+                    handlePauseToggle(memberId, 'Active');
                     break;
                 case 'delete':
                     confirmDelete(member);
@@ -2697,12 +2312,11 @@
             if (!targetButton) return; // Not an action button
 
             const memberId = targetButton.dataset.id;
-            const storageSourceId = targetButton.dataset.sourceId; // Get storage source ID
             const action = targetButton.dataset.action;
-            const member = allMembers.find(m => m.id === memberId && m.storageSourceId === storageSourceId);
+            const member = allMembers.find(m => m.id === memberId);
 
             if (!member) {
-                console.warn(`Member with ID ${memberId} from source ${storageSourceId} not found for action ${action}.`);
+                console.warn(`Member with ID ${memberId} not found for action ${action}.`);
                 return;
             }
 
@@ -2711,10 +2325,10 @@
                     handleEdit(member);
                     break;
                 case 'pause':
-                    handlePauseToggle(memberId, storageSourceId, 'Inactive');
+                    handlePauseToggle(memberId, 'Inactive');
                     break;
                 case 'activate':
-                    handlePauseToggle(memberId, storageSourceId, 'Active');
+                    handlePauseToggle(memberId, 'Active');
                     break;
                 case 'delete':
                     confirmDelete(member);
@@ -2724,85 +2338,12 @@
             }
         });
 
-        // --- Add Storage Form Submission ---
-        addFirebaseConfigForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!firestoreDbs['primary'] || !currentUserId) {
-                showMessage('Primary database not ready or user not authenticated. Please sign in.', 'error');
-                return;
-            }
-
-            const configName = firebaseConfigNameInput.value.trim();
-            const firebaseConfig = {
-                apiKey: firebaseApiKeyInput.value.trim(),
-                authDomain: firebaseAuthDomainInput.value.trim(),
-                projectId: firebaseProjectIdInput.value.trim(),
-                storageBucket: firebaseStorageBucketInput.value.trim(),
-                messagingSenderId: firebaseMessagingSenderIdInput.value.trim(),
-                appId: firebaseAppIdInput.value.trim(),
-                measurementId: firebaseMeasurementIdInput.value.trim() || undefined // Optional
-            };
-            const cloudinaryConfig = {
-                cloudName: cloudinaryCloudNameInput.value.trim(),
-                uploadPreset: cloudinaryUploadPresetInput.value.trim()
-            };
-
-            // Basic validation
-            if (!configName || !firebaseConfig.apiKey || !firebaseConfig.projectId || !cloudinaryConfig.cloudName) {
-                showMessage('Please fill in all required Firebase and Cloudinary fields.', 'error');
-                return;
-            }
-
-            // Attempt to initialize to validate config
-            // Use a unique name for the temporary app to avoid conflicts
-            const tempAppName = `temp-${Date.now()}`;
-            const testAppResult = initializeFirebaseInstance(firebaseConfig, tempAppName);
-            if (!testAppResult) {
-                showMessage('Invalid Firebase configuration. Please check your inputs.', 'error');
-                return;
-            }
-            // Delete the test app after validation
-            testAppResult.app.delete().then(() => console.log(`Temporary Firebase app '${tempAppName}' deleted.`)).catch(e => console.error(`Error deleting temp app '${tempAppName}':`, e));
-
-
-            try {
-                // Save the new configuration to the primary Firestore
-                await addDoc(collection(firestoreDbs['primary'], `artifacts/${envAppId}/public/data/userCloudConfigs`), {
-                    name: configName,
-                    firebaseConfig: firebaseConfig,
-                    cloudinaryConfig: cloudinaryConfig,
-                    createdAt: serverTimestamp(),
-                    createdBy: currentUserId
-                });
-                showMessage('New storage configuration saved and activated!', 'success');
-                clearAddStorageForm();
-                // Re-load and re-initialize all configs to pick up the new one
-                await loadAndInitializeAdditionalConfigs(firestoreDbs['primary']);
-            } catch (error) {
-                console.error("Error saving new cloud config:", error);
-                showMessage('Failed to save new storage configuration. Please try again.', 'error');
-            }
-        });
-
-        // --- Active Storage Configs List Delegation ---
-        activeStorageConfigsList.addEventListener('click', (e) => {
-            const deleteButton = e.target.closest('.delete-config-btn');
-            if (deleteButton) {
-                const configId = deleteButton.dataset.configId;
-                if (confirm('Are you sure you want to delete this storage configuration? This will remove it from the app but not delete the actual Firebase project or Cloudinary account.')) {
-                    deleteCloudConfig(configId);
-                }
-            }
-        });
-
-
     </script>
 <div class="fixed bottom-0 inset-x-0 bg-gray-900 text-white flex justify-around items-center py-3 border-t border-gray-700 z-50" id="bottom-nav"><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-manage-member').click()">🏠
 Dashboard</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-existing').click()">📋
 Existing</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-payment').click()">💳
 Payment</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-id-card').click()">🆔
-ID Card</button><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-storage').click()">☁️
-Storage</button></div><button class="fixed bottom-16 right-4 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 z-50 text-sm font-semibold" id="sticky-add-member" onclick="document.getElementById('tab-manage-member').click()">+ Add Member</button><script>
+ID Card</button></div><button class="fixed bottom-16 right-4 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 z-50 text-sm font-semibold" id="sticky-add-member" onclick="document.getElementById('tab-manage-member').click()">+ Add Member</button><script>
 document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('splash-screen');
     setTimeout(() => {
@@ -2828,5 +2369,115 @@ document.addEventListener('DOMContentLoaded', function() {
         // No need to set it here.
     }
 });
-</script></body>
+</script>
+<!-- Tab Button -->
+<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-config-storage">
+    Cloud Config & Storage
+</button>
+
+<!-- Tab Content: Config & Storage -->
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-config-storage">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud & View Storage</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
+<div>
+<label class="block text-sm font-medium text-gray-300">Firebase API Key</label>
+<input type="text" id="firebase-api-key" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" />
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300">Firebase Project ID</label>
+<input type="text" id="firebase-project-id" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" />
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300">Cloudinary Cloud Name</label>
+<input type="text" id="cloudinary-cloud-name" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" />
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300">Cloudinary Upload Preset</label>
+<input type="text" id="cloudinary-upload-preset" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" />
+</div>
+<div class="md:col-span-2 flex justify-end pt-4">
+<button type="button" id="apply-config-btn" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3">Save & Apply</button>
+</div>
+</form>
+
+<h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
+<ul class="text-gray-300 space-y-2 text-sm">
+<li><strong>Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
+<li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
+</ul>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const tabConfig = document.getElementById("tab-config-storage");
+    const contentConfig = document.getElementById("content-config-storage");
+
+    tabConfig.addEventListener("click", () => {
+        document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+        document.querySelectorAll("button[id^='tab-']").forEach(el => el.classList.remove("tab-active"));
+        contentConfig.classList.remove("hidden");
+        tabConfig.classList.add("tab-active");
+    });
+
+    document.getElementById("apply-config-btn").addEventListener("click", () => {
+        const firebaseApiKey = document.getElementById("firebase-api-key").value;
+        const firebaseProjectId = document.getElementById("firebase-project-id").value;
+        const cloudName = document.getElementById("cloudinary-cloud-name").value;
+        const uploadPreset = document.getElementById("cloudinary-upload-preset").value;
+        alert("Configuration saved locally. Reload to apply.");
+        localStorage.setItem("customFirebaseApiKey", firebaseApiKey);
+        localStorage.setItem("customFirebaseProjectId", firebaseProjectId);
+        localStorage.setItem("customCloudName", cloudName);
+        localStorage.setItem("customUploadPreset", uploadPreset);
+    });
+
+    const fbUsage = document.getElementById("firebase-usage-display");
+    const clUsage = document.getElementById("cloudinary-usage-display");
+    fbUsage.textContent = document.getElementById("data-usage-display")?.textContent || "N/A";
+
+    // Cloudinary usage fetch (optional if you expose unsigned endpoint)
+    clUsage.textContent = "Requires Cloudinary API (disabled for security)";
+});
+</script>
+
+
+<script>
+// === Cloud Config Initialization and Storage Fetch ===
+document.addEventListener("DOMContentLoaded", () => {
+    const fbUsage = document.getElementById("firebase-usage-display");
+    const clUsage = document.getElementById("cloudinary-usage-display");
+
+    // Auto-load saved config
+    const firebaseApiKey = localStorage.getItem("customFirebaseApiKey");
+    const firebaseProjectId = localStorage.getItem("customFirebaseProjectId");
+    const cloudName = localStorage.getItem("customCloudName");
+    const uploadPreset = localStorage.getItem("customUploadPreset");
+
+    if (firebaseApiKey) document.getElementById("firebase-api-key").value = firebaseApiKey;
+    if (firebaseProjectId) document.getElementById("firebase-project-id").value = firebaseProjectId;
+    if (cloudName) document.getElementById("cloudinary-cloud-name").value = cloudName;
+    if (uploadPreset) document.getElementById("cloudinary-upload-preset").value = uploadPreset;
+
+    // Firebase usage already estimated
+    fbUsage.textContent = document.getElementById("data-usage-display")?.textContent || "N/A";
+
+    // Fetch Cloudinary usage via unsigned endpoint (secure read-only)
+    if (cloudName) {
+        fetch(`https://res.cloudinary.com/${cloudName}/usage`)
+            .then(res => res.ok ? res.json() : Promise.reject("Not available"))
+            .then(data => {
+                const used = (data?.plan?.usage?.storage?.used || 0) / (1024 * 1024);
+                const limit = (data?.plan?.usage?.storage?.limit || 1) / (1024 * 1024);
+                clUsage.textContent = `${used.toFixed(2)} MB / ${limit.toFixed(0)} MB`;
+            })
+            .catch(() => {
+                clUsage.textContent = "Unable to fetch (requires signed API or enable usage endpoint)";
+            });
+    } else {
+        clUsage.textContent = "No Cloud Name provided";
+    }
+});
+</script>
+
+</body>
 </html>
