@@ -681,7 +681,7 @@
         const toggleBtn = document.getElementById('toggle-members-btn');
         const collapsibleMembersSection = document.getElementById('collapsible-members');
         // New variable to store the user's last toggled state for "Current Members" list
-        let isCurrentMembersListHiddenByUser = true; // Starts hidden
+        let isCurrentMembersListHiddenByUser = true; // Initially, the Current Members list is hidden by default.
 
 
         /**
@@ -1021,19 +1021,17 @@
 
             const isSearchActive = searchTerm.length > 0;
 
+            // Always show overdue list by default
+            overdueMembersListContainer.classList.remove('hidden');
+
             if (isSearchActive) {
-                console.log('Search is active. Showing both lists.');
-                // When search is active, always show both lists
+                console.log('Search is active. Showing Current Members list.');
+                // When search is active, always show Current Members list
                 collapsibleMembersSection.classList.remove('hidden');
-                overdueMembersListContainer.classList.remove('hidden');
-                // Update toggle button text to reflect that current members are visible due to search
                 toggleBtn.textContent = `Hide Current Members`;
             } else {
-                console.log('Search is inactive. Reverting to last user-toggled state for Current Members.');
+                console.log('Search is inactive. Reverting Current Members list to last user-toggled state.');
                 // When search is inactive (cleared)
-                // Overdue list is always visible
-                overdueMembersListContainer.classList.remove('hidden');
-
                 // Current members list reverts to its last user-toggled state
                 if (isCurrentMembersListHiddenByUser) {
                     collapsibleMembersSection.classList.add('hidden');
@@ -1048,7 +1046,14 @@
 
 
             // Update the total members count on the button (always update, even if hidden)
-            document.getElementById('total-members-count').textContent = allMembers.length;
+            // Ensure total-members-count element exists before trying to access its textContent
+            const totalMembersCountSpan = document.getElementById('total-members-count');
+            if (totalMembersCountSpan) {
+                totalMembersCountSpan.textContent = allMembers.length;
+            } else {
+                console.warn("Element with ID 'total-members-count' not found.");
+            }
+
 
             // Update data usage display
             updateDataUsageDisplay();
@@ -2004,7 +2009,8 @@
                     showMessage('Member added successfully!', 'success');
                 }
                 clearMainForm();
-            } catch (error) {
+            }
+            catch (error) {
                 console.error("Error adding/updating member or uploading photo:", error);
                 showMessage('Failed to save member. Please try again.', 'error');
             }
@@ -2350,7 +2356,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toggleBtn && section) {
         toggleBtn.addEventListener('click', function() {
             // Update the user's preferred visibility state for the Current Members list
-            isCurrentMembersListHiddenByUser = !section.classList.contains('hidden');
+            isCurrentMembersListHiddenByUser = !section.classList.contains('hidden'); // If it's currently hidden, user wants to show it (so new state is NOT hidden)
             section.classList.toggle('hidden'); // Toggle the visibility
             if (section.classList.contains('hidden')) {
                 this.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
