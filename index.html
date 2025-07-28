@@ -626,6 +626,7 @@
 
         // Overdue Members specific DOM elements
         const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
+        const overdueMembersListContainer = document.getElementById('overdue-members-list-container'); // Added this line
         const noOverdueMembersMessage = document.getElementById('no-overdue-members-message');
 
         // Date & Time Display elements
@@ -996,59 +997,6 @@
             dataUsageDisplay.textContent = formattedSize;
         }
 
-        /**
-         * Compresses a base64 image to a target size (approximately).
-         * @param {string} dataUrl - The original base64 data URL of the image.
-         * @param {number} targetSizeKB - The target size in kilobytes (e.g., 50).
-         * @returns {Promise<string>} A Promise that resolves with the compressed base64 data URL.
-         */
-        async function compressImage(dataUrl, targetSizeKB) {
-            return new Promise((resolve, reject) => {
-                showMessage('Compressing image...', 'success'); // Show compressing message
-                const img = new Image();
-                img.src = dataUrl;
-
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    // Set initial dimensions (can scale down if needed)
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                    let quality = 0.9; // Start with high quality
-                    let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                    let currentSizeKB = (compressedDataUrl.length * 0.75 / 1024); // Estimate size in KB
-
-                    // Loop to reduce quality until target size is met or quality is too low
-                    while (currentSizeKB > targetSizeKB && quality > 0.1) {
-                        quality -= 0.1; // Decrease quality
-                        compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                        currentSizeKB = (compressedDataUrl.length * 0.75 / 1024);
-                    }
-
-                    // If still too large after max compression, scale down dimensions
-                    if (currentSizeKB > targetSizeKB) {
-                        const scaleFactor = Math.sqrt(targetSizeKB / currentSizeKB); // Calculate scale factor
-                        canvas.width = img.width * scaleFactor;
-                        canvas.height = img.height * scaleFactor;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8); // Re-compress with moderate quality
-                        currentSizeKB = (compressedDataUrl.length * 0.75 / 1024);
-                    }
-
-                    showMessage(`Image compressed to ${currentSizeKB.toFixed(2)} KB`, 'success');
-                    resolve(compressedDataUrl);
-                };
-
-                img.onerror = (err) => {
-                    showMessage('Image compression failed: Could not load image.', 'error');
-                    reject(err);
-                };
-            });
-        }
-
 
         /**
          * Renders the list of members in the table.
@@ -1061,14 +1009,33 @@
             const searchTerm = searchInput.value.toLowerCase();
             const filterStatus = filterStatusSelect.value;
 
-            // Update the total members count on the button
-            document.getElementById('total-members-count').textContent = allMembers.length;
-            // Update the toggle button text based on visibility
-            if (collapsibleMembersSection.classList.contains('hidden')) {
+            // --- New Search-driven Visibility Logic ---
+            const isSearchActive = searchTerm.length > 0;
+
+            if (isSearchActive) {
+                collapsibleMembersSection.classList.add('hidden');
+                overdueMembersListContainer.classList.add('hidden');
+                // Update toggle button text to reflect hidden state due to search
                 toggleBtn.textContent = `Show Current Members (${allMembers.length})`;
             } else {
-                toggleBtn.textContent = 'Hide Current Members';
+                // If search is inactive, restore visibility based on original toggle state
+                // Overdue list is always visible when no search is active
+                overdueMembersListContainer.classList.remove('hidden');
+
+                // For current members, we respect the toggle button's state
+                // The toggle button's click listener already handles adding/removing 'hidden'
+                // We just need to ensure its text is correct initially.
+                if (collapsibleMembersSection.classList.contains('hidden')) {
+                    toggleBtn.textContent = `Show Current Members (${allMembers.length})`;
+                } else {
+                    toggleBtn.textContent = 'Hide Current Members';
+                }
             }
+            // --- End New Search-driven Visibility Logic ---
+
+
+            // Update the total members count on the button (always update, even if hidden)
+            document.getElementById('total-members-count').textContent = allMembers.length;
 
             // Update data usage display
             updateDataUsageDisplay();
@@ -1489,28 +1456,16 @@
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = async (e) => { // Made onload async
-                    const originalDataUrl = e.target.result;
-                    try {
-                        const compressedDataUrl = await compressImage(originalDataUrl, 50); // Compress to 50KB
-                        previewElement.src = compressedDataUrl;
-                        setPhotoBase64Callback(compressedDataUrl); // Set the correct base64 variable
-                        clearBtn.classList.remove('hidden');
-                        switchCameraBtnElement.classList.add('hidden');
-                        stopCamera(cameraFeedElement, cameraStreamVar);
-                        viewLinkElement.href = compressedDataUrl;
-                        viewLinkElement.textContent = 'View Photo Preview';
-                        viewLinkElement.classList.remove('hidden');
-                        previewElement.classList.remove('hidden');
-                    } catch (error) {
-                        console.error("Error during image compression:", error);
-                        showMessage('Image compression failed.', 'error');
-                        // Fallback to original or clear if compression fails
-                        previewElement.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
-                        setPhotoBase64Callback(null);
-                        clearBtn.classList.add('hidden');
-                        viewLinkElement.classList.add('hidden');
-                    }
+                reader.onload = (e) => {
+                    previewElement.src = e.target.result;
+                    setPhotoBase64Callback(e.target.result); // Set the correct base64 variable
+                    clearBtn.classList.remove('hidden');
+                    switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
+                    stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
+                    viewLinkElement.href = e.target.result;
+                    viewLinkElement.textContent = 'View Photo Preview';
+                    viewLinkElement.classList.remove('hidden');
+                    previewElement.classList.remove('hidden'); // Ensure preview is visible
                 };
                 reader.readAsDataURL(file);
             }
@@ -1531,28 +1486,17 @@
         async function handleTakePhoto(cameraFeedElement, cameraCanvasElement, previewElement, clearBtn, switchCameraBtnElement, viewLinkElement, setPhotoBase64Callback, currentFacingModeParam, setCameraStreamCallback) {
             if (cameraFeedElement.srcObject && !cameraFeedElement.classList.contains('hidden')) {
                 // If camera is already active, capture photo
-                const originalDataUrl = capturePhoto(cameraFeedElement, cameraCanvasElement, previewElement);
-                if (originalDataUrl) {
-                    try {
-                        const compressedDataUrl = await compressImage(originalDataUrl, 50); // Compress to 50KB
-                        setPhotoBase64Callback(compressedDataUrl);
-                        previewElement.src = compressedDataUrl; // Update preview with compressed image
-                        stopCamera(cameraFeedElement, cameraFeedElement.srcObject);
-                        setCameraStreamCallback(null);
-                        clearBtn.classList.remove('hidden');
-                        switchCameraBtnElement.classList.add('hidden');
-                        viewPhotoLink.href = compressedDataUrl;
-                        viewPhotoLink.textContent = 'View Photo Preview';
-                        viewPhotoLink.classList.remove('hidden');
-                        previewElement.classList.remove('hidden');
-                    } catch (error) {
-                        console.error("Error during image compression:", error);
-                        showMessage('Image compression failed.', 'error');
-                        previewElement.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
-                        setPhotoBase64Callback(null);
-                        clearBtn.classList.add('hidden');
-                        viewPhotoLink.classList.add('hidden');
-                    }
+                const dataUrl = capturePhoto(cameraFeedElement, cameraCanvasElement, previewElement);
+                if (dataUrl) {
+                    setPhotoBase64Callback(dataUrl);
+                    stopCamera(cameraFeedElement, cameraFeedElement.srcObject); // Stop camera after capture
+                    setCameraStreamCallback(null); // Clear stream variable
+                    clearBtn.classList.remove('hidden');
+                    switchCameraBtnElement.classList.add('hidden'); // Hide switch camera button
+                    viewLinkElement.href = dataUrl;
+                    viewLinkElement.textContent = 'View Photo Preview';
+                    viewLinkElement.classList.remove('hidden');
+                    previewElement.classList.remove('hidden'); // Ensure preview is visible
                 }
             } else {
                 // Otherwise, start camera
@@ -1561,9 +1505,9 @@
                     setCameraStreamCallback(stream);
                     cameraFeedElement.srcObject = stream;
                     cameraFeedElement.classList.remove('hidden');
-                    previewElement.classList.add('hidden');
-                    viewLinkElement.classList.add('hidden');
-                    switchCameraBtnElement.classList.remove('hidden');
+                    previewElement.classList.add('hidden'); // Hide static preview while camera is on
+                    viewLinkElement.classList.add('hidden'); // Hide link while camera is live
+                    switchCameraBtnElement.classList.remove('hidden'); // Show switch camera button
                 } else {
                     showMessage('Could not access camera. Please ensure permissions are granted and no other app is using it.', 'error');
                 }
@@ -2067,9 +2011,7 @@
         cameraFeed.addEventListener('click', () => {
             const dataUrl = capturePhoto(cameraFeed, cameraCanvas, photoPreview);
             if (dataUrl) {
-                // No direct compression here, as handleTakePhoto already does it
-                // We just need to update the preview and state if capture was successful
-                currentPhotoBase64 = dataUrl; // This should already be compressed dataUrl from handleTakePhoto
+                currentPhotoBase64 = dataUrl;
                 stopCamera(cameraFeed, cameraStream);
                 cameraStream = null;
                 clearPhotoBtn.classList.remove('hidden');
@@ -2167,8 +2109,7 @@
         existingCameraFeed.addEventListener('click', () => {
             const dataUrl = capturePhoto(existingCameraFeed, existingCameraCanvas, existingPhotoPreview);
             if (dataUrl) {
-                // No direct compression here, as handleTakePhoto already does it
-                existingPhotoBase64 = dataUrl; // This should already be compressed dataUrl from handleTakePhoto
+                existingPhotoBase64 = dataUrl;
                 stopCamera(existingCameraFeed, existingCameraStream);
                 existingCameraStream = null;
                 existingClearPhotoBtn.classList.remove('hidden');
@@ -2207,6 +2148,7 @@
                     addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, addPaymentMembershipTypeInput.value)); // Updated ID
                 }
             } else {
+                addPaymentCurrentDueDateInput.value = ''; // Updated ID
                 addPaymentNewDueDateInput.value = ''; // Updated ID
             }
         });
@@ -2382,9 +2324,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Set initial button text
-        // This will be set by renderMembers() function after data is loaded
-        // toggleBtn.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
+        // The initial text for the toggle button is now set by renderMembers()
+        // No need to set it here.
     }
 });
 </script></body>
