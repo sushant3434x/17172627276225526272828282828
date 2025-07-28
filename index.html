@@ -1009,22 +1009,27 @@
          * Applies search and filter criteria.
          */
         function renderMembers() {
+            console.log('renderMembers called.');
             membersTableBody.innerHTML = ''; // Clear existing current members rows
             overdueMembersTableBody.innerHTML = ''; // Clear existing overdue members rows
 
             const searchTerm = searchInput.value.toLowerCase();
             const filterStatus = filterStatusSelect.value;
 
-            // --- New Search-driven Visibility Logic ---
+            console.log(`Search Term: '${searchTerm}', Filter Status: '${filterStatus}'`);
+            console.log(`isCurrentMembersListHiddenByUser (before logic): ${isCurrentMembersListHiddenByUser}`);
+
             const isSearchActive = searchTerm.length > 0;
 
             if (isSearchActive) {
+                console.log('Search is active. Showing both lists.');
                 // When search is active, always show both lists
                 collapsibleMembersSection.classList.remove('hidden');
                 overdueMembersListContainer.classList.remove('hidden');
                 // Update toggle button text to reflect that current members are visible due to search
                 toggleBtn.textContent = `Hide Current Members`;
             } else {
+                console.log('Search is inactive. Reverting to last user-toggled state for Current Members.');
                 // When search is inactive (cleared)
                 // Overdue list is always visible
                 overdueMembersListContainer.classList.remove('hidden');
@@ -1038,7 +1043,8 @@
                     toggleBtn.textContent = 'Hide Current Members';
                 }
             }
-            // --- End New Search-driven Visibility Logic ---
+            console.log(`collapsibleMembersSection hidden: ${collapsibleMembersSection.classList.contains('hidden')}`);
+            console.log(`overdueMembersListContainer hidden: ${overdueMembersListContainer.classList.contains('hidden')}`);
 
 
             // Update the total members count on the button (always update, even if hidden)
@@ -1061,6 +1067,8 @@
                 const dateB = new Date(b.dueDate);
                 return dateA - dateB;
             });
+
+            console.log(`Total members: ${allMembers.length}, Filtered members: ${filteredAndSortedMembers.length}`);
 
 
             let hasOverdueMembers = false;
@@ -1738,10 +1746,12 @@
 
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
+            console.log('Window loaded. Initializing Firebase...');
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                console.log('Firebase initialized successfully.');
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
                 showMessage('Failed to initialize Firebase. Check console for errors.', 'error');
@@ -1762,6 +1772,8 @@
                     passwordEntryModal.classList.add('flex');
                     appPasswordInput.value = ''; // Clear input
                     appPasswordInput.focus();
+                    console.log('User authenticated:', currentUserId, 'Showing password modal.');
+
 
                     // Start listening to Firestore for gym members ONLY AFTER Firebase auth is successful
                     const membersCollectionRef = collection(db, `artifacts/${envAppId}/public/data/gymMembers`);
@@ -1770,6 +1782,7 @@
                             id: doc.id,
                             ...doc.data()
                         }));
+                        console.log('Firestore data updated. Total members:', allMembers.length);
                         renderMembers(); // Re-render whenever data changes
                         // If add payment tab is active, re-populate member select
                         if (!contentAddPayment.classList.contains('hidden')) { // Updated content ID
@@ -1797,6 +1810,7 @@
                     // Clear members list if not authenticated
                     allMembers = [];
                     renderMembers();
+                    console.log('User not authenticated. Showing auth section.');
                 }
             });
 
@@ -1805,8 +1819,10 @@
             if (!auth.currentUser) {
                 try {
                     if (initialAuthToken) {
+                        console.log('Attempting sign-in with custom token...');
                         await signInWithCustomToken(auth, initialAuthToken);
                     } else {
+                        console.log('Attempting anonymous sign-in...');
                         await signInAnonymously(auth);
                     }
                 } catch (error) {
@@ -1875,10 +1891,12 @@
                     mainAppSection.classList.add('scale-100', 'opacity-100');
                 }, 10); // Small delay to allow 'hidden' to apply first
                 showTab('manage-member'); // Show default tab on successful app password entry
+                console.log('App unlocked. Showing main app and default tab.');
             } else {
                 showMessage('Incorrect password. Please try again.', 'error');
                 appPasswordInput.value = '';
                 appPasswordInput.focus();
+                console.log('Incorrect app password entered.');
             }
         });
 
@@ -1899,6 +1917,9 @@
                 clearExistingMemberForm();
                 clearAddPaymentForm(); // Updated function call
                 clearIdCardDisplay();
+                // Reset the user's preferred visibility state for current members
+                isCurrentMembersListHiddenByUser = true; // Default to hidden on sign out
+                console.log('Signed out. Resetting app state.');
                 // onAuthStateChanged will handle showing authSection and hiding mainAppSection/passwordEntryModal
             } catch (error) {
                 console.error("Sign out error:", error);
@@ -2328,9 +2349,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const section = document.getElementById('collapsible-members');
     if (toggleBtn && section) {
         toggleBtn.addEventListener('click', function() {
-            // Update the user's preferred visibility state
+            // Update the user's preferred visibility state for the Current Members list
             isCurrentMembersListHiddenByUser = !section.classList.contains('hidden');
-            section.classList.toggle('hidden');
+            section.classList.toggle('hidden'); // Toggle the visibility
             if (section.classList.contains('hidden')) {
                 this.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
             } else {
