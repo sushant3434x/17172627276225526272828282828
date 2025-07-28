@@ -538,7 +538,6 @@
 
 
         // Global variables for Firebase instances
-        // Changed to arrays/maps to hold multiple instances
         let firebaseAppInstance; // Stores the initialized Firebase app instance
         let firestoreDb; // Stores Firestore db instance
         let firebaseAuth; // Stores Auth instance
@@ -861,15 +860,17 @@
         /**
          * Displays a message to the user.
          * @param {string} text - The message text.
-         * @param {'success'|'error'} type - The type of message (success or error).
+         * @param {'success'|'error'|'info'} type - The type of message (success, error, or info).
          */
         function showMessage(text, type) {
             messageDisplay.textContent = text;
-            messageDisplay.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'opacity-0');
+            messageDisplay.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'bg-blue-500', 'opacity-0');
             if (type === 'success') {
                 messageDisplay.classList.add('bg-green-500');
-            } else {
+            } else if (type === 'error') {
                 messageDisplay.classList.add('bg-red-500');
+            } else if (type === 'info') { // New info type
+                messageDisplay.classList.add('bg-blue-500');
             }
             messageDisplay.classList.add('block', 'opacity-100'); // Show with transition
 
@@ -878,7 +879,7 @@
                 messageDisplay.classList.add('opacity-0');
                 setTimeout(() => {
                     messageDisplay.classList.add('hidden'); // Hide after fade
-                    messageDisplay.classList.remove('bg-green-500', 'bg-red-500');
+                    messageDisplay.classList.remove('bg-green-500', 'bg-red-500', 'bg-blue-500'); // Remove all color classes
                     messageDisplay.textContent = '';
                 }, 300); // Match transition duration
             }, 3000); // Message visible for 3 seconds
@@ -1055,13 +1056,71 @@
         }
 
         /**
+         * Compresses an image data URL to a target size (in KB) and max dimensions.
+         * @param {string} dataUrl - The original image data URL.
+         * @param {number} targetSizeKB - The desired target size in kilobytes.
+         * @param {number} maxWidth - Maximum width for the compressed image.
+         * @param {number} maxHeight - Maximum height for the compressed image.
+         * @returns {Promise<string>} A promise that resolves with the compressed image data URL.
+         */
+        async function compressImage(dataUrl, targetSizeKB = 50, maxWidth = 800, maxHeight = 600) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = dataUrl;
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions to fit within maxWidth/maxHeight while maintaining aspect ratio
+                    if (width > maxWidth || height > maxHeight) {
+                        const aspectRatio = width / height;
+                        if (width > height) {
+                            width = maxWidth;
+                            height = width / aspectRatio;
+                        } else {
+                            height = maxHeight;
+                            width = height * aspectRatio;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    let quality = 0.8; // Start with 80% quality
+                    let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    let currentSizeKB = compressedDataUrl.length / 1024;
+
+                    // Iteratively reduce quality until target size is met or minimum quality is reached
+                    // Ensure quality doesn't go below a reasonable minimum (e.g., 0.1)
+                    while (currentSizeKB > targetSizeKB && quality > 0.1) {
+                        quality = Math.max(0.1, quality - 0.05); // Reduce quality by 5%, but not below 0.1
+                        compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        currentSizeKB = compressedDataUrl.length / 1024;
+                    }
+                    resolve(compressedDataUrl);
+                };
+
+                img.onerror = () => {
+                    console.error("Error loading image for compression. Returning original dataUrl.");
+                    resolve(dataUrl); // Resolve with original if error
+                };
+            });
+        }
+
+
+        /**
          * Uploads an image file or data URL to Cloudinary.
          * By default, uploads to the primary Cloudinary config.
          * @param {File|string} fileOrDataUrl - The File object or base64 data URL to upload.
          * @returns {Promise<string|null>} The secure Cloudinary URL, or null if upload fails.
          */
         async function uploadImageToCloudinary(fileOrDataUrl) {
-            // Use the primary cloudinary config for uploads
             const cloudinaryConfig = primaryCloudinaryConfig;
 
             if (!cloudinaryConfig || !cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
@@ -1069,20 +1128,30 @@
                 return null;
             }
 
-            const url = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
-            const formData = new FormData();
-            formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+            let finalDataUrl = fileOrDataUrl;
 
+            // If it's a new image (not an existing Cloudinary URL), compress it
             if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.startsWith('data:')) {
-                // It's a base64 data URL
-                formData.append('file', fileOrDataUrl);
+                if (!fileOrDataUrl.startsWith('https://res.cloudinary.com/')) {
+                    showMessage('Compressing image...', 'info');
+                    finalDataUrl = await compressImage(fileOrDataUrl);
+                }
             } else if (fileOrDataUrl instanceof File) {
-                // It's a File object
-                formData.append('file', fileOrDataUrl);
+                showMessage('Reading and compressing image file...', 'info');
+                finalDataUrl = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(fileOrDataUrl);
+                }).then(dataUrl => compressImage(dataUrl));
             } else {
                 showMessage('Invalid file type for Cloudinary upload.', 'error');
                 return null;
             }
+
+            const url = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
+            const formData = new FormData();
+            formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+            formData.append('file', finalDataUrl); // Use the compressed data URL
 
             try {
                 const response = await fetch(url, {
@@ -1262,9 +1331,13 @@
 
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                            <a href="${photoSrc}" target="_blank" class="block">
-                                <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
-                            </a>
+                            <div class="flex items-center space-x-2">
+                                <a href="${photoSrc}" target="_blank" class="block">
+                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
+                                </a>
+                                <!-- Display storage source ID -->
+                                <span class="text-xs text-gray-400" title="Storage Source">${member.storageSourceId === 'primary' ? 'P' : member.storageSourceId.substring(0, 4)}</span>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200 ${nameClass}">${member.name || 'N/A'}</td>
@@ -1334,9 +1407,13 @@
 
                         overdueRow.innerHTML = `
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                                <a href="${photoSrc}" target="_blank" class="block">
-                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
-                                </a>
+                                <div class="flex items-center space-x-2">
+                                    <a href="${photoSrc}" target="_blank" class="block">
+                                        <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
+                                    </a>
+                                    <!-- Display storage source ID -->
+                                    <span class="text-xs text-gray-400" title="Storage Source">${member.storageSourceId === 'primary' ? 'P' : member.storageSourceId.substring(0, 4)}</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.memberId || 'N/A'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${member.name || 'N/A'}</td>
@@ -1643,7 +1720,7 @@
                 canvasElement.height = videoElement.videoHeight;
                 const context = canvasElement.getContext('2d');
                 context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                const dataUrl = canvasElement.toDataURL('image/png');
+                const dataUrl = canvasElement.toDataURL('image/png'); // Capture as PNG initially
                 previewElement.src = dataUrl;
                 return dataUrl;
             } else {
@@ -1737,9 +1814,8 @@
          * @param {HTMLAnchorElement} viewLinkElement - The link element to update.
          * @param {Function} setPhotoBase64Callback - Callback to set the appropriate currentPhotoBase64/existingPhotoBase64.
          * @param {string|null} memberId - The ID of the member if editing, null if adding new.
-         * @param {string|null} storageSourceId - The ID of the storage source if editing.
          */
-        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, viewLinkElement, setPhotoBase64Callback, memberId, storageSourceId) {
+        async function handleClearPhoto(previewElement, clearBtn, switchCameraBtnElement, fileInput, cameraFeedElement, cameraStreamVar, viewLinkElement, setPhotoBase64Callback, memberId) {
             setPhotoBase64Callback(null);
             previewElement.src = "https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo";
             clearBtn.classList.add('hidden');
@@ -1747,7 +1823,7 @@
             fileInput.value = ''; // Clear file input
             stopCamera(cameraFeedElement, cameraStreamVar); // Stop camera if active
             viewLinkElement.classList.add('hidden'); // Hide the photo link
-            viewLinkElement.href = '#'; // Reset href
+            viewPhotoLink.href = '#'; // Reset href
             previewElement.classList.remove('hidden'); // Ensure preview is visible
 
             // If editing, and the user clears the photo, we need to ensure the photoURL is removed from Firestore
@@ -1965,10 +2041,16 @@
         function fetchCloudinaryUsage() {
             const cloudName = primaryCloudinaryConfig.cloudName;
             if (cloudName) {
+                // This endpoint often requires authentication (e.g., signed request or API key in headers)
+                // Direct client-side fetch might be blocked by CORS or authentication.
+                // For a production app, consider a server-side proxy for this API call.
+                // For now, we'll just attempt a direct fetch, which might fail.
                 fetch(`https://api.cloudinary.com/v1_1/${cloudName}/usage`, {
-                    // Note: This endpoint often requires authentication (e.g., signed request or API key in headers)
-                    // Direct client-side fetch might be blocked by CORS or authentication.
-                    // For a production app, consider a server-side proxy for this API call.
+                    method: 'GET',
+                    headers: {
+                        // In a real app, you might need to add an Authorization header here
+                        // For public usage data, sometimes no auth is needed, but often it is.
+                    }
                 })
                 .then(res => {
                     if (res.ok) {
@@ -2014,6 +2096,8 @@
                 // Note: authDomain, storageBucket, etc. are derived from projectId for standard Firebase projects
                 // For simplicity here, we only update apiKey and projectId.
                 // In a real app, you'd need to save/load the full config object.
+                primaryFirebaseConfig.authDomain = `${newFirebaseProjectId}.firebaseapp.com`;
+                primaryFirebaseConfig.storageBucket = `${newFirebaseProjectId}.appspot.com`;
             }
             if (savedCloudName && savedUploadPreset) {
                 primaryCloudinaryConfig.cloudName = savedCloudName;
@@ -2256,7 +2340,7 @@
         });
 
         // Clear photo button now only clears the link in Firestore
-        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data, editingMemberId, memberForm.dataset.storageSourceId));
+        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data, editingMemberId));
 
         // Add double-tap/click listener to the photo preview in the form
         addPhotoEnlargeListeners(photoPreview);
@@ -2354,7 +2438,7 @@
             }
         });
 
-        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, existingViewPhotoLink, (data) => existingPhotoBase64 = data, null, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
+        existingClearPhotoBtn.addEventListener('click', () => handleClearPhoto(existingPhotoPreview, existingClearPhotoBtn, existingSwitchCameraBtn, existingPhotoUploadInput, existingCameraFeed, existingCameraStream, existingViewPhotoLink, (data) => existingPhotoBase64 = data, null)); // Pass null for new member, as no existing photo to delete from Firestore/Storage yet
 
         // Add double-tap/click listener to the photo preview in the existing form
         addPhotoEnlargeListeners(existingPhotoPreview);
