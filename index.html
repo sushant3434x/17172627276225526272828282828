@@ -803,14 +803,15 @@
          */
         function initializeFirebaseInstance(config, name) {
             try {
+                console.log(`Attempting to initialize Firebase app: ${name}`);
                 const appInstance = initializeApp(config, name);
                 const dbInstance = getFirestore(appInstance);
                 const authInstance = getAuth(appInstance);
-                console.log(`Firebase app '${name}' initialized.`);
+                console.log(`Firebase app '${name}' initialized successfully.`);
                 return { app: appInstance, db: dbInstance, auth: authInstance };
             } catch (error) {
                 console.error(`Error initializing Firebase app '${name}':`, error);
-                showMessage(`Failed to initialize Firebase app '${name}'. Check config.`, 'error');
+                showMessage(`Failed to initialize Firebase app '${name}'. Check console for errors and config details.`, 'error');
                 return null;
             }
         }
@@ -825,7 +826,9 @@
                 return;
             }
 
-            // Clear previous dynamic configs
+            console.log("Loading and initializing additional configs...");
+
+            // Clear previous dynamic configs, but keep the primary one
             allFirebaseConfigs = [{
                 name: 'Primary Firebase',
                 id: 'primary',
@@ -834,16 +837,14 @@
                 auth: firebaseAuths['primary'], // Use the already initialized primary auth
                 cloudinary: primaryCloudinaryConfig
             }];
-            // Stop all existing listeners except for the primary one before re-attaching
-            // (This assumes onSnapshot returns an unsubscribe function, which it does)
-            // For simplicity, we'll re-attach all listeners in subscribeToAllMemberCollections
-
+            // Reset activeCloudinaryConfigs, then add primary
             activeCloudinaryConfigs = { 'primary': primaryCloudinaryConfig };
+
 
             try {
                 const configsRef = collection(primaryDb, `artifacts/${envAppId}/public/data/userCloudConfigs`);
                 const snapshot = await getDocs(configsRef);
-                console.log(`Found ${snapshot.docs.length} additional cloud configs.`);
+                console.log(`Found ${snapshot.docs.length} additional cloud configs in Firestore.`);
 
                 snapshot.forEach(doc => {
                     const savedConfig = doc.data();
@@ -867,15 +868,16 @@
                             firestoreDbs[configId] = initialized.db;
                             firebaseAuths[configId] = initialized.auth;
                             activeCloudinaryConfigs[configId] = cloudinaryConf;
+                            console.log(`Added config: ${configName} (Source ID: ${configId})`);
                         }
                     }
                 });
-                console.log("All Firebase configs after loading:", allFirebaseConfigs.map(c => c.name));
+                console.log("All Firebase configs after loading and initializing:", allFirebaseConfigs.map(c => c.name));
                 renderActiveStorageConfigs(); // Update UI list of configs
                 subscribeToAllMemberCollections(); // Re-subscribe to all member collections
             } catch (error) {
                 console.error("Error loading additional configs:", error);
-                showMessage('Failed to load additional storage configurations.', 'error');
+                showMessage('Failed to load additional storage configurations. Ensure your primary Firebase security rules allow reading from `userCloudConfigs`.', 'error');
             }
         }
 
@@ -884,43 +886,82 @@
          * Merges results into `allMembers` and triggers `renderMembers`.
          */
         function subscribeToAllMemberCollections() {
+            console.log("Subscribing to all member collections...");
             // Unsubscribe from previous listeners if any
             if (window.unsubscribeListeners) {
+                console.log(`Unsubscribing from ${window.unsubscribeListeners.length} previous listeners.`);
                 window.unsubscribeListeners.forEach(unsub => unsub());
             }
             window.unsubscribeListeners = []; // Reset array of unsubscribe functions
 
-            let pendingFetches = allFirebaseConfigs.length;
             let combinedMembers = [];
+            let sourcesLoadedCount = 0;
+            const totalSources = allFirebaseConfigs.length;
 
-            if (pendingFetches === 0) {
+            if (totalSources === 0) {
                 allMembers = [];
                 renderMembers();
+                console.log("No Firebase sources configured. Member list cleared.");
                 return;
             }
 
             allFirebaseConfigs.forEach(config => {
+                if (!config.db) {
+                    console.warn(`Skipping subscription for '${config.name}' as its DB instance is not available.`);
+                    sourcesLoadedCount++; // Count as loaded even if skipped
+                    if (sourcesLoadedCount === totalSources) {
+                        allMembers = combinedMembers;
+                        renderMembers();
+                    }
+                    return;
+                }
+
                 const membersCollectionRef = collection(config.db, `artifacts/${envAppId}/public/data/gymMembers`);
                 const unsubscribe = onSnapshot(membersCollectionRef, (snapshot) => {
+                    console.log(`Data received from '${config.name}' (${snapshot.docs.length} members).`);
                     const membersFromThisDb = snapshot.docs.map(doc => ({
                         id: doc.id,
                         storageSourceId: config.id, // Add source ID to member data
                         ...doc.data()
                     }));
 
-                    // Merge members from this DB into combinedMembers, avoiding duplicates
-                    // A member is unique by its Firestore document ID, even if memberId is the same across DBs
-                    combinedMembers = combinedMembers.filter(m => m.storageSourceId !== config.id); // Remove old entries from this DB
-                    combinedMembers.push(...membersFromThisDb); // Add new entries from this DB
+                    // Remove old entries from this DB and add new ones
+                    combinedMembers = combinedMembers.filter(m => m.storageSourceId !== config.id);
+                    combinedMembers.push(...membersFromThisDb);
 
                     // Sort combinedMembers by name for consistent display
                     combinedMembers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
                     allMembers = combinedMembers; // Update global allMembers
                     renderMembers(); // Re-render the UI
+                    console.log(`Total combined members: ${allMembers.length}`);
+
+                    sourcesLoadedCount++;
+                    if (sourcesLoadedCount === totalSources) {
+                        console.log("All Firebase sources have reported data.");
+                    }
+
+                    // If add payment tab is active, re-populate member select
+                    if (!contentAddPayment.classList.contains('hidden')) {
+                         populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
+                    }
+                    // If ID card tab is active, re-populate member select
+                    if (!contentIdCard.classList.contains('hidden')) {
+                        populateIdCardMemberSelect(idCardMemberSearchInput.value);
+                        // If a member was selected, re-display their card
+                        if (idCardMemberSelect.value) {
+                            displayIdCard(idCardMemberSelect.value);
+                        }
+                    }
+
                 }, (error) => {
                     console.error(`Error fetching members from ${config.name}:`, error);
-                    showMessage(`Failed to load members from ${config.name}.`, 'error');
+                    showMessage(`Failed to load members from ${config.name}. Check your internet connection or Firebase security rules.`, 'error');
+                    sourcesLoadedCount++; // Still count as loaded to avoid infinite waiting
+                    if (sourcesLoadedCount === totalSources) {
+                        allMembers = combinedMembers; // Ensure UI updates even with errors
+                        renderMembers();
+                    }
                 });
                 window.unsubscribeListeners.push(unsubscribe); // Store unsubscribe function
             });
@@ -975,6 +1016,7 @@
                 return;
             }
             try {
+                console.log(`Attempting to delete cloud config with ID: ${configId}`);
                 await deleteDoc(doc(firestoreDbs['primary'], `artifacts/${envAppId}/public/data/userCloudConfigs`, configId));
                 showMessage('Storage configuration deleted successfully!', 'success');
                 // Re-load and re-initialize configs after deletion
@@ -2101,13 +2143,14 @@
             console.log('Window loaded. Initializing Firebase...');
             try {
                 // Initialize primary Firebase app
-                const primaryApp = initializeFirebaseInstance(primaryFirebaseConfig, 'primary');
-                if (primaryApp) {
-                    firebaseApps.push(primaryApp.app);
-                    firestoreDbs['primary'] = primaryApp.db;
-                    firebaseAuths['primary'] = primaryApp.auth;
+                const primaryAppResult = initializeFirebaseInstance(primaryFirebaseConfig, 'primary');
+                if (primaryAppResult) {
+                    firebaseApps.push(primaryAppResult.app);
+                    firestoreDbs['primary'] = primaryAppResult.db;
+                    firebaseAuths['primary'] = primaryAppResult.auth;
                 } else {
                     showMessage('Failed to initialize primary Firebase app. App will not function.', 'error');
+                    // If primary app fails, stop here as nothing else will work
                     return;
                 }
 
@@ -2123,6 +2166,7 @@
 
             // Listen for authentication state changes (Firebase login) on the primary auth instance
             onAuthStateChanged(firebaseAuths['primary'], async (user) => {
+                console.log("onAuthStateChanged triggered. User:", user ? user.uid : "null");
                 if (user) {
                     currentUserId = user.uid;
                     userIdValue.textContent = currentUserId;
@@ -2710,14 +2754,15 @@
             }
 
             // Attempt to initialize to validate config
-            const testAppId = `temp-${Date.now()}`; // Unique ID for temporary app
-            const testApp = initializeFirebaseInstance(firebaseConfig, testAppId);
-            if (!testApp) {
+            // Use a unique name for the temporary app to avoid conflicts
+            const tempAppName = `temp-${Date.now()}`;
+            const testAppResult = initializeFirebaseInstance(firebaseConfig, tempAppName);
+            if (!testAppResult) {
                 showMessage('Invalid Firebase configuration. Please check your inputs.', 'error');
                 return;
             }
             // Delete the test app after validation
-            testApp.app.delete().then(() => console.log('Temporary Firebase app deleted.')).catch(e => console.error('Error deleting temp app:', e));
+            testAppResult.app.delete().then(() => console.log(`Temporary Firebase app '${tempAppName}' deleted.`)).catch(e => console.error(`Error deleting temp app '${tempAppName}':`, e));
 
 
             try {
