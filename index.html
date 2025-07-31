@@ -154,14 +154,14 @@
 <!-- Main Gym App Section -->
 <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
 <div class="flex justify-between items-center mb-8">
-    <div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
-        <!-- Data Usage Icon and Display -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-indigo-400">
-            <path fill-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" clip-rule="evenodd" />
-        </svg>
-        <span>Data Used (Primary Firestore): <span id="data-usage-display" class="font-semibold text-gray-200">0 KB</span></span>
-    </div>
-    <h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+<div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
+<!-- Data Usage Icon and Display -->
+<svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" fill-rule="evenodd"></path>
+</svg>
+<span>Data Used (Primary Firestore): <span class="font-semibold text-gray-200" id="data-usage-display">0 KB</span></span>
+</div>
+<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
 <!-- Date, Time, Day Display -->
 <div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
 <div class="text-xl font-semibold text-gray-200" id="current-time"></div>
@@ -191,9 +191,19 @@
                 ID Card View
             </button>
 <button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-add-storage">
-                Cloud Config & Storage
+                Cloud Config &amp; Storage
             </button>
-</div>
+</div><div class="relative ml-auto mr-4"><button class="fixed bottom-20 right-20 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 z-50   t r a n s i t i o n - t r a n s f o r m   h o v e r : s c a l e - 1 1 0   a n i m a t e - b o u n c e" id="export-toggle-btn" onclick="toggleExportDropdown()" title="Export Options">
+  📤
+</button><div class="hidden fixed bottom-32 right-20 bg-gray-800 text-white shadow-xl rounded-lg z-50 w-40" id="export-dropdown">
+<button class="w-full text-left px-4 py-2 hover:bg-gray-700 border-b border-gray-600" onclick="exportMembersToExcel()">Export to Excel</button>
+<button class="w-full text-left px-4 py-2 hover:bg-gray-700" onclick="exportMembersToPDF()">Export to PDF</button>
+</div><script>
+function toggleExportDropdown() {
+  const dropdown = document.getElementById('export-dropdown');
+  dropdown.classList.toggle('hidden');
+}
+</script></div>
 <!-- Tab Content: Manage Member Details (Existing Form) -->
 <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
 <h2 class="text-2xl font-bold text-white mb-6 text-lg">Manage Member Details</h2>
@@ -396,42 +406,39 @@
 </div>
 <p class="text-gray-400 text-center p-6" id="no-id-card-selected-message">Select a member to view their ID card.</p>
 </div>
-
 <!-- Tab Content: Cloud Config & Storage -->
 <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-storage">
-  <h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud & View Storage</h2>
-  <form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="firebase-api-key-input">Firebase API Key</label>
-      <input type="text" id="firebase-api-key-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Firebase API Key"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="firebase-project-id-input">Firebase Project ID</label>
-      <input type="text" id="firebase-project-id-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Firebase Project ID"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
-      <input type="text" id="cloudinary-cloud-name-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Cloudinary Cloud Name"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
-      <input type="text" id="cloudinary-upload-preset-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Cloudinary Upload Preset"/>
-    </div>
-    <div class="md:col-span-2 flex justify-end pt-4">
-      <button type="button" id="apply-config-btn" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3">
-        Save & Apply
-      </button>
-    </div>
-  </form>
-
-  <h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
-  <ul class="text-gray-300 space-y-2 text-sm">
-    <li><strong>Primary Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
-    <li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
-    <li class="text-xs text-gray-500 mt-2">Note: Cloudinary usage fetch may fail due to API access restrictions.</li>
-  </ul>
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud &amp; View Storage</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="firebase-api-key-input">Firebase API Key</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="firebase-api-key-input" placeholder="Your Firebase API Key" type="text"/>
 </div>
-
+<div>
+<label class="block text-sm font-medium text-gray-300" for="firebase-project-id-input">Firebase Project ID</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="firebase-project-id-input" placeholder="Your Firebase Project ID" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="cloudinary-cloud-name-input" placeholder="Your Cloudinary Cloud Name" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="cloudinary-upload-preset-input" placeholder="Your Cloudinary Upload Preset" type="text"/>
+</div>
+<div class="md:col-span-2 flex justify-end pt-4">
+<button class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3" id="apply-config-btn" type="button">
+        Save &amp; Apply
+      </button>
+</div>
+</form>
+<h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
+<ul class="text-gray-300 space-y-2 text-sm">
+<li><strong>Primary Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
+<li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
+<li class="text-xs text-gray-500 mt-2">Note: Cloudinary usage fetch may fail due to API access restrictions.</li>
+</ul>
+</div>
 <!-- Search and Filter -->
 <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
 <input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
@@ -472,15 +479,10 @@
 </div>
 <!-- Members List (Moved Down) -->
 <div class="flex items-center justify-between mb-4 mt-8">
-    <h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
-    <div class="flex items-center space-x-2">
-        <button id="toggle-members-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
-            Show Current Members (<span id="total-members-count">0</span>)
-        </button>
-        <button id="export-excel-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
-            Export to Excel
-        </button>
-    </div>
+<h2 class="text-2xl font-bold text-white text-lg">Current Members</h2><div class="flex gap-3 mb-4"><button class="bg-yellow-500 text-black px-4 py-2 rounded shadow hover:bg-yellow-600 transition-all" onclick="toggleDuplicatePanel()">Show Duplicates</button></div>
+<button class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm" id="toggle-members-btn">
+        Show Current Members (<span id="total-members-count">0</span>)
+    </button>
 </div>
 <div class="overflow-x-auto rounded-xl shadow-lg border border-gray-700 hidden" id="collapsible-members">
 <table class="min-w-full divide-y divide-gray-700 w-full block overflow-auto text-sm">
@@ -686,7 +688,6 @@
         const memberToDeleteName = document.getElementById('member-to-delete-name');
         const cancelDeleteButton = document.getElementById('cancel-delete-button');
         const confirmDeleteButton = document.getElementById('confirm-delete-button');
-        const exportExcelBtn = document.getElementById('export-excel-btn'); // New button for Excel export
 
         // Overdue Members specific DOM elements
         const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
@@ -2085,76 +2086,6 @@
             }
         }
 
-        /**
-         * Escapes a string for CSV format.
-         * Doubles double quotes and wraps the string in double quotes if it contains commas, double quotes, or newlines.
-         * @param {string} value - The string value to escape.
-         * @returns {string} The escaped string.
-         */
-        function escapeCsvValue(value) {
-            if (value === null || value === undefined) {
-                return '';
-            }
-            let stringValue = String(value);
-            // Check if the value contains a comma, double quote, or newline
-            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-                // Escape internal double quotes by doubling them
-                stringValue = stringValue.replace(/"/g, '""');
-                // Wrap the entire string in double quotes
-                return `"${stringValue}"`;
-            }
-            return stringValue;
-        }
-
-        /**
-         * Exports all member data to a CSV file.
-         */
-        function exportMembersToCsv() {
-            if (allMembers.length === 0) {
-                showMessage('No members to export.', 'info');
-                return;
-            }
-
-            const headers = [
-                "Member ID", "Name", "Phone Number", "Membership Type", "Start Date",
-                "Due Date", "Fee Amount", "Status", "Photo URL", "Created At",
-                "Updated At", "Created By", "Storage Source ID"
-            ];
-
-            const csvRows = [];
-            csvRows.push(headers.map(escapeCsvValue).join(',')); // Add header row
-
-            allMembers.forEach(member => {
-                const row = [
-                    member.memberId,
-                    member.name,
-                    member.phoneNumber,
-                    member.membershipType,
-                    member.startDate,
-                    member.dueDate,
-                    member.feeAmount.toFixed(2), // Format fee to 2 decimal places
-                    member.status,
-                    member.photoURL,
-                    member.createdAt ? member.createdAt.toDate().toLocaleString() : '', // Convert Timestamp to readable string
-                    member.updatedAt ? member.updatedAt.toDate().toLocaleString() : '', // Convert Timestamp to readable string
-                    member.createdBy,
-                    member.storageSourceId
-                ].map(escapeCsvValue); // Escape each value for CSV
-
-                csvRows.push(row.join(','));
-            });
-
-            const csvString = csvRows.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `gym_members_export_${new Date().toISOString().slice(0, 10)}.csv`; // Filename with date
-            document.body.appendChild(link); // Append to body to make it clickable
-            link.click(); // Programmatically click the link to trigger download
-            document.body.removeChild(link); // Clean up the temporary link
-            showMessage('Member data exported to CSV successfully!', 'success');
-        }
-
 
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
@@ -2172,8 +2103,8 @@
                 // Note: authDomain, storageBucket, etc. are derived from projectId for standard Firebase projects
                 // For simplicity here, we only update apiKey and projectId.
                 // In a real app, you'd need to save/load the full config object.
-                primaryFirebaseConfig.authDomain = `${savedFirebaseProjectId}.firebaseapp.com`;
-                primaryFirebaseConfig.storageBucket = `${savedFirebaseProjectId}.appspot.com`;
+                primaryFirebaseConfig.authDomain = `${newFirebaseProjectId}.firebaseapp.com`;
+                primaryFirebaseConfig.storageBucket = `${newFirebaseProjectId}.appspot.com`;
             }
             if (savedCloudName && savedUploadPreset) {
                 primaryCloudinaryConfig.cloudName = savedCloudName;
@@ -2742,8 +2673,6 @@
             fetchCloudinaryUsage();
         });
 
-        // Event listener for the new "Export to Excel" button
-        exportExcelBtn.addEventListener('click', exportMembersToCsv);
 
     </script>
 <div class="fixed bottom-0 inset-x-0 bg-gray-900 text-white flex justify-around items-center py-3 border-t border-gray-700 z-50" id="bottom-nav"><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-manage-member').click()">🏠
@@ -2777,5 +2706,96 @@ document.addEventListener('DOMContentLoaded', function() {
         // No need to set it here.
     }
 });
-</script></body>
+</script>
+<div class="fixed right-4 bottom-20 bg-gray-800 border border-yellow-500 shadow-xl text-white rounded-lg p-4 w-96 max-h-[70vh] overflow-y-auto hidden z-50" id="duplicate-panel">
+<div class="flex justify-between items-center mb-2">
+<h3 class="text-lg font-bold text-yellow-400">Duplicate Members</h3>
+<button class="text-sm text-gray-400 hover:text-white" onclick="toggleDuplicatePanel()">Close</button>
+</div>
+<div class="space-y-2 text-sm" id="duplicate-list"></div>
+<button class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded shadow" onclick="removeAllDuplicates()">Delete All Duplicates</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+function exportMembersToExcel() {
+  const rows = [['Name', 'Member ID', 'Phone', 'Type', 'Due']];
+  allMembers.forEach(member => {
+    rows.push([member.name, member.memberId, member.phoneNumber, member.membershipType, member.dueDate]);
+  });
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Members');
+  XLSX.writeFile(workbook, 'GymMembers.xlsx');
+}
+
+async function exportMembersToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(12);
+  doc.text('Gym Members List', 14, 16);
+  let y = 26;
+  allMembers.forEach((m, idx) => {
+    doc.text(`${idx + 1}. ${m.name} | ID: ${m.memberId} | ${m.phoneNumber} | ${m.membershipType} | Due: ${m.dueDate}`, 14, y);
+    y += 10;
+    if (y > 280) { doc.addPage(); y = 20; }
+  });
+  doc.save('GymMembers.pdf');
+}
+
+function toggleDuplicatePanel() {
+  const panel = document.getElementById('duplicate-panel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    renderDuplicateList();
+  }
+}
+
+function renderDuplicateList() {
+  const seen = new Set();
+  const duplicateMap = {};
+  allMembers.forEach(m => {
+    const key = m.name + m.phoneNumber + m.memberId;
+    if (seen.has(key)) {
+      if (!duplicateMap[key]) duplicateMap[key] = [];
+      duplicateMap[key].push(m);
+    } else {
+      seen.add(key);
+    }
+  });
+
+  const container = document.getElementById('duplicate-list');
+  container.innerHTML = '';
+  Object.values(duplicateMap).forEach(dupes => {
+    dupes.forEach(member => {
+      const div = document.createElement('div');
+      div.className = 'bg-gray-700 p-2 rounded flex justify-between items-center';
+      div.innerHTML = `<div>${member.name} (${member.memberId})</div>
+        <button onclick="deleteMemberById('${member.id}')" class="text-red-400 hover:text-white text-xs">Delete</button>`;
+      container.appendChild(div);
+    });
+  });
+
+  if (container.innerHTML === '') {
+    container.innerHTML = '<div class="text-gray-400">No duplicates found.</div>';
+  }
+}
+
+function removeAllDuplicates() {
+  if (!confirm('Are you sure you want to delete all duplicate entries?')) return;
+  const seen = new Set();
+  const toDelete = [];
+  allMembers.forEach(m => {
+    const key = m.name + m.phoneNumber + m.memberId;
+    if (seen.has(key)) {
+      toDelete.push(m.id);
+    } else {
+      seen.add(key);
+    }
+  });
+  toDelete.forEach(id => deleteMemberById(id));
+  showMessage('All duplicate members removed.', 'success');
+}
+</script>
+</body>
 </html>
