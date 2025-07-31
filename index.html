@@ -727,7 +727,75 @@
         const closePhotoModalBtn = document.getElementById('close-photo-modal-btn');
         const photoViewContent = document.getElementById('photo-view-content');
 
-        // Double tap detection variables
+        
+
+function renderMembers() {
+    membersTableBody.innerHTML = "";
+    overdueMembersTableBody.innerHTML = "";
+
+    const keyMap = new Map();
+
+    // Count how many times each combo of name, phone, ID appears
+    allMembers.forEach(member => {
+        const key = `${member.name?.toLowerCase().trim()}|${member.phoneNumber?.trim()}|${member.memberId?.toLowerCase().trim()}`;
+        keyMap.set(key, (keyMap.get(key) || 0) + 1);
+    });
+
+    allMembers.forEach(member => {
+        const row = document.createElement('tr');
+
+        const key = `${member.name?.toLowerCase().trim()}|${member.phoneNumber?.trim()}|${member.memberId?.toLowerCase().trim()}`;
+        const isDuplicate = keyMap.get(key) > 1;
+
+        if (isDuplicate) {
+            row.classList.add('bg-yellow-300', 'bg-opacity-40');
+        }
+
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap"><img src="${member.photo || 'https://placehold.co/40x40/4a5568/cbd5e0?text=No+Photo'}" class="member-photo" loading="lazy" /></td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.memberId || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.name || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.phoneNumber || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.membershipType || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.startDate || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.dueDate || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${defaultPlanAmounts[member.membershipType] || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${getDaysLeft(member.dueDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <button class="text-red-500 hover:text-red-700 font-semibold" onclick="confirmDeleteMember('${member.id}', '${member.name}')">Delete</button>
+            </td>
+        `;
+        membersTableBody.appendChild(row);
+    });
+
+    document.getElementById("total-members-count").textContent = allMembers.length;
+    noMembersMessage.classList.toggle('hidden', allMembers.length > 0);
+}
+
+
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap"><img src="${member.photo || 'https://placehold.co/40x40/4a5568/cbd5e0?text=No+Photo'}" class="member-photo" /></td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.memberId || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.name || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.phoneNumber || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.membershipType || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.startDate || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${member.dueDate || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${defaultPlanAmounts[member.membershipType] || ''}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-white">${getDaysLeft(member.dueDate)}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <button class="text-red-500 hover:text-red-700 font-semibold" onclick="confirmDeleteMember('${member.id}', '${member.name}')">Delete</button>
+            </td>
+        `;
+        membersTableBody.appendChild(row);
+    });
+
+    document.getElementById("total-members-count").textContent = allMembers.length;
+    noMembersMessage.classList.toggle('hidden', allMembers.length > 0);
+}
+
+
+// Double tap detection variables
         let lastTap = 0;
         const TAP_THRESHOLD = 300; // milliseconds
 
@@ -1243,39 +1311,7 @@
          * Renders the list of members in the table.
          * Applies search and filter criteria.
          */
-        function renderMembers() {
-            console.log('renderMembers called.');
-            membersTableBody.innerHTML = ''; // Clear existing current members rows
-            overdueMembersTableBody.innerHTML = ''; // Clear existing overdue members rows
-
-            const searchTerm = searchInput.value.toLowerCase();
-            const filterStatus = filterStatusSelect.value;
-
-            console.log(`Search Term: '${searchTerm}', Filter Status: '${filterStatus}'`);
-            console.log(`isCurrentMembersListHiddenByUser (before logic): ${isCurrentMembersListHiddenByUser}`);
-
-            const isSearchActive = searchTerm.length > 0;
-
-            // Overdue list should always be available and expanded by default
-            overdueMembersListContainer.classList.remove('hidden');
-
-            if (isSearchActive) {
-                console.log('Search is active. Showing Current Members list.');
-                // When search is active, always show Current Members list
-                collapsibleMembersSection.classList.remove('hidden');
-                toggleBtn.textContent = `Hide Current Members`;
-            } else {
-                console.log('Search is inactive. Reverting Current Members list to last user-toggled state.');
-                // When search is inactive (cleared)
-                // Current members list reverts to its last user-toggled state
-                if (isCurrentMembersListHiddenByUser) {
-                    collapsibleMembersSection.classList.add('hidden');
-                    toggleBtn.textContent = `Show Current Members (${allMembers.length})`;
-                } else {
-                    collapsibleMembersSection.classList.remove('hidden');
-                    toggleBtn.textContent = 'Hide Current Members';
-                }
-            }
+                    }
             console.log(`collapsibleMembersSection hidden: ${collapsibleMembersSection.classList.contains('hidden')}`);
             console.log(`overdueMembersListContainer hidden: ${overdueMembersListContainer.classList.contains('hidden')}`);
 
