@@ -109,8 +109,7 @@
             transform: translateY(0);
             opacity: 1;
         }
-    
-.duplicate-highlight { background-color: #facc15 !important; }</style>
+    </style>
 </head>
 <body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed"><div class="fixed inset-0 bg-black flex items-center justify-center z-50 text-white text-4xl font-bold" id="splash-screen">Made by SUSHANT SINGH</div>
 <!-- Message Display -->
@@ -155,14 +154,14 @@
 <!-- Main Gym App Section -->
 <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
 <div class="flex justify-between items-center mb-8">
-<div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
-<!-- Data Usage Icon and Display -->
-<svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-<path clip-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" fill-rule="evenodd"></path>
-</svg>
-<span>Data Used (Primary Firestore): <span class="font-semibold text-gray-200" id="data-usage-display">0 KB</span></span>
-</div>
-<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+    <div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
+        <!-- Data Usage Icon and Display -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-indigo-400">
+            <path fill-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" clip-rule="evenodd" />
+        </svg>
+        <span>Data Used (Primary Firestore): <span id="data-usage-display" class="font-semibold text-gray-200">0 KB</span></span>
+    </div>
+    <h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
 <!-- Date, Time, Day Display -->
 <div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
 <div class="text-xl font-semibold text-gray-200" id="current-time"></div>
@@ -192,7 +191,7 @@
                 ID Card View
             </button>
 <button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-add-storage">
-                Cloud Config &amp; Storage
+                Cloud Config & Storage
             </button>
 </div>
 <!-- Tab Content: Manage Member Details (Existing Form) -->
@@ -397,39 +396,42 @@
 </div>
 <p class="text-gray-400 text-center p-6" id="no-id-card-selected-message">Select a member to view their ID card.</p>
 </div>
+
 <!-- Tab Content: Cloud Config & Storage -->
 <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-storage">
-<h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud &amp; View Storage</h2>
-<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
-<div>
-<label class="block text-sm font-medium text-gray-300" for="firebase-api-key-input">Firebase API Key</label>
-<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="firebase-api-key-input" placeholder="Your Firebase API Key" type="text"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-300" for="firebase-project-id-input">Firebase Project ID</label>
-<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="firebase-project-id-input" placeholder="Your Firebase Project ID" type="text"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
-<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="cloudinary-cloud-name-input" placeholder="Your Cloudinary Cloud Name" type="text"/>
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
-<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="cloudinary-upload-preset-input" placeholder="Your Cloudinary Upload Preset" type="text"/>
-</div>
-<div class="md:col-span-2 flex justify-end pt-4">
-<button class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3" id="apply-config-btn" type="button">
-        Save &amp; Apply
+  <h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud & View Storage</h2>
+  <form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
+    <div>
+      <label class="block text-sm font-medium text-gray-300" for="firebase-api-key-input">Firebase API Key</label>
+      <input type="text" id="firebase-api-key-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Firebase API Key"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-300" for="firebase-project-id-input">Firebase Project ID</label>
+      <input type="text" id="firebase-project-id-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Firebase Project ID"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
+      <input type="text" id="cloudinary-cloud-name-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Cloudinary Cloud Name"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
+      <input type="text" id="cloudinary-upload-preset-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Cloudinary Upload Preset"/>
+    </div>
+    <div class="md:col-span-2 flex justify-end pt-4">
+      <button type="button" id="apply-config-btn" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3">
+        Save & Apply
       </button>
+    </div>
+  </form>
+
+  <h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
+  <ul class="text-gray-300 space-y-2 text-sm">
+    <li><strong>Primary Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
+    <li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
+    <li class="text-xs text-gray-500 mt-2">Note: Cloudinary usage fetch may fail due to API access restrictions.</li>
+  </ul>
 </div>
-</form>
-<h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
-<ul class="text-gray-300 space-y-2 text-sm">
-<li><strong>Primary Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
-<li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
-<li class="text-xs text-gray-500 mt-2">Note: Cloudinary usage fetch may fail due to API access restrictions.</li>
-</ul>
-</div>
+
 <!-- Search and Filter -->
 <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
 <input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
@@ -470,8 +472,8 @@
 </div>
 <!-- Members List (Moved Down) -->
 <div class="flex items-center justify-between mb-4 mt-8">
-<h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
-<button class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm" id="toggle-members-btn">
+    <h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
+    <button id="toggle-members-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
         Show Current Members (<span id="total-members-count">0</span>)
     </button>
 </div>
@@ -2697,142 +2699,5 @@ document.addEventListener('DOMContentLoaded', function() {
         // No need to set it here.
     }
 });
-</script>
-<script>
-// Duplicate detection and highlight logic
-
-function isDuplicateMember(newMember) {
-    return allMembers.some(member =>
-        member.name?.toLowerCase().trim() === newMember.name.toLowerCase().trim() &&
-        member.phoneNumber?.replace(/\D/g, '') === newMember.phoneNumber.replace(/\D/g, '') &&
-        member.memberId?.toLowerCase().trim() === newMember.memberId.toLowerCase().trim()
-    );
-}
-
-function highlightDuplicates() {
-    const rows = document.querySelectorAll("#members-table-body tr");
-    const seen = new Set();
-    rows.forEach(row => {
-        const name = row.querySelector(".col-name")?.textContent.trim().toLowerCase();
-        const phone = row.querySelector(".col-phone")?.textContent.replace(/\D/g, '');
-        const id = row.querySelector(".col-id")?.textContent.trim().toLowerCase();
-        const key = name + phone + id;
-
-        if (seen.has(key)) {
-            row.classList.add("duplicate-highlight");
-        } else {
-            row.classList.remove("duplicate-highlight");
-            seen.add(key);
-        }
-    });
-}
-
-// Hook into form submit
-document.getElementById("member-form").addEventListener("submit", function(event) {
-    const newMember = {
-        name: document.getElementById("name").value,
-        phoneNumber: document.getElementById("phone-number").value,
-        memberId: document.getElementById("member-id").value
-    };
-
-    if (isDuplicateMember(newMember)) {
-        event.preventDefault();
-        showMessage("Duplicate member: same name, phone, and ID already exists.", "error");
-        return false;
-    }
-});
-
-// Re-highlight on member render
-const originalRenderMembers = window.renderMembers;
-window.renderMembers = function() {
-    if (originalRenderMembers) originalRenderMembers();
-    highlightDuplicates();
-};
-</script>
-<script>
-// Restore Firebase and Cloudinary Config from localStorage
-function loadSavedConfig() {
-    const firebaseApiKey = localStorage.getItem("firebase-api-key");
-    const firebaseProjectId = localStorage.getItem("firebase-project-id");
-    const cloudinaryCloudName = localStorage.getItem("cloudinary-cloud-name");
-    const cloudinaryUploadPreset = localStorage.getItem("cloudinary-upload-preset");
-
-    if (firebaseApiKey && firebaseProjectId) {
-        primaryFirebaseConfig.apiKey = firebaseApiKey;
-        primaryFirebaseConfig.projectId = firebaseProjectId;
-        primaryFirebaseConfig.authDomain = `${firebaseProjectId}.firebaseapp.com`;
-        primaryFirebaseConfig.storageBucket = `${firebaseProjectId}.appspot.com`;
-        primaryFirebaseConfig.messagingSenderId = "default";
-        primaryFirebaseConfig.appId = "default";
-        primaryFirebaseConfig.measurementId = "G-default";
-    }
-
-    if (cloudinaryCloudName && cloudinaryUploadPreset) {
-        primaryCloudinaryConfig.cloudName = cloudinaryCloudName;
-        primaryCloudinaryConfig.uploadPreset = cloudinaryUploadPreset;
-    }
-}
-
-// Call it on load
-loadSavedConfig();
-</script>
-<script>
-// Save config to localStorage when Apply button is clicked
-document.getElementById("apply-config-btn").addEventListener("click", () => {
-    const firebaseApiKey = document.getElementById("firebase-api-key-input").value.trim();
-    const firebaseProjectId = document.getElementById("firebase-project-id-input").value.trim();
-    const cloudinaryCloudName = document.getElementById("cloudinary-cloud-name-input").value.trim();
-    const cloudinaryUploadPreset = document.getElementById("cloudinary-upload-preset-input").value.trim();
-
-    if (firebaseApiKey && firebaseProjectId) {
-        localStorage.setItem("firebase-api-key", firebaseApiKey);
-        localStorage.setItem("firebase-project-id", firebaseProjectId);
-    }
-
-    if (cloudinaryCloudName && cloudinaryUploadPreset) {
-        localStorage.setItem("cloudinary-cloud-name", cloudinaryCloudName);
-        localStorage.setItem("cloudinary-upload-preset", cloudinaryUploadPreset);
-    }
-
-    alert("Config saved. Please refresh the page to apply.");
-});
-</script>
-<script>
-// Add duplicate check for "Add Existing Member" form
-document.getElementById("existing-member-form").addEventListener("submit", function(event) {
-    const newMember = {
-        name: document.getElementById("existing-name").value,
-        phoneNumber: document.getElementById("existing-phone-number").value,
-        memberId: document.getElementById("existing-member-id").value
-    };
-
-    if (isDuplicateMember(newMember)) {
-        event.preventDefault();
-        showMessage("Duplicate member detected in 'Add Existing Member'.", "error");
-        return false;
-    }
-});
-</script>
-
-<script>
-// Patch: When rendering member rows, ensure cells include identifiable classes
-const originalRenderMembers = window.renderMembers;
-window.renderMembers = function () {
-    if (originalRenderMembers) originalRenderMembers();
-
-    // Patch table rows after render
-    const rows = document.querySelectorAll("#members-table-body tr");
-    rows.forEach(row => {
-        const cells = row.querySelectorAll("td");
-        if (cells.length >= 3) {
-            cells[1].classList.add("col-id");
-            cells[2].classList.add("col-name");
-            cells[3].classList.add("col-phone");
-        }
-    });
-
-    highlightDuplicates();
-};
-</script>
-</body>
+</script></body>
 </html>
