@@ -473,9 +473,14 @@
 <!-- Members List (Moved Down) -->
 <div class="flex items-center justify-between mb-4 mt-8">
     <h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
-    <button id="toggle-members-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
-        Show Current Members (<span id="total-members-count">0</span>)
-    </button>
+    <div class="flex items-center space-x-2">
+        <button id="toggle-members-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+            Show Current Members (<span id="total-members-count">0</span>)
+        </button>
+        <button id="export-excel-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+            Export to Excel
+        </button>
+    </div>
 </div>
 <div class="overflow-x-auto rounded-xl shadow-lg border border-gray-700 hidden" id="collapsible-members">
 <table class="min-w-full divide-y divide-gray-700 w-full block overflow-auto text-sm">
@@ -681,6 +686,7 @@
         const memberToDeleteName = document.getElementById('member-to-delete-name');
         const cancelDeleteButton = document.getElementById('cancel-delete-button');
         const confirmDeleteButton = document.getElementById('confirm-delete-button');
+        const exportExcelBtn = document.getElementById('export-excel-btn'); // New button for Excel export
 
         // Overdue Members specific DOM elements
         const overdueMembersTableBody = document.getElementById('overdue-members-table-body');
@@ -2079,6 +2085,76 @@
             }
         }
 
+        /**
+         * Escapes a string for CSV format.
+         * Doubles double quotes and wraps the string in double quotes if it contains commas, double quotes, or newlines.
+         * @param {string} value - The string value to escape.
+         * @returns {string} The escaped string.
+         */
+        function escapeCsvValue(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            let stringValue = String(value);
+            // Check if the value contains a comma, double quote, or newline
+            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                // Escape internal double quotes by doubling them
+                stringValue = stringValue.replace(/"/g, '""');
+                // Wrap the entire string in double quotes
+                return `"${stringValue}"`;
+            }
+            return stringValue;
+        }
+
+        /**
+         * Exports all member data to a CSV file.
+         */
+        function exportMembersToCsv() {
+            if (allMembers.length === 0) {
+                showMessage('No members to export.', 'info');
+                return;
+            }
+
+            const headers = [
+                "Member ID", "Name", "Phone Number", "Membership Type", "Start Date",
+                "Due Date", "Fee Amount", "Status", "Photo URL", "Created At",
+                "Updated At", "Created By", "Storage Source ID"
+            ];
+
+            const csvRows = [];
+            csvRows.push(headers.map(escapeCsvValue).join(',')); // Add header row
+
+            allMembers.forEach(member => {
+                const row = [
+                    member.memberId,
+                    member.name,
+                    member.phoneNumber,
+                    member.membershipType,
+                    member.startDate,
+                    member.dueDate,
+                    member.feeAmount.toFixed(2), // Format fee to 2 decimal places
+                    member.status,
+                    member.photoURL,
+                    member.createdAt ? member.createdAt.toDate().toLocaleString() : '', // Convert Timestamp to readable string
+                    member.updatedAt ? member.updatedAt.toDate().toLocaleString() : '', // Convert Timestamp to readable string
+                    member.createdBy,
+                    member.storageSourceId
+                ].map(escapeCsvValue); // Escape each value for CSV
+
+                csvRows.push(row.join(','));
+            });
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `gym_members_export_${new Date().toISOString().slice(0, 10)}.csv`; // Filename with date
+            document.body.appendChild(link); // Append to body to make it clickable
+            link.click(); // Programmatically click the link to trigger download
+            document.body.removeChild(link); // Clean up the temporary link
+            showMessage('Member data exported to CSV successfully!', 'success');
+        }
+
 
         // Initialize Firebase and App Password Check on window load
         window.onload = async function() {
@@ -2096,8 +2172,8 @@
                 // Note: authDomain, storageBucket, etc. are derived from projectId for standard Firebase projects
                 // For simplicity here, we only update apiKey and projectId.
                 // In a real app, you'd need to save/load the full config object.
-                primaryFirebaseConfig.authDomain = `${newFirebaseProjectId}.firebaseapp.com`;
-                primaryFirebaseConfig.storageBucket = `${newFirebaseProjectId}.appspot.com`;
+                primaryFirebaseConfig.authDomain = `${savedFirebaseProjectId}.firebaseapp.com`;
+                primaryFirebaseConfig.storageBucket = `${savedFirebaseProjectId}.appspot.com`;
             }
             if (savedCloudName && savedUploadPreset) {
                 primaryCloudinaryConfig.cloudName = savedCloudName;
@@ -2666,6 +2742,8 @@
             fetchCloudinaryUsage();
         });
 
+        // Event listener for the new "Export to Excel" button
+        exportExcelBtn.addEventListener('click', exportMembersToCsv);
 
     </script>
 <div class="fixed bottom-0 inset-x-0 bg-gray-900 text-white flex justify-around items-center py-3 border-t border-gray-700 z-50" id="bottom-nav"><button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-manage-member').click()">🏠
