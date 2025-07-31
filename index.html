@@ -109,7 +109,8 @@
             transform: translateY(0);
             opacity: 1;
         }
-    </style>
+    
+.duplicate-highlight { background-color: #facc15 !important; }</style>
 </head>
 <body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed"><div class="fixed inset-0 bg-black flex items-center justify-center z-50 text-white text-4xl font-bold" id="splash-screen">Made by SUSHANT SINGH</div>
 <!-- Message Display -->
@@ -154,14 +155,14 @@
 <!-- Main Gym App Section -->
 <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
 <div class="flex justify-between items-center mb-8">
-    <div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
-        <!-- Data Usage Icon and Display -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-indigo-400">
-            <path fill-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" clip-rule="evenodd" />
-        </svg>
-        <span>Data Used (Primary Firestore): <span id="data-usage-display" class="font-semibold text-gray-200">0 KB</span></span>
-    </div>
-    <h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+<div class="flex items-center space-x-2 text-gray-400 text-sm font-medium">
+<!-- Data Usage Icon and Display -->
+<svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M3.5 4A1.5 1.5 0 002 5.5v9A1.5 1.5 0 003.5 16h13A1.5 1.5 0 0018 14.5v-9A1.5 1.5 0 0016.5 4h-13zM12 9a1 1 0 100 2h1a1 1 0 100-2h-1zm-4 0a1 1 0 100 2h1a1 1 0 100-2H8z" fill-rule="evenodd"></path>
+</svg>
+<span>Data Used (Primary Firestore): <span class="font-semibold text-gray-200" id="data-usage-display">0 KB</span></span>
+</div>
+<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
 <!-- Date, Time, Day Display -->
 <div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
 <div class="text-xl font-semibold text-gray-200" id="current-time"></div>
@@ -191,7 +192,7 @@
                 ID Card View
             </button>
 <button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-add-storage">
-                Cloud Config & Storage
+                Cloud Config &amp; Storage
             </button>
 </div>
 <!-- Tab Content: Manage Member Details (Existing Form) -->
@@ -245,7 +246,7 @@
                         </button>
 </div>
 <div class="flex items-center space-x-4">
-<img loading="lazy" alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
 <video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" id="camera-feed" playsinline=""></video>
 <canvas class="hidden" id="camera-canvas"></canvas>
 </div>
@@ -313,7 +314,7 @@
                         </button>
 </div>
 <div class="flex items-center space-x-4">
-<img loading="lazy" alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="existing-photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="existing-photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
 <video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" id="existing-camera-feed" playsinline=""></video>
 <canvas class="hidden" id="existing-camera-canvas"></canvas>
 </div>
@@ -381,7 +382,7 @@
 </div>
 <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-6 hidden" id="id-card-display">
 <div class="flex-shrink-0">
-<img loading="lazy" alt="Member Photo" class="id-card-photo" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
+<img alt="Member Photo" class="id-card-photo" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
 </div>
 <div class="flex-grow text-white">
 <h3 class="text-3xl font-bold mb-2 text-lg" id="id-card-name"></h3>
@@ -396,42 +397,39 @@
 </div>
 <p class="text-gray-400 text-center p-6" id="no-id-card-selected-message">Select a member to view their ID card.</p>
 </div>
-
 <!-- Tab Content: Cloud Config & Storage -->
 <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-storage">
-  <h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud & View Storage</h2>
-  <form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="firebase-api-key-input">Firebase API Key</label>
-      <input type="text" id="firebase-api-key-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Firebase API Key"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="firebase-project-id-input">Firebase Project ID</label>
-      <input type="text" id="firebase-project-id-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Firebase Project ID"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
-      <input type="text" id="cloudinary-cloud-name-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Cloudinary Cloud Name"/>
-    </div>
-    <div>
-      <label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
-      <input type="text" id="cloudinary-upload-preset-input" class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" placeholder="Your Cloudinary Upload Preset"/>
-    </div>
-    <div class="md:col-span-2 flex justify-end pt-4">
-      <button type="button" id="apply-config-btn" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3">
-        Save & Apply
-      </button>
-    </div>
-  </form>
-
-  <h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
-  <ul class="text-gray-300 space-y-2 text-sm">
-    <li><strong>Primary Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
-    <li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
-    <li class="text-xs text-gray-500 mt-2">Note: Cloudinary usage fetch may fail due to API access restrictions.</li>
-  </ul>
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">Configure Cloud &amp; View Storage</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="config-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="firebase-api-key-input">Firebase API Key</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="firebase-api-key-input" placeholder="Your Firebase API Key" type="text"/>
 </div>
-
+<div>
+<label class="block text-sm font-medium text-gray-300" for="firebase-project-id-input">Firebase Project ID</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="firebase-project-id-input" placeholder="Your Firebase Project ID" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="cloudinary-cloud-name-input" placeholder="Your Cloudinary Cloud Name" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
+<input class="mt-1 block w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600" id="cloudinary-upload-preset-input" placeholder="Your Cloudinary Upload Preset" type="text"/>
+</div>
+<div class="md:col-span-2 flex justify-end pt-4">
+<button class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md w-full mb-3" id="apply-config-btn" type="button">
+        Save &amp; Apply
+      </button>
+</div>
+</form>
+<h3 class="text-xl font-semibold text-white mt-6 mb-2">Storage Overview</h3>
+<ul class="text-gray-300 space-y-2 text-sm">
+<li><strong>Primary Firebase Usage:</strong> <span id="firebase-usage-display">Calculating...</span></li>
+<li><strong>Cloudinary Usage:</strong> <span id="cloudinary-usage-display">Fetching...</span></li>
+<li class="text-xs text-gray-500 mt-2">Note: Cloudinary usage fetch may fail due to API access restrictions.</li>
+</ul>
+</div>
 <!-- Search and Filter -->
 <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
 <input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
@@ -472,8 +470,8 @@
 </div>
 <!-- Members List (Moved Down) -->
 <div class="flex items-center justify-between mb-4 mt-8">
-    <h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
-    <button id="toggle-members-btn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+<h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
+<button class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm" id="toggle-members-btn">
         Show Current Members (<span id="total-members-count">0</span>)
     </button>
 </div>
@@ -527,7 +525,7 @@
 <button class="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold focus:outline-none w-full mb-3" id="close-photo-modal-btn">
                 ×
             </button>
-<img loading="lazy" alt="Enlarged Member Photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" id="enlarged-photo" src=""/>
+<img alt="Enlarged Member Photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" id="enlarged-photo" src=""/>
 </div>
 </div>
 <!-- Firebase SDK -->
@@ -537,22 +535,7 @@
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
-        
-function logToDebug(...args) {
-    const logArea = document.getElementById("debug-log");
-    if (logArea) {
-        logArea.style.display = "block";
-        const line = document.createElement("div");
-        line.textContent = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(" ");
-        logArea.appendChild(line);
-        logArea.scrollTop = logArea.scrollHeight;
-    }
-    console.log(...args);
-}
-window.logToDebug = logToDebug;
-
-
-// Global variables for Firebase instances
+        // Global variables for Firebase instances
         let firebaseAppInstance; // Stores the initialized Firebase app instance
         let firestoreDb; // Stores Firestore db instance
         let firebaseAuth; // Stores Auth instance
@@ -742,75 +725,7 @@ window.logToDebug = logToDebug;
         const closePhotoModalBtn = document.getElementById('close-photo-modal-btn');
         const photoViewContent = document.getElementById('photo-view-content');
 
-        
-
-function renderMembers() {
-    membersTableBody.innerHTML = "";
-    overdueMembersTableBody.innerHTML = "";
-
-    const keyMap = new Map();
-
-    // Count how many times each combo of name, phone, ID appears
-    allMembers.forEach(member => {
-        const key = `${member.name?.toLowerCase().trim()}|${member.phoneNumber?.trim()}|${member.memberId?.toLowerCase().trim()}`;
-        keyMap.set(key, (keyMap.get(key) || 0) + 1);
-    });
-
-    allMembers.forEach(member => {
-        const row = document.createElement('tr');
-
-        const key = `${member.name?.toLowerCase().trim()}|${member.phoneNumber?.trim()}|${member.memberId?.toLowerCase().trim()}`;
-        const isDuplicate = keyMap.get(key) > 1;
-
-        if (isDuplicate) {
-            row.classList.add('bg-yellow-300', 'bg-opacity-40');
-        }
-
-        row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap"><img src="${member.photo || 'https://placehold.co/40x40/4a5568/cbd5e0?text=No+Photo'}" class="member-photo" loading="lazy" /></td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.memberId || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.name || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.phoneNumber || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.membershipType || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.startDate || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.dueDate || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${defaultPlanAmounts[member.membershipType] || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${getDaysLeft(member.dueDate)}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <button class="text-red-500 hover:text-red-700 font-semibold" onclick="confirmDeleteMember('${member.id}', '${member.name}')">Delete</button>
-            </td>
-        `;
-        membersTableBody.appendChild(row);
-    });
-
-    document.getElementById("total-members-count").textContent = allMembers.length;
-    noMembersMessage.classList.toggle('hidden', allMembers.length > 0);
-}
-
-
-        row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap"><img src="${member.photo || 'https://placehold.co/40x40/4a5568/cbd5e0?text=No+Photo'}" class="member-photo" /></td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.memberId || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.name || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.phoneNumber || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.membershipType || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.startDate || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${member.dueDate || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${defaultPlanAmounts[member.membershipType] || ''}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-white">${getDaysLeft(member.dueDate)}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <button class="text-red-500 hover:text-red-700 font-semibold" onclick="confirmDeleteMember('${member.id}', '${member.name}')">Delete</button>
-            </td>
-        `;
-        membersTableBody.appendChild(row);
-    });
-
-    document.getElementById("total-members-count").textContent = allMembers.length;
-    noMembersMessage.classList.toggle('hidden', allMembers.length > 0);
-}
-
-
-// Double tap detection variables
+        // Double tap detection variables
         let lastTap = 0;
         const TAP_THRESHOLD = 300; // milliseconds
 
@@ -1326,7 +1241,39 @@ function renderMembers() {
          * Renders the list of members in the table.
          * Applies search and filter criteria.
          */
-                    }
+        function renderMembers() {
+            console.log('renderMembers called.');
+            membersTableBody.innerHTML = ''; // Clear existing current members rows
+            overdueMembersTableBody.innerHTML = ''; // Clear existing overdue members rows
+
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterStatus = filterStatusSelect.value;
+
+            console.log(`Search Term: '${searchTerm}', Filter Status: '${filterStatus}'`);
+            console.log(`isCurrentMembersListHiddenByUser (before logic): ${isCurrentMembersListHiddenByUser}`);
+
+            const isSearchActive = searchTerm.length > 0;
+
+            // Overdue list should always be available and expanded by default
+            overdueMembersListContainer.classList.remove('hidden');
+
+            if (isSearchActive) {
+                console.log('Search is active. Showing Current Members list.');
+                // When search is active, always show Current Members list
+                collapsibleMembersSection.classList.remove('hidden');
+                toggleBtn.textContent = `Hide Current Members`;
+            } else {
+                console.log('Search is inactive. Reverting Current Members list to last user-toggled state.');
+                // When search is inactive (cleared)
+                // Current members list reverts to its last user-toggled state
+                if (isCurrentMembersListHiddenByUser) {
+                    collapsibleMembersSection.classList.add('hidden');
+                    toggleBtn.textContent = `Show Current Members (${allMembers.length})`;
+                } else {
+                    collapsibleMembersSection.classList.remove('hidden');
+                    toggleBtn.textContent = 'Hide Current Members';
+                }
+            }
             console.log(`collapsibleMembersSection hidden: ${collapsibleMembersSection.classList.contains('hidden')}`);
             console.log(`overdueMembersListContainer hidden: ${overdueMembersListContainer.classList.contains('hidden')}`);
 
@@ -1384,7 +1331,7 @@ function renderMembers() {
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
                             <div class="flex items-center space-x-2">
                                 <a href="${photoSrc}" target="_blank" class="block">
-                                    <img loading="lazy" src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
+                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
                                 </a>
                                 <!-- Display storage source ID -->
                                 <span class="text-xs text-gray-400" title="Storage Source">${member.storageSourceId === 'primary' ? 'P' : member.storageSourceId.substring(0, 4)}</span>
@@ -1460,7 +1407,7 @@ function renderMembers() {
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
                                 <div class="flex items-center space-x-2">
                                     <a href="${photoSrc}" target="_blank" class="block">
-                                        <img loading="lazy" src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
+                                        <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
                                     </a>
                                     <!-- Display storage source ID -->
                                     <span class="text-xs text-gray-400" title="Storage Source">${member.storageSourceId === 'primary' ? 'P' : member.storageSourceId.substring(0, 4)}</span>
@@ -2268,17 +2215,6 @@ function renderMembers() {
 
         // Main Member Form Event Listener (for adding new or updating existing)
         memberForm.addEventListener('submit', async (e) => {
-        // Duplicate check logic
-        const duplicate = allMembers.find(m =>
-            m.name?.toLowerCase().trim() === nameInput.value.trim().toLowerCase() &&
-            m.phoneNumber?.trim() === phoneNumberInput.value.trim() &&
-            m.memberId?.trim().toLowerCase() === memberIdInput.value.trim().toLowerCase()
-        );
-        if (duplicate) {
-            showMessage('Duplicate member exists with same Name, Phone Number, and Member ID.', 'error');
-            return;
-        }
-
             e.preventDefault();
             const targetDb = firestoreDb; // Always use the current primary DB
             if (!targetDb || !currentUserId) {
@@ -2762,8 +2698,56 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<!-- Debug Console -->
-<div id="debug-log" style="position:fixed;bottom:0;left:0;width:100%;background:#1a202c;color:#90cdf4;font-family:monospace;padding:10px;font-size:12px;z-index:9999;max-height:150px;overflow-y:auto;display:none;"></div>
+<script>
+// Duplicate detection and highlight logic
 
+function isDuplicateMember(newMember) {
+    return allMembers.some(member =>
+        member.name?.toLowerCase().trim() === newMember.name.toLowerCase().trim() &&
+        member.phoneNumber?.replace(/\D/g, '') === newMember.phoneNumber.replace(/\D/g, '') &&
+        member.memberId?.toLowerCase().trim() === newMember.memberId.toLowerCase().trim()
+    );
+}
+
+function highlightDuplicates() {
+    const rows = document.querySelectorAll("#members-table-body tr");
+    const seen = new Set();
+    rows.forEach(row => {
+        const name = row.querySelector(".col-name")?.textContent.trim().toLowerCase();
+        const phone = row.querySelector(".col-phone")?.textContent.replace(/\D/g, '');
+        const id = row.querySelector(".col-id")?.textContent.trim().toLowerCase();
+        const key = name + phone + id;
+
+        if (seen.has(key)) {
+            row.classList.add("duplicate-highlight");
+        } else {
+            row.classList.remove("duplicate-highlight");
+            seen.add(key);
+        }
+    });
+}
+
+// Hook into form submit
+document.getElementById("member-form").addEventListener("submit", function(event) {
+    const newMember = {
+        name: document.getElementById("name").value,
+        phoneNumber: document.getElementById("phone-number").value,
+        memberId: document.getElementById("member-id").value
+    };
+
+    if (isDuplicateMember(newMember)) {
+        event.preventDefault();
+        showMessage("Duplicate member: same name, phone, and ID already exists.", "error");
+        return false;
+    }
+});
+
+// Re-highlight on member render
+const originalRenderMembers = window.renderMembers;
+window.renderMembers = function() {
+    if (originalRenderMembers) originalRenderMembers();
+    highlightDuplicates();
+};
+</script>
 </body>
 </html>
