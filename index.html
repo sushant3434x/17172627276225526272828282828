@@ -2749,7 +2749,6 @@ window.renderMembers = function() {
     highlightDuplicates();
 };
 </script>
-
 <script>
 // Restore Firebase and Cloudinary Config from localStorage
 function loadSavedConfig() {
@@ -2776,6 +2775,64 @@ function loadSavedConfig() {
 
 // Call it on load
 loadSavedConfig();
+</script>
+<script>
+// Save config to localStorage when Apply button is clicked
+document.getElementById("apply-config-btn").addEventListener("click", () => {
+    const firebaseApiKey = document.getElementById("firebase-api-key-input").value.trim();
+    const firebaseProjectId = document.getElementById("firebase-project-id-input").value.trim();
+    const cloudinaryCloudName = document.getElementById("cloudinary-cloud-name-input").value.trim();
+    const cloudinaryUploadPreset = document.getElementById("cloudinary-upload-preset-input").value.trim();
+
+    if (firebaseApiKey && firebaseProjectId) {
+        localStorage.setItem("firebase-api-key", firebaseApiKey);
+        localStorage.setItem("firebase-project-id", firebaseProjectId);
+    }
+
+    if (cloudinaryCloudName && cloudinaryUploadPreset) {
+        localStorage.setItem("cloudinary-cloud-name", cloudinaryCloudName);
+        localStorage.setItem("cloudinary-upload-preset", cloudinaryUploadPreset);
+    }
+
+    alert("Config saved. Please refresh the page to apply.");
+});
+</script>
+<script>
+// Add duplicate check for "Add Existing Member" form
+document.getElementById("existing-member-form").addEventListener("submit", function(event) {
+    const newMember = {
+        name: document.getElementById("existing-name").value,
+        phoneNumber: document.getElementById("existing-phone-number").value,
+        memberId: document.getElementById("existing-member-id").value
+    };
+
+    if (isDuplicateMember(newMember)) {
+        event.preventDefault();
+        showMessage("Duplicate member detected in 'Add Existing Member'.", "error");
+        return false;
+    }
+});
+</script>
+
+<script>
+// Patch: When rendering member rows, ensure cells include identifiable classes
+const originalRenderMembers = window.renderMembers;
+window.renderMembers = function () {
+    if (originalRenderMembers) originalRenderMembers();
+
+    // Patch table rows after render
+    const rows = document.querySelectorAll("#members-table-body tr");
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length >= 3) {
+            cells[1].classList.add("col-id");
+            cells[2].classList.add("col-name");
+            cells[3].classList.add("col-phone");
+        }
+    });
+
+    highlightDuplicates();
+};
 </script>
 </body>
 </html>
