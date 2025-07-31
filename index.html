@@ -245,7 +245,7 @@
                         </button>
 </div>
 <div class="flex items-center space-x-4">
-<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<img loading="lazy" alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
 <video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" id="camera-feed" playsinline=""></video>
 <canvas class="hidden" id="camera-canvas"></canvas>
 </div>
@@ -313,7 +313,7 @@
                         </button>
 </div>
 <div class="flex items-center space-x-4">
-<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="existing-photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<img loading="lazy" alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="existing-photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
 <video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-500 shadow-sm hidden" id="existing-camera-feed" playsinline=""></video>
 <canvas class="hidden" id="existing-camera-canvas"></canvas>
 </div>
@@ -381,7 +381,7 @@
 </div>
 <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-600 flex flex-col md:flex-row items-center md:items-start gap-6 hidden" id="id-card-display">
 <div class="flex-shrink-0">
-<img alt="Member Photo" class="id-card-photo" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
+<img loading="lazy" alt="Member Photo" class="id-card-photo" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
 </div>
 <div class="flex-grow text-white">
 <h3 class="text-3xl font-bold mb-2 text-lg" id="id-card-name"></h3>
@@ -527,7 +527,7 @@
 <button class="absolute top-3 right-3 text-gray-400 hover:text-white text-3xl font-bold focus:outline-none w-full mb-3" id="close-photo-modal-btn">
                 ×
             </button>
-<img alt="Enlarged Member Photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" id="enlarged-photo" src=""/>
+<img loading="lazy" alt="Enlarged Member Photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" id="enlarged-photo" src=""/>
 </div>
 </div>
 <!-- Firebase SDK -->
@@ -1333,7 +1333,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
                             <div class="flex items-center space-x-2">
                                 <a href="${photoSrc}" target="_blank" class="block">
-                                    <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
+                                    <img loading="lazy" src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
                                 </a>
                                 <!-- Display storage source ID -->
                                 <span class="text-xs text-gray-400" title="Storage Source">${member.storageSourceId === 'primary' ? 'P' : member.storageSourceId.substring(0, 4)}</span>
@@ -1409,7 +1409,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
                                 <div class="flex items-center space-x-2">
                                     <a href="${photoSrc}" target="_blank" class="block">
-                                        <img src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
+                                        <img loading="lazy" src="${photoSrc}" alt="Member Photo" class="member-photo cursor-pointer" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4a5568/cbd5e0?text=👤';">
                                     </a>
                                     <!-- Display storage source ID -->
                                     <span class="text-xs text-gray-400" title="Storage Source">${member.storageSourceId === 'primary' ? 'P' : member.storageSourceId.substring(0, 4)}</span>
@@ -2219,7 +2219,7 @@
         memberForm.addEventListener('submit', async (e) => {
         // Duplicate check logic
         const duplicate = allMembers.find(m =>
-            m.name?.toLowerCase() === nameInput.value.trim().toLowerCase() &&
+            m.name?.toLowerCase().trim() === nameInput.value.trim().toLowerCase() &&
             m.phoneNumber?.trim() === phoneNumberInput.value.trim() &&
             m.memberId?.trim().toLowerCase() === memberIdInput.value.trim().toLowerCase()
         );
