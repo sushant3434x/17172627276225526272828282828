@@ -2749,5 +2749,33 @@ window.renderMembers = function() {
     highlightDuplicates();
 };
 </script>
+
+<script>
+// Restore Firebase and Cloudinary Config from localStorage
+function loadSavedConfig() {
+    const firebaseApiKey = localStorage.getItem("firebase-api-key");
+    const firebaseProjectId = localStorage.getItem("firebase-project-id");
+    const cloudinaryCloudName = localStorage.getItem("cloudinary-cloud-name");
+    const cloudinaryUploadPreset = localStorage.getItem("cloudinary-upload-preset");
+
+    if (firebaseApiKey && firebaseProjectId) {
+        primaryFirebaseConfig.apiKey = firebaseApiKey;
+        primaryFirebaseConfig.projectId = firebaseProjectId;
+        primaryFirebaseConfig.authDomain = `${firebaseProjectId}.firebaseapp.com`;
+        primaryFirebaseConfig.storageBucket = `${firebaseProjectId}.appspot.com`;
+        primaryFirebaseConfig.messagingSenderId = "default";
+        primaryFirebaseConfig.appId = "default";
+        primaryFirebaseConfig.measurementId = "G-default";
+    }
+
+    if (cloudinaryCloudName && cloudinaryUploadPreset) {
+        primaryCloudinaryConfig.cloudName = cloudinaryCloudName;
+        primaryCloudinaryConfig.uploadPreset = cloudinaryUploadPreset;
+    }
+}
+
+// Call it on load
+loadSavedConfig();
+</script>
 </body>
 </html>
