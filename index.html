@@ -537,7 +537,22 @@
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 
-        // Global variables for Firebase instances
+        
+function logToDebug(...args) {
+    const logArea = document.getElementById("debug-log");
+    if (logArea) {
+        logArea.style.display = "block";
+        const line = document.createElement("div");
+        line.textContent = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(" ");
+        logArea.appendChild(line);
+        logArea.scrollTop = logArea.scrollHeight;
+    }
+    console.log(...args);
+}
+window.logToDebug = logToDebug;
+
+
+// Global variables for Firebase instances
         let firebaseAppInstance; // Stores the initialized Firebase app instance
         let firestoreDb; // Stores Firestore db instance
         let firebaseAuth; // Stores Auth instance
@@ -2746,5 +2761,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // No need to set it here.
     }
 });
-</script></body>
+</script>
+<!-- Debug Console -->
+<div id="debug-log" style="position:fixed;bottom:0;left:0;width:100%;background:#1a202c;color:#90cdf4;font-family:monospace;padding:10px;font-size:12px;z-index:9999;max-height:150px;overflow-y:auto;display:none;"></div>
+
+</body>
 </html>
