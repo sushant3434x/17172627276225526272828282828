@@ -499,6 +499,30 @@
 </table>
 <p class="text-gray-400 text-center p-6 hidden" id="no-members-message">No members found. Add a new member above!</p>
 </div>
+
+<!-- Inactive Members Section -->
+<div class="flex items-center justify-between mb-4 mt-8">
+  <h2 class="text-2xl font-bold text-yellow-400 text-lg">Inactive Members</h2>
+  <button id="toggle-inactive-btn" class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+    Show Inactive Members (<span id="total-inactive-count">0</span>)
+  </button>
+</div>
+<div class="overflow-x-auto rounded-xl shadow-lg border border-yellow-700 hidden" id="collapsible-inactive">
+  <table class="min-w-full divide-y divide-yellow-700 w-full block overflow-auto text-sm">
+    <thead class="bg-yellow-900">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-yellow-200 uppercase">Photo</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-yellow-200 uppercase">Member ID</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-yellow-200 uppercase">Name</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-yellow-200 uppercase">Phone</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-yellow-200 uppercase">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="bg-gray-800 divide-y divide-gray-700" id="inactive-members-table-body"></tbody>
+  </table>
+  <p class="text-gray-400 text-center p-6 hidden" id="no-inactive-message">No inactive members.</p>
+</div>
+
 <!-- Credits -->
 <div class="mt-10 text-center text-gray-500 text-sm">
             Built with ❤️ by <span class="font-semibold text-indigo-400">Sushant Singh</span>
