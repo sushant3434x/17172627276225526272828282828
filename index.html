@@ -79,22 +79,8 @@
   </nav>
 </aside>
 
-<!-- Auth Screen -->
-<section id="auth-section" class="max-w-md mx-auto mt-10 p-6 bg-gray-800 rounded-xl border border-gray-700 hidden">
-  <h2 class="text-xl font-semibold mb-4">Sign in to Firebase</h2>
-  <div class="space-y-3">
-    <input id="auth-email" class="w-full p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Email" type="email" />
-    <input id="auth-password" class="w-full p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Password" type="password" />
-    <div class="flex gap-2">
-      <button id="signin-button" class="flex-1 px-3 py-2 bg-indigo-600 rounded hover:bg-indigo-700">Sign In</button>
-      <button id="signup-button" class="flex-1 px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">Sign Up</button>
-    </div>
-    <button id="anonymous-signin-button" class="w-full px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">Sign In Anonymously</button>
-  </div>
-</section>
-
 <!-- In-App Password Modal -->
-<div id="password-entry-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+<div id="password-entry-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
   <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl w-full max-w-sm">
     <h3 class="text-lg font-semibold mb-2">Enter App Password</h3>
     <p class="text-sm text-gray-400 mb-4">You must enter the correct app password to continue.</p>
@@ -376,13 +362,26 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
   import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs, query, where, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  
+  // =======================================================================
+  // IMPORTANT: THIS IS YOUR FIREBASE CONFIGURATION
+  // It has been populated with the values you provided.
+  // DO NOT EDIT THIS UNLESS YOU WANT TO CHANGE THE LINKED PROJECT.
+  // =======================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
+    authDomain: "alpha-core-fitness-data.firebaseapp.com",
+    projectId: "alpha-core-fitness-data",
+    storageBucket: "alpha-core-fitness-data.firebasestorage.app",
+    messagingSenderId: "311733734225",
+    appId: "1:311733734225:web:697ef2dc197ebb2e662170",
+    measurementId: "G-C5EKPN2K2J" // This will be ignored as getAnalytics is not imported.
+  };
+  
+  const appId = firebaseConfig.projectId;
 
-  // Global variables provided by the Canvas environment
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-  const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
   const firebaseApp = initializeApp(firebaseConfig);
   const db = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
@@ -399,17 +398,11 @@
   const splashScreen = document.getElementById('splash-screen');
   const topBar = document.getElementById('top-bar');
   const mainAppSection = document.getElementById('main-app-section');
-  const authSection = document.getElementById('auth-section');
   const hamburgerBtn = document.getElementById('hamburger-btn');
   const hamburgerDrawer = document.getElementById('hamburger-drawer');
   const drawerCloseBtn = document.getElementById('drawer-close');
   const drawerLinks = document.querySelectorAll('.drawer-link');
   const signoutButton = document.getElementById('signout-button');
-  const authEmailInput = document.getElementById('auth-email');
-  const authPasswordInput = document.getElementById('auth-password');
-  const signInButton = document.getElementById('signin-button');
-  const signUpButton = document.getElementById('signup-button');
-  const anonymousSignInButton = document.getElementById('anonymous-signin-button');
   const appPasswordInput = document.getElementById('app-password-input');
   const submitAppPasswordButton = document.getElementById('submit-app-password');
   const passwordEntryModal = document.getElementById('password-entry-modal');
@@ -546,20 +539,19 @@
 
   function handleAuthStatus(user) {
     if (user && isAppPasswordVerified) {
-      authSection.classList.add('hidden');
+      passwordEntryModal.classList.add('hidden');
       mainAppSection.classList.remove('hidden');
       topBar.classList.remove('hidden');
       userId = user.uid;
       console.log("Authentication successful. User ID:", userId);
       // Initialize Firebase listener after successful auth
       setupFirestoreListeners(userId);
-    } else if (user && !isAppPasswordVerified) {
-      // Do nothing, the password modal is already showing
     } else {
-      authSection.classList.remove('hidden');
+      // Show password modal if not verified, or if user signs out
+      passwordEntryModal.classList.remove('hidden');
       mainAppSection.classList.add('hidden');
       topBar.classList.add('hidden');
-      console.log("User is not authenticated. Showing sign-in screen.");
+      console.log("User is not authenticated. Showing password screen.");
     }
   }
 
@@ -596,62 +588,25 @@
   // Firebase Authentication
   onAuthStateChanged(auth, handleAuthStatus);
 
-  signInButton.addEventListener('click', async () => {
-    try {
-      const email = authEmailInput.value;
-      const password = authPasswordInput.value;
-      await signInWithEmailAndPassword(auth, email, password);
-      showMessage('Signed in successfully!');
-    } catch (error) {
-      console.error(error);
-      showMessage('Sign in failed. Please check your credentials.', 'error');
-    }
-  });
-
-  signUpButton.addEventListener('click', async () => {
-    try {
-      const email = authEmailInput.value;
-      const password = authPasswordInput.value;
-      await createUserWithEmailAndPassword(auth, email, password);
-      showMessage('Signed up successfully!');
-    } catch (error) {
-      console.error(error);
-      showMessage('Sign up failed.', 'error');
-    }
-  });
-
-  anonymousSignInButton.addEventListener('click', async () => {
-    try {
-      await signInAnonymously(auth);
-      showMessage('Signed in anonymously!');
-    } catch (error) {
-      console.error(error);
-      showMessage('Anonymous sign in failed.', 'error');
+  submitAppPasswordButton.addEventListener('click', async () => {
+    if (appPasswordInput.value === APP_PASSWORD) {
+      isAppPasswordVerified = true;
+      showMessage('App password correct! Signing in...');
+      try {
+        await signInAnonymously(auth);
+      } catch (error) {
+        console.error("Anonymous sign in failed: ", error);
+        showMessage("Failed to sign in. Check your Firebase config.", 'error');
+      }
+    } else {
+      showMessage('Incorrect app password.', 'error');
     }
   });
 
   signoutButton.addEventListener('click', async () => {
     await signOut(auth);
     showMessage('Signed out.');
-    // Re-show auth section and password modal after sign out
-    isAppPasswordVerified = false;
-    authSection.classList.remove('hidden');
-    mainAppSection.classList.add('hidden');
-    topBar.classList.add('hidden');
-    passwordEntryModal.classList.remove('hidden');
-    document.body.classList.remove('drawer-open');
-    hamburgerDrawer.classList.remove('open');
-  });
-
-  submitAppPasswordButton.addEventListener('click', async () => {
-    if (appPasswordInput.value === APP_PASSWORD) {
-      isAppPasswordVerified = true;
-      passwordEntryModal.classList.add('hidden');
-      authSection.classList.remove('hidden'); // Show auth section after password is correct
-      showMessage('App password correct! Please sign in.');
-    } else {
-      showMessage('Incorrect app password.', 'error');
-    }
+    isAppPasswordVerified = false; // Reset password state on sign out
   });
 
   // Firebase and Firestore Logic
@@ -1096,21 +1051,6 @@
       noIdCardSelectedMessage.classList.remove('hidden');
     }
   });
-
-  // Auth token sign-in
-  if (initialAuthToken) {
-    console.log("Attempting sign-in with custom token...");
-    signInWithCustomToken(auth, initialAuthToken).catch((error) => {
-      console.error('Error signing in with custom token:', error);
-      showMessage('Failed to sign in automatically.', 'error');
-      // Fallback to anonymous sign-in if custom token fails
-      console.log("Falling back to anonymous sign-in...");
-      signInAnonymously(auth);
-    });
-  } else {
-    console.log("No custom token provided. Signing in anonymously...");
-    signInAnonymously(auth);
-  }
 
   // Clock
   function updateTime() {
