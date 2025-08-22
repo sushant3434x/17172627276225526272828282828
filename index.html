@@ -1,110 +1,871 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gym Dashboard with Firebase & Cloudinary</title>
-  <style>
-    body { background: #121212; color: #ddd; font-family: Arial, sans-serif; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    th, td { padding: 8px; border: 1px solid #444; text-align: left; }
-    th { background: #222; }
-    button { cursor: pointer; padding: 4px 8px; border-radius: 4px; border: none; background: #2d7a2d; color: white; }
-    button.inactive-btn { background: #555; }
-    .input-section { max-width: 350px; margin-bottom: 20px; }
-    label { display: block; margin-bottom: 4px; }
-    input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #555; background: #222; color: white; margin-bottom: 12px; }
-    #inactiveMembersSection { margin-top: 10px; }
-    #inactiveMembersSection.hidden { display: none; }
-  </style>
-  <!-- Firebase App SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym Management Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(to bottom right, #1a202c, #2d3748);
+        overflow-x: hidden;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #4a5568;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #a0aec0;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #cbd5e0;
+        cursor: pointer;
+      }
+      .member-photo {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 1px solid #4a5568;
+      }
+      .id-card-photo {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid #a0aec0;
+      }
+      .fullscreen-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #1a202c;
+        z-index: 100;
+        transition: opacity 0.5s ease;
+      }
+      .hidden {
+        display: none !important;
+      }
+      /* Side Navigation Menu styles */
+      #side-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 280px;
+        background: #1a202c;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 90;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+      }
+      #side-nav.open {
+        transform: translateX(0);
+      }
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 80;
+      }
+      .app-tab {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      .app-tab.active-tab {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
 
-<h1>Gym Dashboard with Firebase & Cloudinary</h1>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fullscreen-container flex-col text-white">
+        <svg class="h-16 w-16 text-red-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+        </svg>
+        <p class="mt-4 text-xl md:text-2xl font-semibold">made with ❤️ by sushant singh</p>
+    </div>
 
-<!-- Config Inputs -->
-<div class="input-section">
-  <label for="firebase-api-key-input">Firebase API Key</label>
-  <input type="text" id="firebase-api-key-input" placeholder="Your Firebase API Key" />
+    <!-- Password Screen -->
+    <div id="password-screen" class="fullscreen-container hidden flex-col text-white">
+      <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-sm text-center">
+        <h2 class="text-3xl font-bold mb-6 text-gray-100">Enter Password</h2>
+        <input type="password" id="password-input" class="w-full p-3 mb-4 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300" placeholder="Password" />
+        <button id="password-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md">Submit</button>
+        <p id="password-error-message" class="mt-2 text-red-500 text-sm hidden"></p>
+      </div>
+    </div>
 
-  <label for="firebase-project-id-input">Firebase Project ID</label>
-  <input type="text" id="firebase-project-id-input" placeholder="Your Firebase Project ID" />
+    <!-- Main App Container -->
+    <div id="main-app-container" class="container mx-auto p-4 md:p-8 text-white hidden">
 
-  <label for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
-  <input type="text" id="cloudinary-cloud-name-input" placeholder="Your Cloudinary Cloud Name" />
+      <!-- Top Bar with Hamburger Menu -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-4">
+          <button id="hamburger-btn" class="text-gray-400 hover:text-white transition-colors">
+            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h1 class="text-3xl font-bold text-gray-100">AlphaCore Fitness</h1>
+        </div>
+      </div>
 
-  <label for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
-  <input type="text" id="cloudinary-upload-preset-input" placeholder="Your Cloudinary Upload Preset" />
+      <!-- Side Navigation Menu -->
+      <nav id="side-nav" class="p-6">
+        <h2 class="text-2xl font-bold text-gray-100 mb-6">Menu</h2>
+        <ul>
+          <li class="mb-4">
+            <button class="w-full text-left p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors" onclick="showSection('dashboard')">
+              🏠 Dashboard
+            </button>
+          </li>
+          <li class="mb-4">
+            <button class="w-full text-left p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors" onclick="showSection('add-member')">
+              ➕ Add Member
+            </button>
+          </li>
+          <li class="mb-4">
+            <button class="w-full text-left p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors" onclick="showSection('view-all-members')">
+              👥 View All Members
+            </button>
+          </li>
+          <li class="mb-4">
+            <button class="w-full text-left p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors" onclick="showSection('inactive-members')">
+              💤 Inactive Members
+            </button>
+          </li>
+          <li class="mb-4">
+            <button class="w-full text-left p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors" onclick="showSection('payment-history')">
+              💰 Payment History
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <div id="overlay" class="hidden"></div>
 
-  <button onclick="initApp()">Initialize Firebase & Cloudinary</button>
-</div>
+      <!-- Dashboard Section -->
+      <div id="dashboard-section" class="app-tab">
+        <h2 class="text-3xl font-bold mb-6 text-gray-100">Dashboard</h2>
 
-<hr/>
+        <!-- Stats Section (Grid Layout) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col justify-between">
+            <p class="text-lg font-medium text-gray-400">Total Members</p>
+            <p id="total-members-display" class="text-4xl font-bold text-white mt-2">0</p>
+          </div>
+          <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col justify-between">
+            <p class="text-lg font-medium text-gray-400">Active</p>
+            <p id="active-members-display" class="text-4xl font-bold text-green-400 mt-2">0</p>
+          </div>
+          <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col justify-between">
+            <p class="text-lg font-medium text-gray-400">Overdue</p>
+            <p id="overdue-members-display" class="text-4xl font-bold text-red-400 mt-2">0</p>
+          </div>
+          <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col justify-between">
+            <p class="text-lg font-medium text-gray-400">Inactive</p>
+            <p id="inactive-members-display" class="text-4xl font-bold text-yellow-400 mt-2">0</p>
+          </div>
+        </div>
 
-<!-- Dashboard -->
-<h2>Overdue Members</h2>
-<table id="overdueMembersTable">
-  <thead>
-    <tr>
-      <th>Photo</th><th>Member ID</th><th>Name</th><th>Phone Number</th><th>Type</th><th>Start Date</th><th>Due Date</th><th>Fee</th><th>Days Overdue</th><th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="overdueMembersTableBody">
-  </tbody>
-</table>
+        <!-- Overdue Members Quick View -->
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg mt-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-semibold text-gray-100">Overdue Members (Quick View)</h3>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors" onclick="showSection('view-all-members')">View All →</button>
+          </div>
+          <div id="overdue-members-container" class="space-y-4">
+            <div id="overdue-list-header" class="grid grid-cols-4 gap-4 text-gray-400 font-semibold border-b border-gray-600 pb-2">
+              <span>ID</span>
+              <span>Name</span>
+              <span>Phone</span>
+              <span>Due Date</span>
+            </div>
+            <div id="overdue-members-list" class="space-y-2">
+              <p class="text-gray-500 text-center">No overdue members found.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<h2>Current Members</h2>
-<table id="currentMembersTable">
-  <thead>
-    <tr>
-      <th>Photo</th><th>Member ID</th><th>Name</th><th>Phone Number</th><th>Type</th><th>Start Date</th><th>Due Date</th><th>Fee</th><th>Days Left</th><th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="currentMembersTableBody">
-  </tbody>
-</table>
+      <!-- Add Member Section (initially hidden) -->
+      <div id="add-member-section" class="app-tab hidden">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h2 class="text-2xl font-semibold mb-4 text-gray-100">Add New Member</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-300" for="member-name-input">Member Name</label>
+              <input type="text" id="member-name-input" class="mt-1 block w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300" placeholder="Enter name" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300" for="payment-amount-input">Payment Amount</label>
+              <input type="number" id="payment-amount-input" class="mt-1 block w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300" placeholder="Enter amount" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300" for="payment-type-select">Payment Type</label>
+              <select id="payment-type-select" class="mt-1 block w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300">
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="half-yearly">Half-Yearly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300" for="photo-upload-input">Upload Photo</label>
+              <input type="file" id="photo-upload-input" class="mt-1 block w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300" />
+              <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Cloudinary. Deletion from app removes link, not image from Cloudinary.</p>
+            </div>
+          </div>
+          <button id="add-member-btn" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md">Add Member</button>
+        </div>
+      </div>
+      
+      <!-- View All Members Section (NEW) -->
+      <div id="view-all-members-section" class="app-tab hidden">
+        <h2 class="text-3xl font-bold mb-6 text-gray-100">👥 All Members</h2>
+        
+        <!-- Search and Filter -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
+            <input type="text" id="member-search" placeholder="Search by name..." class="w-full sm:w-1/2 p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300">
+            <select id="member-filter" class="w-full sm:w-auto p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300">
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="overdue">Overdue</option>
+            </select>
+        </div>
 
-<h2>Inactive Members <button id="toggleInactiveBtn" onclick="toggleInactive()">Show Members</button></h2>
-<div id="inactiveMembersSection" class="hidden">
-  <table>
-    <thead>
-      <tr>
-        <th>Photo</th><th>Member ID</th><th>Name</th><th>Phone Number</th><th>Type</th><th>Start Date</th><th>Due Date</th><th>Fee</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="inactiveMembersTable">
-    </tbody>
-  </table>
-</div>
+        <!-- Active Members List -->
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg mt-6">
+          <div class="flex items-center justify-between cursor-pointer" onclick="toggleMemberList('active')">
+            <h3 class="text-xl font-semibold text-gray-100">Active Members</h3>
+            <button class="text-gray-400 hover:text-white transition-colors" id="active-members-toggle-btn">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="active-members-list-container" class="mt-4">
+            <div id="active-members-list" class="space-y-4"></div>
+          </div>
+        </div>
 
-<script>
-  // Globals
-  let firestore;
-  let cloudinaryConfig = {};
-  let members = []; // All members from Firestore
-  let initialized = false;
+        <!-- Overdue Members List -->
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg mt-6">
+          <div class="flex items-center justify-between cursor-pointer" onclick="toggleMemberList('overdue')">
+            <h3 class="text-xl font-semibold text-gray-100">Overdue Members</h3>
+            <button class="text-gray-400 hover:text-white transition-colors" id="overdue-members-full-list-toggle-btn">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div id="overdue-members-full-list-container" class="mt-4 hidden">
+            <div id="overdue-members-full-list" class="space-y-4"></div>
+          </div>
+        </div>
+      </div>
 
-  function initApp() {
-    const apiKey = document.getElementById('firebase-api-key-input').value.trim();
-    const projectId = document.getElementById('firebase-project-id-input').value.trim();
-    const cloudName = document.getElementById('cloudinary-cloud-name-input').value.trim();
-    const uploadPreset = document.getElementById('cloudinary-upload-preset-input').value.trim();
+      <!-- Inactive Members Section (NEW) -->
+      <div id="inactive-members-section" class="app-tab hidden">
+        <h2 class="text-3xl font-bold mb-6 text-gray-100">💤 Inactive Members</h2>
+        
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg mt-6">
+          <div id="inactive-list-container" class="space-y-4">
+            <!-- Inactive member cards will go here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Payment History Section (NEW) -->
+      <div id="payment-history-section" class="app-tab hidden">
+        <h2 class="text-3xl font-bold mb-6 text-gray-100">💰 Payment History</h2>
 
-    if (!apiKey || !projectId || !cloudName || !uploadPreset) {
-      alert('Please enter all Firebase and Cloudinary configuration values.');
-      return;
-    }
+        <!-- Search and Filter -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
+            <input type="text" id="payment-search" placeholder="Search by member name..." class="w-full sm:w-1/2 p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300">
+            <div class="flex w-full sm:w-auto space-x-2">
+                <select id="payment-filter-month" class="w-1/2 p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300"></select>
+                <select id="payment-filter-year" class="w-1/2 p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring focus:border-blue-300"></select>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg mt-6">
+            <div id="payments-list" class="space-y-2">
+                <!-- Payment records will be rendered here -->
+                <p class="text-gray-500 text-center">No payments found for this period.</p>
+            </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- JavaScript Section -->
+    <script>
+      // Global variables
+      const CORRECT_PASSWORD = '2003';
+      
+      // DOM elements
+      const splashScreen = document.getElementById('splash-screen');
+      const passwordScreen = document.getElementById('password-screen');
+      const passwordInput = document.getElementById('password-input');
+      const passwordSubmitBtn = document.getElementById('password-submit-btn');
+      const passwordErrorMsg = document.getElementById('password-error-message');
+      const mainAppContainer = document.getElementById('main-app-container');
+      const hamburgerBtn = document.getElementById('hamburger-btn');
+      const sideNav = document.getElementById('side-nav');
+      const overlay = document.getElementById('overlay');
+      
+      const memberSearchInput = document.getElementById('member-search');
+      const memberFilterSelect = document.getElementById('member-filter');
+      
+      const paymentSearchInput = document.getElementById('payment-search');
+      const paymentMonthSelect = document.getElementById('payment-filter-month');
+      const paymentYearSelect = document.getElementById('payment-filter-year');
 
-    // Init Firebase
-    const firebaseConfig = {
-      apiKey: apiKey,
-      authDomain: `${projectId}.firebaseapp.com`,
-      projectId: projectId,
-      storageBucket: `${projectId}.appspot.com`,
-      messagingSenderId: "YOUR_SENDER_ID", // Optional
+      // Firebase and Cloudinary configuration placeholders
+      const firebaseConfig = {
+        apiKey: "YOUR_FIREBASE_API_KEY", // Placeholder
+        projectId: "YOUR_FIREBASE_PROJECT_ID", // Placeholder
+      };
+      const CLOUDINARY_CLOUD_NAME = "YOUR_CLOUDINARY_CLOUD_NAME"; // Placeholder
+      const CLOUDINARY_UPLOAD_PRESET = "YOUR_CLOUDINARY_UPLOAD_PRESET"; // Placeholder
+      
+      let db;
+      let allMembers = [];
+      let allPayments = [];
+
+      // Event listener for password submission
+      passwordSubmitBtn.addEventListener('click', () => {
+        if (passwordInput.value === CORRECT_PASSWORD) {
+          passwordScreen.classList.add('hidden');
+          mainAppContainer.classList.remove('hidden');
+          initializeFirebase();
+        } else {
+          passwordErrorMsg.textContent = 'Incorrect password. Please try again.';
+          passwordErrorMsg.classList.remove('hidden');
+        }
+      });
+      
+      // Function to initialize Firebase after successful login
+      function initializeFirebase() {
+        if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+          firebase.initializeApp(firebaseConfig);
+          db = firebase.firestore();
+          console.log('Firebase Initialized');
+          
+          // Listen for real-time changes to the 'members' collection
+          db.collection('members').onSnapshot(snapshot => {
+            allMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            updateAllViews();
+          }, error => {
+            console.error('Error fetching members:', error);
+          });
+          
+          // Listen for real-time changes to the 'payments' collection
+          db.collection('payments').onSnapshot(snapshot => {
+              allPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              renderPayments();
+          }, error => {
+              console.error('Error fetching payments:', error);
+          });
+          
+        } else {
+          showMessage('Firebase configuration not provided. Data persistence will not work. Please add your API keys.');
+        }
+      }
+
+      // Main function to update all views
+      function updateAllViews() {
+          renderDashboard();
+          filterAndRenderMembers();
+          renderInactiveMembersList();
+          renderPayments();
+      }
+
+      // Splash screen logic
+      document.addEventListener('DOMContentLoaded', () => {
+        populatePaymentFilters();
+        setTimeout(() => {
+          splashScreen.classList.add('hidden');
+          passwordScreen.classList.remove('hidden');
+        }, 2000); // Display for 2 seconds
+      });
+
+      // Navigation logic
+      hamburgerBtn.addEventListener('click', () => {
+        sideNav.classList.toggle('open');
+        overlay.classList.toggle('hidden');
+      });
+
+      overlay.addEventListener('click', () => {
+        sideNav.classList.remove('open');
+        overlay.classList.add('hidden');
+      });
+
+      // Function to show a specific section
+      function showSection(sectionId) {
+        const sections = document.querySelectorAll('.app-tab');
+        sections.forEach(section => {
+            section.classList.remove('active-tab');
+            section.classList.add('hidden');
+        });
+        const targetSection = document.getElementById(`${sectionId}-section`);
+        targetSection.classList.remove('hidden');
+        // A slight delay to allow for the transition
+        setTimeout(() => targetSection.classList.add('active-tab'), 10);
+        
+        // Close the side nav after selection
+        sideNav.classList.remove('open');
+        overlay.classList.add('hidden');
+        
+        if (sectionId === 'view-all-members') {
+            filterAndRenderMembers();
+        } else if (sectionId === 'inactive-members') {
+            renderInactiveMembersList();
+        } else if (sectionId === 'payment-history') {
+            renderPayments();
+        }
+      }
+      
+      // Initial view setup
+      document.getElementById('dashboard-section').classList.add('active-tab');
+
+      // Event listener to add a new member
+      document.getElementById('add-member-btn').addEventListener('click', async () => {
+        const name = document.getElementById('member-name-input').value;
+        const amount = document.getElementById('payment-amount-input').value;
+        const paymentType = document.getElementById('payment-type-select').value;
+        const photoFile = document.getElementById('photo-upload-input').files[0];
+
+        if (!name || !amount) {
+          showMessage('Please fill in all fields.');
+          return;
+        }
+
+        let photoUrl = '';
+        if (photoFile && CLOUDINARY_CLOUD_NAME !== "YOUR_CLOUDINARY_CLOUD_NAME") {
+          const formData = new FormData();
+          formData.append('file', photoFile);
+          formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+          
+          try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+              method: 'POST',
+              body: formData,
+            });
+            const data = await response.json();
+            photoUrl = data.secure_url;
+          } catch (error) {
+            console.error('Error uploading to Cloudinary:', error);
+            showMessage('Failed to upload photo to Cloudinary.');
+            return;
+          }
+        }
+
+        const now = new Date();
+        let expiryDate = new Date();
+        if (paymentType === 'monthly') {
+          expiryDate.setMonth(now.getMonth() + 1);
+        } else if (paymentType === 'quarterly') {
+          expiryDate.setMonth(now.getMonth() + 3);
+        } else if (paymentType === 'half-yearly') {
+          expiryDate.setMonth(now.getMonth() + 6);
+        } else if (paymentType === 'yearly') {
+          expiryDate.setFullYear(now.getFullYear() + 1);
+        }
+        
+        const newMember = {
+            name: name,
+            amount: parseFloat(amount),
+            paymentType: paymentType,
+            lastPaid: now.toISOString(),
+            expiryDate: expiryDate.toISOString(),
+            photoUrl: photoUrl,
+            status: 'active'
+        };
+
+        if (db) {
+            const memberRef = await db.collection('members').add(newMember);
+            await db.collection('payments').add({
+                memberId: memberRef.id,
+                memberName: name,
+                amount: parseFloat(amount),
+                date: now.toISOString(),
+                paymentType: paymentType
+            });
+            showMessage(`New member ${name} and payment recorded successfully!`);
+        } else {
+            showMessage('Firebase not initialized. Please configure your API keys to save data.');
+        }
+        
+        document.getElementById('member-name-input').value = '';
+        document.getElementById('payment-amount-input').value = '';
+        document.getElementById('photo-upload-input').value = '';
+      });
+
+      // Function to mark a member as inactive
+      async function markMemberInactive(memberId) {
+        if (!db) { showMessage('Firebase not initialized.'); return; }
+        const memberRef = db.collection('members').doc(memberId);
+        await memberRef.update({
+          status: 'inactive',
+          inactiveDate: new Date().toISOString()
+        });
+      }
+      
+      // Function to reactivate a member
+      async function reactivateMember(memberId) {
+          if (!db) { showMessage('Firebase not initialized.'); return; }
+          const paymentType = await showPaymentPrompt();
+          if (!paymentType) return; // User cancelled
+          const memberRef = db.collection('members').doc(memberId);
+          let newExpiryDate = new Date();
+          let amount = 0;
+          if (paymentType === 'monthly') { newExpiryDate.setMonth(newExpiryDate.getMonth() + 1); amount = 50; }
+          if (paymentType === 'quarterly') { newExpiryDate.setMonth(newExpiryDate.getMonth() + 3); amount = 120; }
+          if (paymentType === 'half-yearly') { newExpiryDate.setMonth(newExpiryDate.getMonth() + 6); amount = 200; }
+          if (paymentType === 'yearly') { newExpiryDate.setFullYear(newExpiryDate.getFullYear() + 1); amount = 350; }
+          
+          await memberRef.update({
+              status: 'active',
+              expiryDate: newExpiryDate.toISOString(),
+              lastPaid: new Date().toISOString(),
+              inactiveDate: firebase.firestore.FieldValue.delete()
+          });
+          
+          await db.collection('payments').add({
+              memberId: memberId,
+              memberName: allMembers.find(m => m.id === memberId).name,
+              amount: amount,
+              date: new Date().toISOString(),
+              paymentType: paymentType
+          });
+          
+          showMessage(`Member reactivated with a ${paymentType} plan!`);
+      }
+
+      // Function to delete a member
+      async function deleteMember(memberId) {
+        if (!db) { showMessage('Firebase not initialized.'); return; }
+        if (await showConfirm("Are you sure you want to delete this member?")) {
+          await db.collection('members').doc(memberId).delete();
+        }
+      }
+
+      // Main function to render all dashboard stats and overdue list
+      function renderDashboard() {
+        const now = new Date();
+        const activeMembers = allMembers.filter(m => m.status === 'active' && new Date(m.expiryDate) >= now);
+        const overdueMembers = allMembers.filter(m => m.status === 'active' && new Date(m.expiryDate) < now);
+        const inactiveMembers = allMembers.filter(m => m.status === 'inactive');
+
+        document.getElementById('total-members-display').textContent = allMembers.length;
+        document.getElementById('active-members-display').textContent = activeMembers.length;
+        document.getElementById('overdue-members-display').textContent = overdueMembers.length;
+        document.getElementById('inactive-members-display').textContent = inactiveMembers.length;
+
+        const overdueListContainer = document.getElementById('overdue-members-list');
+        overdueListContainer.innerHTML = '';
+        if (overdueMembers.length === 0) {
+          overdueListContainer.innerHTML = `<p class="text-gray-500 text-center">No overdue members found.</p>`;
+        } else {
+          overdueMembers.forEach((member, index) => {
+            const overdueItem = document.createElement('div');
+            overdueItem.className = 'grid grid-cols-4 gap-4 py-2 border-b border-gray-600 pb-2';
+            overdueItem.innerHTML = `
+              <span class="text-gray-300 overflow-hidden text-ellipsis whitespace-nowrap">${index + 1}</span>
+              <span class="text-white overflow-hidden text-ellipsis whitespace-nowrap">${member.name}</span>
+              <span class="text-gray-300 overflow-hidden text-ellipsis whitespace-nowrap">N/A</span>
+              <span class="text-red-300 overflow-hidden text-ellipsis whitespace-nowrap">${new Date(member.expiryDate).toLocaleDateString()}</span>
+            `;
+            overdueListContainer.appendChild(overdueItem);
+          });
+        }
+      }
+      
+      // Filter and render members based on search and filter selections
+      function filterAndRenderMembers() {
+          const searchTerm = memberSearchInput.value.toLowerCase();
+          const filterStatus = memberFilterSelect.value;
+
+          const filteredMembers = allMembers.filter(member => {
+              const nameMatches = member.name.toLowerCase().includes(searchTerm);
+              const now = new Date();
+              const isOverdue = member.status === 'active' && new Date(member.expiryDate) < now;
+              const isActive = member.status === 'active' && new Date(member.expiryDate) >= now;
+
+              const statusMatches = filterStatus === 'all' || 
+                                     (filterStatus === 'active' && isActive) ||
+                                     (filterStatus === 'overdue' && isOverdue);
+              
+              return nameMatches && statusMatches;
+          });
+
+          renderMemberList(filteredMembers);
+      }
+      
+      // Render member list in View All Members section
+      function renderMemberList(members) {
+          const activeList = members.filter(m => m.status === 'active' && new Date(m.expiryDate) >= new Date());
+          const overdueList = members.filter(m => m.status === 'active' && new Date(m.expiryDate) < new Date());
+          
+          const activeListContainer = document.getElementById('active-members-list');
+          activeListContainer.innerHTML = activeList.length === 0 ? '<p class="text-gray-500 text-center">No active members found.</p>' : '';
+          activeList.forEach(member => {
+              activeListContainer.appendChild(renderMember(member, 'active'));
+          });
+          
+          const overdueListContainer = document.getElementById('overdue-members-full-list');
+          overdueListContainer.innerHTML = overdueList.length === 0 ? '<p class="text-gray-500 text-center">No overdue members found.</p>' : '';
+          overdueList.forEach(member => {
+              overdueListContainer.appendChild(renderMember(member, 'overdue'));
+          });
+      }
+
+      // Render the list of inactive members
+      function renderInactiveMembersList() {
+        const inactiveList = allMembers.filter(m => m.status === 'inactive');
+        const inactiveListContainer = document.getElementById('inactive-list-container');
+        inactiveListContainer.innerHTML = '';
+        if (inactiveList.length === 0) {
+            inactiveListContainer.innerHTML = '<p class="text-gray-500 text-center">No inactive members found.</p>';
+        } else {
+            inactiveList.forEach(member => {
+                inactiveListContainer.appendChild(renderMember(member, 'inactive'));
+            });
+        }
+      }
+
+      // Event listeners for search and filter inputs
+      memberSearchInput.addEventListener('input', filterAndRenderMembers);
+      memberFilterSelect.addEventListener('change', filterAndRenderMembers);
+      
+      // Function to render a single member list item
+      function renderMember(member, status) {
+        const memberItem = document.createElement('div');
+        let bgColor;
+        let statusText;
+        let statusColor;
+        let actionButton = '';
+
+        if (status === 'active') {
+            bgColor = 'bg-gray-700';
+            statusText = 'Active';
+            statusColor = 'text-green-300';
+            actionButton = `
+              <button onclick="markMemberInactive('${member.id}')" class="text-2xl hover:bg-gray-600 p-2 rounded-full transition-colors" title="Mark Inactive">
+                <span role="img" aria-label="mark inactive">💤</span>
+              </button>
+            `;
+        } else if (status === 'overdue') {
+            bgColor = 'bg-red-900';
+            statusText = 'Overdue';
+            statusColor = 'text-red-300';
+             actionButton = `
+              <button onclick="markMemberInactive('${member.id}')" class="text-2xl hover:bg-red-800 p-2 rounded-full transition-colors" title="Mark Inactive">
+                <span role="img" aria-label="mark inactive">💤</span>
+              </button>
+            `;
+        } else if (status === 'inactive') {
+            bgColor = 'bg-yellow-900';
+            statusText = 'Inactive';
+            statusColor = 'text-yellow-300';
+            actionButton = `
+              <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors" onclick="reactivateMember('${member.id}')">Reactivate</button>
+            `;
+        }
+        
+        memberItem.className = `p-4 rounded-lg shadow transition-colors ${bgColor}`;
+        memberItem.id = `member-${member.id}`;
+        
+        memberItem.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div class="flex-grow">
+              <p class="text-lg font-medium text-white">${member.name}</p>
+              <p class="text-sm text-gray-400">
+                Status: <span class="font-semibold ${statusColor}">${statusText}</span>
+              </p>
+              <p class="text-sm text-gray-400">
+                Expiry: <span class="font-semibold">${member.expiryDate ? new Date(member.expiryDate).toLocaleDateString() : 'N/A'}</span>
+              </p>
+              <p class="text-sm text-gray-400">Last Paid: <span class="font-semibold">${member.lastPaid ? new Date(member.lastPaid).toLocaleDateString() : 'N/A'}</span></p>
+            </div>
+            <div class="flex items-center space-x-2">
+              ${actionButton}
+              <button onclick="deleteMember('${member.id}')" class="text-red-500 hover:text-red-700 transition-colors" title="Delete Member">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+        return memberItem;
+      }
+      
+      // Function to toggle list visibility in "View All Members" section
+      function toggleMemberList(type) {
+        const containerId = `${type}-members-list-container`;
+        const toggleBtnId = `${type}-members-toggle-btn`;
+        
+        const container = document.getElementById(containerId);
+        const toggleBtn = document.getElementById(toggleBtnId);
+
+        const isHidden = container.classList.toggle('hidden');
+        if (isHidden) {
+            toggleBtn.innerHTML = `<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+        } else {
+            toggleBtn.innerHTML = `<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>`;
+        }
+      }
+      
+      // Function to populate payment history filter dropdowns
+      function populatePaymentFilters() {
+          const now = new Date();
+          const currentYear = now.getFullYear();
+          const currentMonth = now.getMonth();
+          
+          const months = [
+              'January', 'February', 'March', 'April', 'May', 'June',
+              'July', 'August', 'September', 'October', 'November', 'December'
+          ];
+          
+          paymentMonthSelect.innerHTML = months.map((month, index) => 
+              `<option value="${index}" ${index === currentMonth ? 'selected' : ''}>${month}</option>`
+          ).join('');
+          
+          const startYear = 2023; // You can adjust this as needed
+          for (let i = currentYear; i >= startYear; i--) {
+              const option = document.createElement('option');
+              option.value = i;
+              option.textContent = i;
+              if (i === currentYear) {
+                  option.selected = true;
+              }
+              paymentYearSelect.appendChild(option);
+          }
+      }
+      
+      // Filter and render payments based on search and date selection
+      function renderPayments() {
+          const searchTerm = paymentSearchInput.value.toLowerCase();
+          const month = parseInt(paymentMonthSelect.value, 10);
+          const year = parseInt(paymentYearSelect.value, 10);
+          
+          const filteredPayments = allPayments.filter(payment => {
+              const paymentDate = new Date(payment.date);
+              const nameMatches = payment.memberName.toLowerCase().includes(searchTerm);
+              const dateMatches = paymentDate.getMonth() === month && paymentDate.getFullYear() === year;
+              return nameMatches && dateMatches;
+          }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          const paymentsListContainer = document.getElementById('payments-list');
+          paymentsListContainer.innerHTML = '';
+          
+          if (filteredPayments.length === 0) {
+              paymentsListContainer.innerHTML = `<p class="text-gray-500 text-center">No payments found for this period.</p>`;
+          } else {
+              filteredPayments.forEach((payment, index) => {
+                  const paymentItem = document.createElement('div');
+                  paymentItem.className = 'p-4 rounded-lg bg-gray-700 shadow flex justify-between items-center';
+                  paymentItem.innerHTML = `
+                    <div>
+                      <p class="text-lg font-medium text-white">#${index + 1}: ${payment.memberName}</p>
+                      <p class="text-sm text-gray-400">Amount: <span class="font-semibold text-green-300">$${payment.amount}</span></p>
+                      <p class="text-sm text-gray-400">Date: <span class="font-semibold">${new Date(payment.date).toLocaleDateString()}</span></p>
+                      <p class="text-sm text-gray-400">Type: <span class="font-semibold">${payment.paymentType}</span></p>
+                    </div>
+                  `;
+                  paymentsListContainer.appendChild(paymentItem);
+              });
+          }
+      }
+      
+      paymentSearchInput.addEventListener('input', renderPayments);
+      paymentMonthSelect.addEventListener('change', renderPayments);
+      paymentYearSelect.addEventListener('change', renderPayments);
+
+
+      // Custom message box functions to replace alert and confirm
+      function showMessage(message) {
+        const messageBox = document.createElement('div');
+        messageBox.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 p-6 rounded-lg shadow-2xl text-white text-center z-50';
+        messageBox.innerHTML = `
+          <p class="text-lg">${message}</p>
+          <button onclick="this.parentNode.remove()" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">OK</button>
+        `;
+        document.body.appendChild(messageBox);
+      }
+
+      function showConfirm(message) {
+        return new Promise(resolve => {
+          const confirmBox = document.createElement('div');
+          confirmBox.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 p-6 rounded-lg shadow-2xl text-white text-center z-50';
+          confirmBox.innerHTML = `
+            <p class="text-lg">${message}</p>
+            <div class="mt-4 space-x-4">
+              <button onclick="this.parentNode.parentNode.remove(); resolve(true);" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Yes</button>
+              <button onclick="this.parentNode.parentNode.remove(); resolve(false);" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">No</button>
+            </div>
+          `;
+          document.body.appendChild(confirmBox);
+        });
+      }
+      
+      // Custom payment prompt to replace alert/prompt for activation
+      function showPaymentPrompt() {
+        return new Promise(resolve => {
+            const promptBox = document.createElement('div');
+            promptBox.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 p-6 rounded-lg shadow-2xl text-white text-center z-50';
+            promptBox.innerHTML = `
+                <p class="text-lg mb-4">Select payment type:</p>
+                <select id="payment-prompt-select" class="w-full p-3 mb-4 bg-gray-800 text-white rounded-lg border border-gray-600">
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="half-yearly">Half-Yearly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+                <div class="flex justify-center space-x-4">
+                    <button id="prompt-ok" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">OK</button>
+                    <button id="prompt-cancel" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
+                </div>
+            `;
+            document.body.appendChild(promptBox);
+            
+            document.getElementById('prompt-ok').onclick = () => {
+                const value = document.getElementById('payment-prompt-select').value;
+                promptBox.remove();
+                resolve(value);
+            };
+            
+            document.getElementById('prompt-cancel').onclick = () => {
+                promptBox.remove();
+                resolve(null);
+            };
+        });
+      }
+    </script>
+  </body>
+</html>
       appId: "YOUR_APP_ID" // Optional
     };
     firebase.initializeApp(firebaseConfig);
