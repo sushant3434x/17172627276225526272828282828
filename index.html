@@ -1,110 +1,677 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>AlphaCore Fitness — Gym Manager</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlphaCore Fitness Gym Manager</title>
+  <script src="https://cdn.tailwindcss.com">
+document.getElementById('btn-view-all-overdue')?.addEventListener('click', ()=>{
+  handleMenuTab('manage');
+  const wrap = document.getElementById('wrap-overdue') || document.getElementById('overdue-section');
+  wrap?.classList.remove('hidden');
+  wrap?.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+</script>
   <style>
-    html, body { height: 100%; }
-    /* smooth slide overs */
-    .slide-in { transform: translateX(0) !important; }
-    /* Hide number spinners */
-    input[type=number]::-webkit-outer-spin-button,
-    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type=number] { -moz-appearance: textfield; }
-    /* table cells */
-    th, td { white-space: nowrap; }
-  </style>
+    #appMain { display:none; min-height:100vh; width:100%; }
+    .hide { display:none !important; }
+    table th, table td { white-space: nowrap; }
+  
+    .sidebar-active {
+      background-color: rgb(79 70 229 / 0.2);
+      color: #818cf8;
+      font-weight: 600;
+    }
+    </style>
 </head>
 <body class="bg-gray-950 text-gray-100">
-  <!-- Top Bar -->
-  <header class="sticky top-0 z-40 bg-gray-900/80 backdrop-blur border-b border-gray-800">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <button id="hamburgerBtn" class="p-2 rounded-xl bg-gray-800 hover:bg-gray-700 shadow">☰</button>
-      <h1 class="font-bold tracking-wide">AlphaCore Fitness — Gym Manager</h1>
-      <button id="bellBtn" class="relative p-2 rounded-xl bg-gray-800 hover:bg-gray-700">
-        🔔
-        <span id="bellCount" class="absolute -top-2 -right-2 text-xs bg-red-600 text-white px-1.5 py-0.5 rounded-full hidden">0</span>
-      </button>
-    </div>
+
+<!-- Splash Screen -->
+<div id="splashScreen" class="fixed inset-0 flex items-center justify-center bg-black text-white text-3xl font-bold z-50 opacity-100 transition-opacity duration-1000">
+  Made by Sushant Singh
+</div>
+
+<!-- Password Screen -->
+<div id="passwordScreen" class="hidden fixed inset-0 flex flex-col items-center justify-center bg-gray-950 text-white z-40">
+  <h2 class="text-2xl mb-4">Enter Password</h2>
+  <input id="passwordInput" type="password" placeholder="Password" class="px-4 py-2 rounded text-black" />
+  <button id="passwordBtn" class="mt-4 px-4 py-2 bg-indigo-600 rounded">Unlock</button>
+  <p id="passwordError" class="mt-2 text-red-500 hidden">Incorrect password</p>
+</div>
+
+<div id="appMain" class="flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="fixed top-0 left-0 right-0 h-12 bg-gray-900 flex items-center px-4 z-50 shadow">
+    <button id="hamburgerBtn" onclick="openMenu()" class="text-white text-xl">☰</button>
+    <h1 class="ml-3 font-semibold">AlphaCore Fitness</h1>
   </header>
 
-  <!-- Sidebar -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-gray-900 border-r border-gray-800 transform -translate-x-full transition-transform duration-200 z-50">
-    <div class="p-4 flex items-center justify-between border-b border-gray-800">
-      <div class="font-semibold">Navigation</div>
-      <button id="closeSidebar" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700">✕</button>
-    </div>
-    <nav class="p-4 space-y-2">
-      <button data-tab="dashboard" class="tablink w-full text-left px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700">📊 Dashboard</button>
-      <button data-tab="manage" class="tablink w-full text-left px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700">👥 Manage Members</button>
-      <button data-tab="addMember" class="tablink w-full text-left px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700">➕ Add Member</button>
-      <button data-tab="addPayment" class="tablink w-full text-left px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700">💰 Add Payment</button>
-      <button data-tab="idCard" class="tablink w-full text-left px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700">🪪 ID Card</button>
-      <button data-tab="billing" class="tablink w-full text-left px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700">📒 Billing</button>
-      <button data-tab="inactive" class="tablink w-full text-left px-4 py-3 rounded-xl bg-yellow-700/40 hover:bg-yellow-700/60">💤 Inactive Members</button>
-    </nav>
-  </aside>
+  <!-- Sidebar Menu -->
+  <div id="sidebarMenu" class="fixed top-0 left-0 h-full w-56 bg-gray-900 text-white z-50 p-4 space-y-3 transform -translate-x-full transition-transform duration-300">
+    <div class="flex justify-between items-center mb-4"><div class="font-semibold">Navigation</div><button onclick="closeMenu()" class="text-xl">✖</button></div>
+    <button onclick="handleMenuTab('dashboard')" class="block w-full text-left px-3 py-2 rounded hover:bg-gray-800">Dashboard</button>
+    <button onclick="handleMenuTab('manage')" class="block w-full text-left px-3 py-2 rounded hover:bg-gray-800">Manage Members</button>
+    <button onclick="handleMenuTab('addmember')" class="block w-full text-left px-3 py-2 rounded hover:bg-gray-800">Add Member</button>
+    <button onclick="handleMenuTab('addpayment')" class="block w-full text-left px-3 py-2 rounded hover:bg-gray-800">Add Payment</button>
+    <button onclick="handleMenuTab('billing')" class="block w-full text-left px-3 py-2 rounded hover:bg-gray-800">Billing</button>
+    <div class="mt-4 text-xs text-gray-400">Cloud: alpha-core-fitness-data</div>
+  </div>
 
-  <!-- Content -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <!-- Dashboard / Stats -->
-    <section id="tab-dashboard" class="tab">
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow">
+  <!-- Backdrop Overlay -->
+  <div id="backdrop" class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <!-- Content Area -->
+  <main class="flex-grow p-6 pt-16">
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="app-tab">
+      <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow transition-transform duration-300 hover:scale-105">
           <div class="text-sm text-gray-400">Total Members</div>
           <div id="stat-total" class="text-2xl font-bold mt-1">0</div>
         </div>
-        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow">
+        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow transition-transform duration-300 hover:scale-105">
           <div class="text-sm text-gray-400">Active</div>
           <div id="stat-active" class="text-2xl font-bold mt-1 text-indigo-400">0</div>
         </div>
-        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow">
+        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow transition-transform duration-300 hover:scale-105">
           <div class="text-sm text-gray-400">Overdue</div>
           <div id="stat-overdue" class="text-2xl font-bold mt-1 text-red-400">0</div>
         </div>
-        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow">
+        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow transition-transform duration-300 hover:scale-105">
           <div class="text-sm text-gray-400">Inactive</div>
           <div id="stat-inactive" class="text-2xl font-bold mt-1 text-yellow-400">0</div>
         </div>
-        <div class="p-4 rounded-2xl bg-gray-900 border border-gray-800 shadow">
-          <div class="text-sm text-gray-400">Collected (This Month)</div>
-          <div id="stat-collected" class="text-2xl font-bold mt-1 text-green-400">₹0</div>
-        </div>
       </div>
-      <div class="mt-6 text-sm text-gray-400">Tip: Use the ☰ menu to switch sections. Use the ➕ button (bottom-right) for quick actions.</div>
-    </section>
 
-    <!-- Manage Members: Current & Overdue lists -->
-    <section id="tab-manage" class="tab hidden">
-      <!-- Current members -->
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-xl font-semibold">Current Members</h2>
-        <button id="toggleCurrent" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500">Show Current (<span id="count-current">0</span>)</button>
-      </div>
-      <div id="wrap-current" class="hidden">
-        <div class="mb-2 flex items-center gap-2">
-          <input id="search-current" class="w-full p-3 rounded-xl bg-gray-900 border border-gray-800" placeholder="Search current by name or ID..." />
-          <button id="clear-current" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700">Clear</button>
+      <!-- Overdue Quick View -->
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-semibold text-red-400">Overdue Members (Quick View)</h2>
+          <button id="btn-view-all-overdue" class="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 text-sm">View All →</button>
         </div>
         <div class="overflow-x-auto rounded-2xl border border-gray-800">
           <table class="min-w-full text-sm">
             <thead class="bg-gray-900/80">
               <tr>
-                <th class="px-4 py-3 text-left">Photo</th>
-                <th class="px-4 py-3 text-left">ID</th>
-                <th class="px-4 py-3 text-left">Name</th>
-                <th class="px-4 py-3 text-left">Phone</th>
-                <th class="px-4 py-3 text-left">Type</th>
-                <th class="px-4 py-3 text-left">Start</th>
-                <th class="px-4 py-3 text-left">Due</th>
-                <th class="px-4 py-3 text-left">Fee</th>
-                <th class="px-4 py-3 text-left">Actions</th>
+                <th class="px-4 py-2 text-left">ID</th>
+                <th class="px-4 py-2 text-left">Name</th>
+                <th class="px-4 py-2 text-left">Phone</th>
+                <th class="px-4 py-2 text-left">Due Date</th>
               </tr>
             </thead>
-            <tbody id="tbody-current" class="divide-y divide-gray-800"></tbody>
+            <tbody id="tbody-overdue-quick" class="divide-y divide-gray-800"></tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="mt-6 text-sm text-gray-400">Tip: Use the ☰ menu to switch sections.</div>
+    </div>
+
+    <!-- Manage Members Tab -->
+    <div id="manage" class="app-tab hidden">
+      <div class="flex items-center justify-between mb-3">
+        <h1 class="text-2xl font-bold">Manage Members</h1>
+        <div class="text-sm text-gray-400">Search / Toggle lists</div>
+      </div>
+
+      <!-- Current Members -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Current Members</h2>
+          <button id="toggleCurrent" class="px-3 py-1 rounded bg-indigo-600">Show/Hide</button>
+        </div>
+        <div id="wrap-current" class="mt-3">
+          <div class="mb-2 flex gap-2">
+            <input id="search-current" class="flex-1 p-2 rounded bg-gray-900 text-white" placeholder="Search current by name or ID..." />
+            <button id="clear-current" class="px-3 rounded bg-gray-800">Clear</button>
+          </div>
+          <div class="overflow-x-auto rounded-2xl border border-gray-800">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-900/80">
+                <tr>
+                  <th class="px-4 py-3 text-left">Photo</th>
+                  <th class="px-4 py-3 text-left">ID</th>
+                  <th class="px-4 py-3 text-left">Name</th>
+                  <th class="px-4 py-3 text-left">Phone</th>
+                  <th class="px-4 py-3 text-left">Plan</th>
+                  <th class="px-4 py-3 text-left">Start</th>
+                  <th class="px-4 py-3 text-left">Due</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-current" class="divide-y divide-gray-800"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overdue Members -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-red-400">Overdue Members</h2>
+          <button id="toggleOverdue" class="px-3 py-1 rounded bg-red-600">Show/Hide</button>
+        </div>
+        <div id="wrap-overdue" class="mt-3">
+          <div class="mb-2 flex gap-2">
+            <input id="search-overdue" class="flex-1 p-2 rounded bg-gray-900 text-white" placeholder="Search overdue by name or ID..." />
+            <button id="clear-overdue" class="px-3 rounded bg-gray-800">Clear</button>
+          </div>
+          <div class="overflow-x-auto rounded-2xl border border-gray-800">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-900/80">
+                <tr>
+                  <th class="px-4 py-3 text-left">Photo</th>
+                  <th class="px-4 py-3 text-left">ID</th>
+                  <th class="px-4 py-3 text-left">Name</th>
+                  <th class="px-4 py-3 text-left">Phone</th>
+                  <th class="px-4 py-3 text-left">Plan</th>
+                  <th class="px-4 py-3 text-left">Start</th>
+                  <th class="px-4 py-3 text-left">Due</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-overdue" class="divide-y divide-gray-800"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inactive Members -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-yellow-400">Inactive Members</h2>
+          <button id="toggleInactive" class="px-3 py-1 rounded bg-yellow-600">Show/Hide</button>
+        </div>
+        <div id="wrap-inactive" class="mt-3">
+          <div class="mb-2 flex gap-2">
+            <input id="search-inactive" class="flex-1 p-2 rounded bg-gray-900 text-white" placeholder="Search inactive by name or ID..." />
+            <button id="clear-inactive" class="px-3 rounded bg-gray-800">Clear</button>
+          </div>
+          <div class="overflow-x-auto rounded-2xl border border-gray-800">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-900/80">
+                <tr>
+                  <th class="px-4 py-3 text-left">Photo</th>
+                  <th class="px-4 py-3 text-left">ID</th>
+                  <th class="px-4 py-3 text-left">Name</th>
+                  <th class="px-4 py-3 text-left">Phone</th>
+                  <th class="px-4 py-3 text-left">Plan</th>
+                  <th class="px-4 py-3 text-left">Start</th>
+                  <th class="px-4 py-3 text-left">Due</th>
+                  <th class="px-4 py-3 text-left">Status</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-inactive" class="divide-y divide-gray-800"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Member Tab -->
+    <div id="addmember" class="app-tab hidden">
+      <h1 class="text-2xl font-bold mb-4">Add Member</h1>
+      <form id="form-add-member" class="grid sm:grid-cols-2 gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl">
+        <input name="memberId" required placeholder="Member ID" class="p-3 rounded-xl bg-gray-950 border border-gray-800" />
+        <input name="name" required placeholder="Name" class="p-3 rounded-xl bg-gray-950 border border-gray-800" />
+        <input name="phone" required placeholder="Phone" class="p-3 rounded-xl bg-gray-950 border border-gray-800" />
+        <div class="flex items-center gap-2">
+          <input id="file-photo" type="file" accept="image/*" class="hidden" />
+          <button type="button" id="btn-upload" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700">⬆️ Upload Photo</button>
+          <input name="photo" type="hidden" />
+        </div>
+        <select name="plan" class="p-3 rounded-xl bg-gray-950 border border-gray-800">
+          <option>Monthly</option>
+          <option>Quarterly</option>
+          <option>HalfYearly</option>
+          <option>Annual</option>
+        </select>
+        <div class="col-span-full">
+          <button class="px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500">Add Member</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Add Payment Tab -->
+    <div id="addpayment" class="app-tab hidden">
+      <h1 class="text-2xl font-bold mb-4">Add Payment</h1>
+      <form id="form-add-payment" class="grid sm:grid-cols-2 gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl">
+        <input name="memberId" required placeholder="Member ID" class="p-3 rounded-xl bg-gray-950 border border-gray-800" />
+        <select name="plan" class="p-3 rounded-xl bg-gray-950 border border-gray-800">
+          <option>Monthly</option>
+          <option>Quarterly</option>
+          <option>HalfYearly</option>
+          <option>Annual</option>
+        </select>
+        <input name="amount" type="number" placeholder="Amount (₹)" class="p-3 rounded-xl bg-gray-950 border border-gray-800" />
+        <div class="col-span-full">
+          <button class="px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500">Record Payment</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Billing Tab -->
+    <div id="billing" class="app-tab hidden">
+      <h1 class="text-2xl font-bold mb-4">Billing Records</h1>
+      <div class="mb-2 flex items-center gap-2">
+        <input id="billing-search" class="w-full p-3 rounded-xl bg-gray-900 border border-gray-800" placeholder="Search by Name or ID..." />
+        <button id="billing-clear" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700">🔍</button>
+      </div>
+      <div class="overflow-x-auto rounded-2xl border border-gray-800">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-900/80">
+            <tr>
+              <th class="px-4 py-3 text-left">Date</th>
+              <th class="px-4 py-3 text-left">Photo</th>
+              <th class="px-4 py-3 text-left">Member ID</th>
+              <th class="px-4 py-3 text-left">Name</th>
+              <th class="px-4 py-3 text-left">Phone</th>
+              <th class="px-4 py-3 text-left">Plan</th>
+              <th class="px-4 py-3 text-left">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-billing" class="divide-y divide-gray-800"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-400 text-sm py-4">
+    Built with ❤️ by Sushant Singh
+  </footer>
+</div>
+
+<!-- Firebase compat for single file usage -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
+document.getElementById('btn-view-all-overdue')?.addEventListener('click', ()=>{
+  handleMenuTab('manage');
+  const wrap = document.getElementById('wrap-overdue') || document.getElementById('overdue-section');
+  wrap?.classList.remove('hidden');
+  wrap?.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
+document.getElementById('btn-view-all-overdue')?.addEventListener('click', ()=>{
+  handleMenuTab('manage');
+  const wrap = document.getElementById('wrap-overdue') || document.getElementById('overdue-section');
+  wrap?.classList.remove('hidden');
+  wrap?.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+</script>
+
+<script>
+/* === Configs === */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
+  authDomain: "alpha-core-fitness-data.firebaseapp.com",
+  projectId: "alpha-core-fitness-data",
+  storageBucket: "alpha-core-fitness-data.firebasestorage.app",
+  messagingSenderId: "311733734225",
+  appId: "1:311733734225:web:697ef2dc197ebb2e662170",
+  measurementId: "G-C5EKPN2K2J"
+};
+const CLOUDINARY = { cloudName: "dbm2s6xd2", uploadPreset: "gym_member_photos_preset" };
+
+/* === Utilities === */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const today = () => new Date().toISOString().slice(0,10);
+const mapFee = plan => ({Monthly:800,Quarterly:2000,HalfYearly:4000,Annual:7000})[plan] || 800;
+const addDuration = (start, plan) => {
+  const dt = new Date(start);
+  const map = {Monthly:30,Quarterly:90,HalfYearly:182,Annual:365};
+  dt.setDate(dt.getDate() + (map[plan]||30));
+  return dt.toISOString().slice(0,10);
+};
+function toast(msg, ok){ const t = document.createElement('div'); t.textContent = msg; t.className='fixed bottom-6 left-1/2 -translate-x-1/2 px-3 py-2 rounded bg-gray-800'; document.body.appendChild(t); setTimeout(()=>t.remove(),1600); }
+
+/* === Local Storage === */
+const LS_MEM = 'ac_members';
+const LS_PAY = 'ac_payments';
+const loadLocalMembers = () => { try { return JSON.parse(localStorage.getItem(LS_MEM)||'[]'); } catch { return []; } };
+const saveLocalMembers = (m)=> localStorage.setItem(LS_MEM, JSON.stringify(m));
+const loadLocalPayments = () => { try { return JSON.parse(localStorage.getItem(LS_PAY)||'[]'); } catch { return []; } };
+const saveLocalPayments = (p)=> localStorage.setItem(LS_PAY, JSON.stringify(p));
+
+/* === Firebase Init === */
+let db = null;
+try{
+  const app = firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.firestore();
+} catch(e){ console.warn('Firebase init error', e); }
+
+/* === Data helpers === */
+function saveMember(member){ // save locally and to Firestore
+  const arr = loadLocalMembers();
+  const idx = arr.findIndex(x=>x.id===member.id);
+  if(idx>=0) arr[idx]=member; else arr.push(member);
+  saveLocalMembers(arr);
+  if(db){ try{ db.collection('members').doc(member.id).set(member, {merge:true}); }catch(e){console.warn('saveMember cloud',e);} }
+  renderAll();
+}
+
+function deleteMember(id){
+  if(!confirm('Delete permanently?')) return;
+  let arr = loadLocalMembers().filter(x=>x.id!==id);
+  saveLocalMembers(arr);
+  if(db){ try{ db.collection('members').doc(id).delete(); }catch(e){console.warn('delete cloud', e);} }
+  toast('Deleted');
+  renderAll();
+}
+
+function addPaymentRecord(member, plan, amount, skipCloud){
+  const payments = loadLocalPayments();
+  const rec = { date: today(), photo: member.photo||'', memberId: member.id, name: member.name||'', phone: member.phone||'', plan, amount: Number(amount||0) };
+  payments.push(rec);
+  saveLocalPayments(payments);
+  if(db && !skipCloud){ try{ db.collection('payments').add(rec); } catch(e){ console.warn('payments add', e); } }
+  renderBilling();
+}
+
+/* === Rendering === */
+function imgCell(url){ const src = url || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><rect width=%2240%22 height=%2240%22 fill=%22%23222%22/></svg>'; return `<img src="${src}" class="w-10 h-10 rounded object-cover" />`; }
+
+function isOverdue(m){ return m.status==='Active' && new Date(m.dueDate) < new Date(today()); }
+
+function renderAll(){
+  const members = loadLocalMembers();
+  const current = members.filter(m=> m.status==='Active' && !isOverdue(m));
+  const overdue = members.filter(isOverdue);
+  const inactive = members.filter(m=> m.status==='Inactive');
+
+  $('#stat-total').textContent = members.length;
+  $('#stat-active').textContent = members.filter(m=>m.status==='Active').length;
+  $('#stat-overdue').textContent = overdue.length;
+  $('#stat-inactive').textContent = inactive.length;
+
+  const renderRows = (arr, ctx) => arr.map(m=>`
+    <tr class="hover:bg-gray-900/40">
+      <td class="px-4 py-2">${imgCell(m.photo)}</td>
+      <td class="px-4 py-2">${m.id}</td>
+      <td class="px-4 py-2">${m.name}</td>
+      <td class="px-4 py-2">${m.phone}</td>
+      <td class="px-4 py-2">${m.plan}</td>
+      <td class="px-4 py-2">${m.startDate||''}</td>
+      <td class="px-4 py-2 ${isOverdue(m)?'text-red-400':''}">${m.dueDate||''}</td>
+      <td class="px-4 py-2">
+        ${ctx!=='inactive' ? `<button data-act="profile" data-id="${m.id}" class="px-2 py-1 rounded bg-gray-700">👁️</button>
+        <button data-act="pay" data-id="${m.id}" class="px-2 py-1 rounded bg-gray-700">💰</button>
+        <button data-act="inactive" data-id="${m.id}" class="px-2 py-1 rounded bg-gray-700">💤</button>`
+        : `<button data-act="activate" data-id="${m.id}" class="px-2 py-1 rounded bg-green-600">Activate</button>` }
+        <button data-act="edit" data-id="${m.id}" class="px-2 py-1 rounded bg-gray-700">✏️</button>
+        <button data-act="del" data-id="${m.id}" class="px-2 py-1 rounded bg-red-700">🗑️</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td class="p-4" colspan="8">No members</td></tr>';
+
+  $('#tbody-current').innerHTML = renderRows(current, 'current');
+  $('#tbody-overdue').innerHTML = renderRows(overdue, 'overdue');
+  $('#tbody-inactive').innerHTML = renderRows(inactive, 'inactive');
+  computeStats();
+
+try{
+  const quickTbody = document.getElementById('tbody-overdue-quick');
+  if(quickTbody && typeof overdue !== 'undefined'){
+    const top5 = overdue.slice(0,5);
+    quickTbody.innerHTML = top5.map(m=>`
+      <tr class="hover:bg-gray-900/40">
+        <td class="px-4 py-2">${m.id||''}</td>
+        <td class="px-4 py-2">${m.name||''}</td>
+        <td class="px-4 py-2">${m.phone||''}</td>
+        <td class="px-4 py-2 ${typeof isOverdue==='function' && isOverdue(m)?'text-red-400':''}">${m.dueDate||''}</td>
+      </tr>
+    `).join('') || '<tr><td class="p-3" colspan="4">No overdue members 🎉</td></tr>';
+  }
+}catch(e){ console.warn('Quick view render skipped', e); }
+
+  renderBilling();
+}
+
+function renderBilling(){
+  const payments = loadLocalPayments().slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  const q = ($('#billing-search')?.value||'').toLowerCase();
+  $('#tbody-billing').innerHTML = payments.filter(p=> (p.memberId||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q)).map(p=>`
+    <tr class="hover:bg-gray-900/40">
+      <td class="px-4 py-2">${p.date}</td>
+      <td class="px-4 py-2">${imgCell(p.photo)}</td>
+      <td class="px-4 py-2">${p.memberId}</td>
+      <td class="px-4 py-2">${p.name}</td>
+      <td class="px-4 py-2">${p.phone}</td>
+      <td class="px-4 py-2">${p.plan}</td>
+      <td class="px-4 py-2">₹${Number(p.amount||0).toLocaleString('en-IN')}</td>
+    </tr>
+  `).join('') || '<tr><td class="p-4" colspan="7">No payments</td></tr>';
+}
+
+/* === Actions === */
+function openProfile(id){
+  const member = loadLocalMembers().find(m=>m.id===id); if(!member) return;
+  alert(`${member.name}\\nID: ${member.id}\\nPhone: ${member.phone}\\nPlan: ${member.plan}\\nDue: ${member.dueDate}`);
+}
+
+function markInactive(id){
+  const members = loadLocalMembers();
+  const m = members.find(x=>x.id===id); if(!m) return;
+  m.status = 'Inactive'; saveMember(m); toast('Marked inactive');
+}
+
+function activateMember(id){
+  const plan = prompt('Plan (Monthly/Quarterly/HalfYearly/Annual):');
+  if(!plan) return;
+  const members = loadLocalMembers(); const m = members.find(x=>x.id===id); if(!m) return;
+  m.status='Active'; m.plan=plan; m.startDate = today(); m.dueDate = addDuration(m.startDate, plan);
+  saveMember(m); addPaymentRecord(m, plan, mapFee(plan)); toast('Reactivated');
+}
+
+function recordPaymentViaPrompt(id){
+  const plan = prompt('Plan (Monthly/Quarterly/HalfYearly/Annual):');
+  if(!plan) return;
+  const amt = prompt('Amount (₹):', mapFee(plan));
+  const members = loadLocalMembers(); const m = members.find(x=>x.id===id); if(!m) return;
+  m.plan = plan; m.startDate = today(); m.dueDate = addDuration(m.startDate, plan); m.status='Active';
+  saveMember(m); addPaymentRecord(m, plan, Number(amt||0)); toast('Payment recorded');
+}
+
+function editMember(id){
+  const members = loadLocalMembers(); const m = members.find(x=>x.id===id); if(!m) return;
+  const name = prompt('Name:', m.name)||m.name;
+  const phone = prompt('Phone:', m.phone)||m.phone;
+  m.name = name; m.phone = phone; saveMember(m); toast('Updated');
+}
+
+/* === Event delegation for tables === */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  const act = btn.getAttribute('data-act'), id = btn.getAttribute('data-id');
+  if(act==='profile') openProfile(id);
+  else if(act==='inactive') markInactive(id);
+  else if(act==='activate') activateMember(id);
+  else if(act==='pay') recordPaymentViaPrompt(id);
+  else if(act==='edit') editMember(id);
+  else if(act==='del') deleteMember(id);
+});
+
+/* === File upload to Cloudinary === */
+document.getElementById('btn-upload').addEventListener('click', ()=> document.getElementById('file-photo').click());
+document.getElementById('file-photo').addEventListener('change', async function(e){
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const url = await uploadToCloudinary(file);
+    document.querySelector('#form-add-member [name=photo]').value = url;
+    toast('Photo uploaded', true);
+  }catch(err){
+    console.warn(err); toast('Upload failed');
+  }
+});
+
+async function uploadToCloudinary(file){
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/upload`;
+  const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', CLOUDINARY.uploadPreset);
+  const res = await fetch(url, { method:'POST', body: fd });
+  if(!res.ok) throw new Error('upload failed');
+  const data = await res.json(); return data.secure_url || data.url;
+}
+
+/* === Forms === */
+// Add member form
+document.getElementById('form-add-member').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const member = {
+    id: (fd.get('memberId')||'').trim(),
+    name: (fd.get('name')||'').trim(),
+    phone: (fd.get('phone')||'').trim(),
+    photo: (fd.get('photo')||'').trim(),
+    plan: fd.get('plan')||'Monthly',
+    fee: mapFee(fd.get('plan')||'Monthly'),
+    startDate: today(),
+    dueDate: addDuration(today(), fd.get('plan')||'Monthly'),
+    status: 'Active'
+  };
+  if(!member.id){ toast('Member ID required'); return; }
+  // save local + cloud
+  saveMember(member);
+  // add initial payment record? no - only when payment recorded
+  toast('Member added', true);
+  e.target.reset();
+});
+
+// Add payment form
+document.getElementById('form-add-payment').addEventListener('submit', function(e){
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const memberId = (fd.get('memberId')||'').trim();
+  const plan = fd.get('plan')||'Monthly';
+  const amount = Number(fd.get('amount')||0);
+  const members = loadLocalMembers(); const m = members.find(x=>x.id===memberId);
+  if(!m){ toast('Member not found'); return; }
+  m.plan = plan; m.startDate = today(); m.dueDate = addDuration(m.startDate, plan); m.status='Active';
+  saveMember(m);
+  addPaymentRecord(m, plan, amount);
+  toast('Payment recorded', true);
+  e.target.reset();
+});
+
+/* === Billing search/clear */ 
+$('#billing-clear')?.addEventListener('click', ()=> { $('#billing-search').value=''; renderBilling(); });
+$('#billing-search')?.addEventListener('input', renderBilling);
+
+/* === Toggle lists and search handlers === */
+$('#toggleCurrent')?.addEventListener('click', ()=> $('#wrap-current').classList.toggle('hidden'));
+$('#toggleOverdue')?.addEventListener('click', ()=> $('#wrap-overdue').classList.toggle('hidden'));
+$('#toggleInactive')?.addEventListener('click', ()=> $('#wrap-inactive').classList.toggle('hidden'));
+$('#clear-current')?.addEventListener('click', ()=> { $('#search-current').value=''; renderAll(); });
+$('#clear-overdue')?.addEventListener('click', ()=> { $('#search-overdue').value=''; renderAll(); });
+$('#clear-inactive')?.addEventListener('click', ()=> { $('#search-inactive').value=''; renderAll(); });
+$('#search-current')?.addEventListener('input', renderAll);
+$('#search-overdue')?.addEventListener('input', renderAll);
+$('#search-inactive')?.addEventListener('input', renderAll);
+
+/* === Compute stats helper === */
+function computeStats(){ /* placeholder - stats updated in renderAll */ }
+
+/* === Cloud pull/push (manual) === */
+async function pullFromCloud(){
+  if(!db){ toast('No cloud'); return; }
+  try{
+    const ms = []; const ps = [];
+    const q1 = await db.collection('members').get(); q1.forEach(d=> ms.push(d.data()));
+    const q2 = await db.collection('payments').get(); q2.forEach(d=> ps.push(d.data()));
+    saveLocalMembers(ms); saveLocalPayments(ps); toast('Pulled from cloud', true); renderAll();
+  }catch(e){ console.warn(e); toast('Pull failed'); }
+}
+async function pushToCloud(){
+  if(!db){ toast('No cloud'); return; }
+  try{
+    const members = loadLocalMembers(), payments = loadLocalPayments();
+    for(const m of members){ await db.collection('members').doc(m.id).set(m, {merge:true}); }
+    for(const p of payments){ await db.collection('payments').add(p); }
+    toast('Pushed to cloud', true);
+  }catch(e){ console.warn(e); toast('Push failed'); }
+}
+
+/* === Splash/Password wiring === */
+window.addEventListener('load', ()=>{ if(window._splashDone) return; window._splashDone=true;
+  setTimeout(()=>{
+    const splash = document.getElementById('splashScreen');
+    splash.style.opacity = '0';
+    setTimeout(()=>{ splash.style.display='none'; document.getElementById('passwordScreen').style.display='flex'; }, 600);
+  }, 1400);
+});
+document.getElementById('passwordBtn').addEventListener('click', ()=>{
+  const val = document.getElementById('passwordInput').value;
+  if(val === '2003'){ document.getElementById('passwordScreen').style.display='none'; document.getElementById('appMain').style.display='flex'; showTab('dashboard'); renderAll(); }
+  else { document.getElementById('passwordError').classList.remove('hidden'); }
+});
+
+/* === Menu/Tab helpers === */
+
+function openMenu(){
+  const menu = document.getElementById('sidebarMenu');
+  const backdrop = document.getElementById('backdrop');
+  menu?.classList.remove('-translate-x-full');
+  if(backdrop){
+    backdrop.classList.remove('pointer-events-none');
+    backdrop.classList.add('opacity-100');
+  }
+}
+function closeMenu(){
+  const menu = document.getElementById('sidebarMenu');
+  const backdrop = document.getElementById('backdrop');
+  menu?.classList.add('-translate-x-full');
+  if(backdrop){
+    backdrop.classList.add('pointer-events-none');
+    backdrop.classList.remove('opacity-100');
+  }
+}
+document.getElementById('backdrop')?.addEventListener('click', closeMenu);
+
+function handleMenuTab(id){
+  // Active highlight
+  document.querySelectorAll('#sidebarMenu button').forEach(btn=>btn.classList.remove('sidebar-active'));
+  const activeBtn = document.querySelector(`#sidebarMenu button[onclick*="${id}"]`);
+  if(activeBtn) activeBtn.classList.add('sidebar-active');
+  showTab(id);
+  closeMenu();
+}
+
+function showTab(id){
+  document.querySelectorAll('.app-tab').forEach(x=>{
+    x.classList.add('hidden');
+    x.classList.remove('opacity-100','opacity-0');
+  });
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('hidden');
+  el.classList.add('opacity-0','transition-opacity','duration-300');
+  void el.offsetWidth;
+  el.classList.remove('opacity-0');
+  el.classList.add('opacity-100');
+  window.scrollTo(0,0);
+}
+
+// initial load: no sample data
+saveLocalMembers([]); saveLocalPayments([]);
+
+
+document.getElementById('btn-view-all-overdue')?.addEventListener('click', ()=>{
+  handleMenuTab('manage');
+  const wrap = document.getElementById('wrap-overdue') || document.getElementById('overdue-section');
+  wrap?.classList.remove('hidden');
+  wrap?.scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+</script>
+</body>
+</html>
         </div>
       </div>
 
