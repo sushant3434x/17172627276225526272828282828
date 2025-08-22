@@ -1,110 +1,313 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Gym Management Dashboard</title>
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Inter Font -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom right, #1a202c, #2d3748);
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #4a5568;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #a0aec0;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e0;
-        }
-        .member-photo {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 1px solid #4a5568;
-        }
-        /* ID Card Photo */
-        .id-card-photo {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #6366f1;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .tab-active {
-            border-color: #6366f1;
-            color: #818cf8;
-            font-weight: 600;
-        }
-        #message-display.hidden {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        #message-display.block {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .line-through-name {
-            text-decoration: line-through;
-        }
-        #photo-view-modal {
-            background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(12px);
-            transition: opacity 0.3s ease-in-out;
-        }
-        #photo-view-modal.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #photo-view-modal.flex {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #photo-view-content {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        }
-        #photo-view-modal.hidden #photo-view-content {
-            transform: scale(0.9);
-            opacity: 0;
-        }
-        #photo-view-modal.flex #photo-view-content {
-            transform: scale(1);
-            opacity: 1;
-        }
-        /* Style for the password entry modal */
-        #password-entry-modal {
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
-            transition: opacity 0.3s ease-in-out;
-        }
-        #password-entry-modal.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #password-entry-modal.flex {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #password-entry-content {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        }
-        #password-entry-modal.hidden #password-entry-content {
-            transform: translateY(-20px);
-            opacity: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gym Dashboard with Firebase & Cloudinary</title>
+  <style>
+    body { background: #121212; color: #ddd; font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { padding: 8px; border: 1px solid #444; text-align: left; }
+    th { background: #222; }
+    button { cursor: pointer; padding: 4px 8px; border-radius: 4px; border: none; background: #2d7a2d; color: white; }
+    button.inactive-btn { background: #555; }
+    .input-section { max-width: 350px; margin-bottom: 20px; }
+    label { display: block; margin-bottom: 4px; }
+    input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #555; background: #222; color: white; margin-bottom: 12px; }
+    #inactiveMembersSection { margin-top: 10px; }
+    #inactiveMembersSection.hidden { display: none; }
+  </style>
+  <!-- Firebase App SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<h1>Gym Dashboard with Firebase & Cloudinary</h1>
+
+<!-- Config Inputs -->
+<div class="input-section">
+  <label for="firebase-api-key-input">Firebase API Key</label>
+  <input type="text" id="firebase-api-key-input" placeholder="Your Firebase API Key" />
+
+  <label for="firebase-project-id-input">Firebase Project ID</label>
+  <input type="text" id="firebase-project-id-input" placeholder="Your Firebase Project ID" />
+
+  <label for="cloudinary-cloud-name-input">Cloudinary Cloud Name</label>
+  <input type="text" id="cloudinary-cloud-name-input" placeholder="Your Cloudinary Cloud Name" />
+
+  <label for="cloudinary-upload-preset-input">Cloudinary Upload Preset</label>
+  <input type="text" id="cloudinary-upload-preset-input" placeholder="Your Cloudinary Upload Preset" />
+
+  <button onclick="initApp()">Initialize Firebase & Cloudinary</button>
+</div>
+
+<hr/>
+
+<!-- Dashboard -->
+<h2>Overdue Members</h2>
+<table id="overdueMembersTable">
+  <thead>
+    <tr>
+      <th>Photo</th><th>Member ID</th><th>Name</th><th>Phone Number</th><th>Type</th><th>Start Date</th><th>Due Date</th><th>Fee</th><th>Days Overdue</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="overdueMembersTableBody">
+  </tbody>
+</table>
+
+<h2>Current Members</h2>
+<table id="currentMembersTable">
+  <thead>
+    <tr>
+      <th>Photo</th><th>Member ID</th><th>Name</th><th>Phone Number</th><th>Type</th><th>Start Date</th><th>Due Date</th><th>Fee</th><th>Days Left</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="currentMembersTableBody">
+  </tbody>
+</table>
+
+<h2>Inactive Members <button id="toggleInactiveBtn" onclick="toggleInactive()">Show Members</button></h2>
+<div id="inactiveMembersSection" class="hidden">
+  <table>
+    <thead>
+      <tr>
+        <th>Photo</th><th>Member ID</th><th>Name</th><th>Phone Number</th><th>Type</th><th>Start Date</th><th>Due Date</th><th>Fee</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="inactiveMembersTable">
+    </tbody>
+  </table>
+</div>
+
+<script>
+  // Globals
+  let firestore;
+  let cloudinaryConfig = {};
+  let members = []; // All members from Firestore
+  let initialized = false;
+
+  function initApp() {
+    const apiKey = document.getElementById('firebase-api-key-input').value.trim();
+    const projectId = document.getElementById('firebase-project-id-input').value.trim();
+    const cloudName = document.getElementById('cloudinary-cloud-name-input').value.trim();
+    const uploadPreset = document.getElementById('cloudinary-upload-preset-input').value.trim();
+
+    if (!apiKey || !projectId || !cloudName || !uploadPreset) {
+      alert('Please enter all Firebase and Cloudinary configuration values.');
+      return;
+    }
+
+    // Init Firebase
+    const firebaseConfig = {
+      apiKey: apiKey,
+      authDomain: `${projectId}.firebaseapp.com`,
+      projectId: projectId,
+      storageBucket: `${projectId}.appspot.com`,
+      messagingSenderId: "YOUR_SENDER_ID", // Optional
+      appId: "YOUR_APP_ID" // Optional
+    };
+    firebase.initializeApp(firebaseConfig);
+    firestore = firebase.firestore();
+
+    // Save Cloudinary Config
+    cloudinaryConfig.cloudName = cloudName;
+    cloudinaryConfig.uploadPreset = uploadPreset;
+
+    alert('Firebase & Cloudinary initialized! Loading members...');
+    initialized = true;
+    loadMembers();
+  }
+
+  function loadMembers() {
+    if (!initialized) {
+      alert('Initialize Firebase first!');
+      return;
+    }
+    firestore.collection('members').get().then(snapshot => {
+      members = [];
+      snapshot.forEach(doc => {
+        let data = doc.data();
+        data.id = doc.id;
+        data.daysLeft = calculateDaysLeft(data.dueDate);
+        data.daysOverdue = calculateDaysOverdue(data.dueDate);
+        members.push(data);
+      });
+      renderTables();
+    }).catch(e => {
+      alert('Error loading members: ' + e.message);
+    });
+  }
+
+  function calculateDaysLeft(dueDateStr) {
+    if (!dueDateStr) return '-';
+    const due = new Date(dueDateStr);
+    const now = new Date();
+    let diff = (due - now) / (1000*60*60*24);
+    return diff > 0 ? Math.floor(diff) : 0;
+  }
+
+  function calculateDaysOverdue(dueDateStr) {
+    if (!dueDateStr) return '-';
+    const due = new Date(dueDateStr);
+    const now = new Date();
+    let diff = (now - due) / (1000*60*60*24);
+    return diff > 0 ? Math.floor(diff) : 0;
+  }
+
+  function renderTables() {
+    renderCurrentMembers();
+    renderInactiveMembers();
+    renderOverdueMembers();
+  }
+
+  function isActive(member) {
+    return member.status !== 'inactive';
+  }
+  function isInactive(member) {
+    return member.status === 'inactive';
+  }
+
+  function renderCurrentMembers() {
+    const tbody = document.getElementById('currentMembersTableBody');
+    tbody.innerHTML = '';
+    const currentMembers = members.filter(m => isActive(m) && !isOverdue(m));
+    if (currentMembers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10">No current members found.</td></tr>`;
+      return;
+    }
+    currentMembers.forEach(m => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${photoCell(m.photo)}</td>
+        <td>${m.id}</td>
+        <td>${m.name}</td>
+        <td>${m.phone}</td>
+        <td>${m.type}</td>
+        <td>${m.startDate || '-'}</td>
+        <td>${m.dueDate || '-'}</td>
+        <td>${m.fee || '-'}</td>
+        <td>${m.daysLeft}</td>
+        <td>
+          <button title="Mark Inactive" onclick="makeInactive('${m.id}')">💤</button>
+        </td>`;
+      tbody.appendChild(row);
+    });
+  }
+
+  function renderInactiveMembers() {
+    const tbody = document.getElementById('inactiveMembersTable');
+    tbody.innerHTML = '';
+    const inactiveMembers = members.filter(m => isInactive(m));
+    if (inactiveMembers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9">No inactive members found.</td></tr>`;
+      return;
+    }
+    inactiveMembers.forEach(m => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${photoCell(m.photo)}</td>
+        <td>${m.id}</td>
+        <td>${m.name}</td>
+        <td>${m.phone}</td>
+        <td>${m.type}</td>
+        <td>${m.startDate || '-'}</td>
+        <td>${m.dueDate || '-'}</td>
+        <td>${m.fee || '-'}</td>
+        <td>
+          <button title="Activate Member" onclick="activateMember('${m.id}')">Activate</button>
+        </td>`;
+      tbody.appendChild(row);
+    });
+  }
+
+  function renderOverdueMembers() {
+    const tbody = document.getElementById('overdueMembersTableBody');
+    tbody.innerHTML = '';
+    const overdueMembers = members.filter(m => isActive(m) && isOverdue(m));
+    if (overdueMembers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10">No members are currently overdue. Great job!</td></tr>`;
+      return;
+    }
+    overdueMembers.forEach(m => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${photoCell(m.photo)}</td>
+        <td>${m.id}</td>
+        <td>${m.name}</td>
+        <td>${m.phone}</td>
+        <td>${m.type}</td>
+        <td>${m.startDate || '-'}</td>
+        <td>${m.dueDate || '-'}</td>
+        <td>${m.fee || '-'}</td>
+        <td>${m.daysOverdue}</td>
+        <td>
+          <button title="Mark Inactive" onclick="makeInactive('${m.id}')">💤</button>
+        </td>`;
+      tbody.appendChild(row);
+    });
+  }
+
+  function isOverdue(member) {
+    return member.daysOverdue > 0;
+  }
+
+  function photoCell(photoUrl) {
+    if (!photoUrl) return 'N/A';
+    return `<img src="${photoUrl}" alt="Photo" style="width:40px; height:40px; border-radius:4px;"/>`;
+  }
+
+  function makeInactive(memberId) {
+    const memberRef = firestore.collection('members').doc(memberId);
+    memberRef.update({ status: 'inactive' }).then(() => {
+      alert('Member marked inactive');
+      loadMembers();
+    }).catch(e => alert('Failed to mark inactive: ' + e.message));
+  }
+
+  function activateMember(memberId) {
+    let paymentType = prompt('Enter payment type: Monthly, Quarterly, Half Yearly, Yearly');
+    if (!paymentType) return alert('Activation cancelled.');
+
+    const now = new Date();
+    const start = now.toISOString().slice(0,10);
+
+    let dueDate = new Date(now);
+    switch(paymentType.toLowerCase()) {
+      case 'monthly': dueDate.setMonth(dueDate.getMonth()+1); break;
+      case 'quarterly': dueDate.setMonth(dueDate.getMonth()+3); break;
+      case 'half yearly': dueDate.setMonth(dueDate.getMonth()+6); break;
+      case 'yearly': dueDate.setFullYear(dueDate.getFullYear()+1); break;
+      default: return alert('Invalid payment type');
+    }
+    dueDate = dueDate.toISOString().slice(0,10);
+
+    const memberRef = firestore.collection('members').doc(memberId);
+    memberRef.update({
+      status: 'active',
+      startDate: start,
+      dueDate: dueDate
+    }).then(() => {
+      alert('Member activated with '+paymentType+' payment type');
+      loadMembers();
+    }).catch(e => alert('Failed to activate member: ' + e.message));
+  }
+
+  function toggleInactive() {
+    const section = document.getElementById('inactiveMembersSection');
+    const btn = document.getElementById('toggleInactiveBtn');
+    if(section.classList.contains('hidden')) {
+      section.classList.remove('hidden');
+      btn.textContent = 'Hide Members';
+    } else {
+      section.classList.add('hidden');
+      btn.textContent = 'Show Members';
+    }
+  }
+</script>
+
+</body>
+</html>
         #password-entry-modal.flex #password-entry-content {
             transform: translateY(0);
             opacity: 1;
