@@ -1,932 +1,1129 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gym Management Dashboard</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <!-- Firebase SDKs (Modular) -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-    <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(to bottom right, #1a202c, #2d3748);
-        color: #e2e8f0;
-        overflow-x: hidden;
-      }
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #4a5568;
-        border-radius: 10px;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #a0aec0;
-        border-radius: 10px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #cbd5e0;
-        cursor: pointer;
-      }
-      .member-photo {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 1px solid #4a5568;
-      }
-      .id-card-photo {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 12px;
-        border: 2px solid #a0aec0;
-      }
-      .hidden {
-        display: none !important;
-      }
-      .line-through-name {
-        text-decoration: line-through;
-      }
-      .tab-content, .modal-content {
-        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-      }
-      .modal-content.hidden {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      .modal-content.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      .member-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-      }
-      .member-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-      }
-      .hamburger-menu {
-        transition: transform 0.3s ease-in-out;
-      }
-      .hamburger-menu.open {
-        transform: translateX(0);
-      }
-      .hamburger-menu.closed {
-        transform: translateX(-100%);
-      }
-    </style>
-  </head>
-  <body class="min-h-screen p-6 flex flex-col items-center justify-center">
-    <!-- Splash Screen -->
-    <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center z-50 text-white text-4xl font-bold">Made by SUSHANT SINGH</div>
-    
-    <!-- Message Display -->
-    <div class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="message-display"></div>
-    
-    <!-- Password Entry Modal -->
-    <div class="fixed inset-0 flex items-center justify-center z-50 hidden" id="password-entry-modal" style="background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);">
-      <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700">
-        <h2 class="text-3xl font-bold text-white mb-6 text-center text-lg">Enter App Password</h2>
-        <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl mb-3" id="app-password-input" maxlength="4" placeholder="••••" type="password" />
-        <button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6 mb-3" id="submit-app-password">
-          Unlock App
-        </button>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Alpha Core Fitness — Member Manager</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* Utilities */
+  .tab-active { border-bottom-width: 2px; border-color: rgb(99 102 241); color: rgb(196 181 253); }
+  .line-through-name { text-decoration: line-through; text-decoration-thickness: 2px; }
+  .drawer-open body { overflow: hidden; }
+
+  /* Row accents */
+  .row-overdue { background-color: rgb(127 29 29); }   /* red-900 */
+  .row-normal  { background-color: rgb(31 41 55); }    /* gray-800 */
+  .row-inactive{ background-color: rgb(133 77 14); }   /* amber-900 */
+
+  /* Slide-in drawer */
+  #hamburger-drawer {
+    transition: transform 0.25s ease;
+    transform: translateX(-100%);
+  }
+  #hamburger-drawer.open { transform: translateX(0%); }
+
+  /* Splash screen */
+  #splash-screen {
+    transition: opacity 0.5s ease-out;
+    opacity: 1;
+    z-index: 100;
+  }
+  #splash-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+<!-- Splash Screen -->
+<div id="splash-screen" class="fixed inset-0 bg-gray-950 flex items-center justify-center flex-col">
+  <div class="animate-pulse text-4xl font-bold mb-4">Alpha Core Fitness</div>
+  <div class="text-sm text-gray-400">Made with ❤️ by SUSHANT SINGH</div>
+</div>
+
+<!-- Top bar -->
+<header class="sticky top-0 z-40 bg-gray-950/80 backdrop-blur border-b border-gray-800 hidden" id="top-bar">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+    <button id="hamburger-btn" class="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 focus:outline-none" aria-label="Menu">☰</button>
+    <h1 class="text-lg font-bold">Alpha Core Fitness — Gym Dashboard</h1>
+    <div class="ml-auto flex items-center gap-4 text-sm">
+      <div class="text-right">
+        <div id="current-time" class="font-semibold"></div>
+        <div id="current-date"></div>
+        <div id="current-day"></div>
       </div>
+      <button id="signout-button" class="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg">Sign Out</button>
     </div>
-    
-    <!-- Main Gym App Section -->
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
-      <!-- Header with Hamburger and Search -->
-      <div class="flex justify-between items-center mb-6">
-        <button id="menu-toggle" class="p-2 rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        <h1 class="text-4xl font-extrabold text-white">Gym Dashboard</h1>
-        <button id="search-toggle" class="p-2 rounded-lg hover:bg-gray-700 transition duration-150 ease-in-out">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
-      </div>
+  </div>
+</header>
 
-      <!-- Dashboard Stats -->
-      <div id="dashboard-view" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-gray-700 p-6 rounded-xl shadow border border-gray-600">
-            <h3 class="text-gray-400 text-sm font-medium">Total Members</h3>
-            <p class="text-white text-4xl font-bold mt-2" id="total-members-count">0</p>
-          </div>
-          <div class="bg-gray-700 p-6 rounded-xl shadow border border-gray-600">
-            <h3 class="text-gray-400 text-sm font-medium">Active Members</h3>
-            <p class="text-green-400 text-4xl font-bold mt-2" id="active-members-count">0</p>
-          </div>
-          <div class="bg-gray-700 p-6 rounded-xl shadow border border-gray-600">
-            <h3 class="text-gray-400 text-sm font-medium">Inactive Members</h3>
-            <p class="text-yellow-400 text-4xl font-bold mt-2" id="inactive-members-count">0</p>
-          </div>
-          <div class="bg-gray-700 p-6 rounded-xl shadow border border-gray-600">
-            <h3 class="text-gray-400 text-sm font-medium">Overdue Members</h3>
-            <p class="text-red-400 text-4xl font-bold mt-2" id="overdue-members-count">0</p>
-          </div>
-        </div>
-        <!-- Collapsible Member Lists -->
-        <div class="w-full mt-6 bg-gray-700 p-6 rounded-xl shadow-inner border border-gray-600" id="collapsible-members">
-            <h2 class="text-2xl font-bold text-white mb-4">Current Members</h2>
-            <div class="space-y-4" id="members-list">
-              <p class="text-gray-400 text-center">No active members found.</p>
-            </div>
-        </div>
-        <div class="w-full mt-6 bg-gray-700 p-6 rounded-xl shadow-inner border border-gray-600" id="collapsible-inactive-members">
-            <h2 class="text-2xl font-bold text-white mb-4">Inactive Members</h2>
-            <div class="space-y-4" id="inactive-members-list">
-              <p class="text-gray-400 text-center">No inactive members found.</p>
-            </div>
-        </div>
-      </div>
+<!-- Drawer -->
+<aside id="hamburger-drawer" class="fixed top-0 left-0 h-full w-72 bg-gray-950 border-r border-gray-800 p-4 z-50">
+  <div class="flex items-center justify-between mb-4">
+    <span class="font-bold">Navigation</span>
+    <button id="drawer-close" class="text-2xl leading-none">&times;</button>
+  </div>
+  <nav class="grid gap-2 text-sm">
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="dashboard">📊 Dashboard</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="current">👥 Current Members</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="overdue">⏰ Overdue</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="inactive">💤 Inactive</button>
+    <hr class="border-gray-800 my-2" />
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="manage">✍️ Manage Member</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="existing">📋 Add Existing</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="payment">💳 Add Payment</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="idcard">🆔 ID Card</button>
+    <button class="drawer-link text-left px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700" data-target="payment-history">📄 Payment History</button>
+  </nav>
+</aside>
 
-      <!-- Content Views (Initially Hidden) -->
-      <div id="content-views" class="space-y-6 hidden">
-        <button id="back-to-dashboard" class="py-2 px-4 bg-gray-700 rounded-lg hover:bg-gray-600 text-white font-semibold mb-4">
-            ← Back to Dashboard
-        </button>
-        <!-- Tab Content: Manage Member Details (Existing Form) -->
-        <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
-          <h2 class="text-2xl font-bold text-white mb-6 text-lg">Manage Member Details</h2>
-          <form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="member-form">
-            <div>
-              <label class="block text-sm font-medium text-gray-300" for="member-id">Member ID</label>
-              <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-id" placeholder="Enter Member ID" type="text" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300" for="full-name">Full Name</label>
-              <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="full-name" placeholder="John Doe" type="text" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300" for="gender">Gender</label>
-              <select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="gender">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300" for="phone-number">Phone Number</label>
-              <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="phone-number" placeholder="9876543210" type="tel" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300" for="member-photo">Member Photo URL</label>
-              <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-photo" placeholder="https://example.com/photo.jpg" type="url" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-300" for="join-date">Join Date</label>
-              <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="join-date" type="date" />
-            </div>
-            <div class="col-span-1 md:col-span-2">
-              <label class="block text-sm font-medium text-gray-300" for="member-status">Membership Status</label>
-              <select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="member-status">
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-            </div>
-            <div class="col-span-1 md:col-span-2 flex flex-col space-y-4 pt-4">
-              <button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mb-3" id="save-button">
-                <span id="save-button-text">Add Member</span>
-              </button>
-              <button class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden mb-3" id="delete-button">
-                Delete Member
-              </button>
-              <button class="w-full py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mb-3" id="reset-button">
-                Reset Form
-              </button>
-            </div>
-          </form>
-        </div>
-        <!-- Tab Content: Add Payment -->
-        <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-payment">
-          <h2 class="text-2xl font-bold text-white mb-6 text-lg">Add Payment</h2>
-          <div class="space-y-4">
-            <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400" id="payment-member-id" placeholder="Member ID" type="text" />
-            <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400" id="payment-amount" placeholder="Amount" type="number" />
-            <select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white" id="payment-type">
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="half-yearly">Half-Yearly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white" id="payment-date" type="date" />
-            <button class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mb-3" id="save-payment">
-              Add Payment
-            </button>
-          </div>
-        </div>
-        <!-- Tab Content: ID Card View -->
-        <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-id-card">
-          <h2 class="text-2xl font-bold text-white mb-6 text-lg">ID Card View</h2>
-          <div class="flex flex-col items-center space-y-4">
-            <input class="w-full p-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-600" id="id-card-search-input" placeholder="Search by Member ID or Name" type="text" />
-            <div class="w-full bg-gray-800 p-6 rounded-lg shadow-inner flex flex-col items-center border border-gray-600" id="id-card-display">
-              <p class="text-gray-400 text-center">Search for a member to view their ID card.</p>
-            </div>
-          </div>
-        </div>
-        <!-- Tab Content: Cloud Config & Storage -->
-        <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-storage">
-          <h2 class="text-2xl font-bold text-white mb-6 text-lg">Cloud Config & Storage</h2>
-          <p class="text-gray-300">This section allows you to configure and manage cloud storage settings for your gym data.</p>
-          <div class="space-y-4 mt-6">
-            <label class="block text-sm font-medium text-gray-300">Firebase Config (read-only)</label>
-            <textarea class="w-full p-3 rounded-lg bg-gray-800 text-gray-400 border border-gray-600" id="firebase-config-display" rows="4" readonly></textarea>
-            <label class="block text-sm font-medium text-gray-300">App ID (read-only)</label>
-            <input class="w-full p-3 rounded-lg bg-gray-800 text-gray-400 border border-gray-600" id="app-id-display" type="text" readonly />
-          </div>
-        </div>
-        <div class="text-sm text-gray-400 text-center bg-gray-700 p-3 rounded-lg border border-gray-600" id="user-id-display">
-          Your User ID: <span class="font-mono text-gray-200 font-semibold" id="user-id-value"></span>
-        </div>
+<!-- Auth Screen -->
+<section id="auth-section" class="max-w-md mx-auto mt-10 p-6 bg-gray-800 rounded-xl border border-gray-700 hidden">
+  <h2 class="text-xl font-semibold mb-4">Sign in to Firebase</h2>
+  <div class="space-y-3">
+    <input id="auth-email" class="w-full p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Email" type="email" />
+    <input id="auth-password" class="w-full p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Password" type="password" />
+    <div class="flex gap-2">
+      <button id="signin-button" class="flex-1 px-3 py-2 bg-indigo-600 rounded hover:bg-indigo-700">Sign In</button>
+      <button id="signup-button" class="flex-1 px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">Sign Up</button>
+    </div>
+    <button id="anonymous-signin-button" class="w-full px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">Sign In Anonymously</button>
+  </div>
+</section>
+
+<!-- In-App Password Modal -->
+<div id="password-entry-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl w-full max-w-sm">
+    <h3 class="text-lg font-semibold mb-2">Enter App Password</h3>
+    <p class="text-sm text-gray-400 mb-4">You must enter the correct app password to continue.</p>
+    <input id="app-password-input" class="w-full p-3 bg-gray-900 border border-gray-700 rounded mb-4" placeholder="Enter password" type="password"/>
+    <button id="submit-app-password" class="w-full px-3 py-2 bg-indigo-600 rounded hover:bg-indigo-700">Continue</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<main id="main-app-section" class="hidden max-w-6xl mx-auto px-4 py-6 space-y-10">
+
+  <!-- Dashboard -->
+  <section id="view-dashboard" class="space-y-6">
+    <!-- Counts -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Current</div>
+        <div id="count-current" class="text-2xl font-bold">0</div>
+      </div>
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Overdue</div>
+        <div id="count-overdue" class="text-2xl font-bold text-red-400">0</div>
+      </div>
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Inactive 💤</div>
+        <div id="count-inactive" class="text-2xl font-bold text-yellow-300">0</div>
+      </div>
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Paid</div>
+        <div id="count-paid" class="text-2xl font-bold text-emerald-300">0</div>
       </div>
     </div>
 
-    <!-- Hamburger Menu Sidebar -->
-    <div id="sidebar-menu" class="fixed top-0 left-0 h-full w-64 bg-gray-900 shadow-xl z-40 p-6 closed hamburger-menu">
-      <div class="flex justify-end mb-8">
-        <button id="close-menu" class="text-gray-400 hover:text-white transition duration-150 ease-in-out">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+    <!-- Expanded Overdue -->
+    <div class="bg-gray-800 border border-red-800 rounded-xl">
+      <div class="flex items-center justify-between p-4">
+        <h3 class="text-lg font-bold text-red-400">Overdue Members</h3>
+        <input id="dash-overdue-search" placeholder="Search overdue…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
       </div>
-      <nav class="space-y-4">
-        <button class="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-150 ease-in-out" data-view="dashboard">Dashboard</button>
-        <button class="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-150 ease-in-out" data-view="manage-member">Manage Member Details</button>
-        <button class="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-150 ease-in-out" data-view="add-payment">Add Payment</button>
-        <button class="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-150 ease-in-out" data-view="id-card">ID Card View</button>
-        <button class="w-full text-left py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-150 ease-in-out" data-view="add-storage">Cloud Storage</button>
-      </nav>
-      <button class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-8" id="signout-button">
-        Sign Out
-      </button>
+      <div id="overdue-container" class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-red-900">
+            <tr>
+              <th class="px-4 py-2 text-left text-red-200">Photo</th>
+              <th class="px-4 py-2 text-left text-red-200">Member ID</th>
+              <th class="px-4 py-2 text-left text-red-200">Name</th>
+              <th class="px-4 py-2 text-left text-red-200">Phone</th>
+              <th class="px-4 py-2 text-left text-red-200">Type</th>
+              <th class="px-4 py-2 text-left text-red-200">Start</th>
+              <th class="px-4 py-2 text-left text-red-200">Due</th>
+              <th class="px-4 py-2 text-left text-red-200">Days Overdue</th>
+              <th class="px-4 py-2 text-left text-red-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="overdue-tbody" class="divide-y divide-gray-700"></tbody>
+        </table>
+        <p id="no-overdue" class="p-4 text-center text-gray-400 hidden">No overdue members. 🎉</p>
+      </div>
     </div>
+  </section>
 
-    <!-- Search Modal -->
-    <div id="search-modal" class="fixed inset-0 flex items-start justify-center p-4 z-50 hidden" style="background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);">
-      <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-lg mt-12">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-white">Search Members</h2>
-          <button id="close-search" class="text-gray-400 hover:text-white transition duration-150 ease-in-out">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+  <!-- Current Members -->
+  <section id="view-current" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold">Current Members</h3>
+      <input id="current-search" placeholder="Search current…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-gray-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-indigo-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-indigo-200">Photo</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Name</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Phone</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Type</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Start</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Due</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Days Left</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="current-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-current" class="p-4 text-center text-gray-400 hidden">No current members.</p>
+    </div>
+  </section>
+
+  <!-- Overdue (separate view) -->
+  <section id="view-overdue" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-red-400">Overdue</h3>
+      <input id="overdue-search" placeholder="Search overdue…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-red-800">
+      <table class="min-w-full text-sm">
+        <thead class="bg-red-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-red-200">Photo</th>
+            <th class="px-4 py-2 text-left text-red-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-red-200">Name</th>
+            <th class="px-4 py-2 text-left text-red-200">Phone</th>
+            <th class="px-4 py-2 text-left text-red-200">Type</th>
+            <th class="px-4 py-2 text-left text-red-200">Start</th>
+            <th class="px-4 py-2 text-left text-red-200">Due</th>
+            <th class="px-4 py-2 text-left text-red-200">Days Overdue</th>
+            <th class="px-4 py-2 text-left text-red-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="overdue2-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-overdue2" class="p-4 text-center text-gray-400 hidden">No overdue members.</p>
+    </div>
+  </section>
+
+  <!-- Inactive -->
+  <section id="view-inactive" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-yellow-300">Inactive Members 💤</h3>
+      <input id="inactive-search" placeholder="Search inactive…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-yellow-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-yellow-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-yellow-200">Photo</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Name</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Phone</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Last Type</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Start</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Due</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Status</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inactive-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-inactive" class="p-4 text-center text-gray-400 hidden">No inactive members.</p>
+    </div>
+  </section>
+
+  <!-- Payment History -->
+  <section id="view-payment-history" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold">Payment History</h3>
+      <input id="payment-history-search" placeholder="Search payments…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-gray-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-indigo-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-indigo-200">S.No.</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Name</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Membership Type</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Payment Date</th>
+          </tr>
+        </thead>
+        <tbody id="payment-history-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-payment-history" class="p-4 text-center text-gray-400 hidden">No payment history found.</p>
+    </div>
+  </section>
+
+  <!-- Manage Member (add/update) -->
+  <section id="view-manage" class="hidden">
+    <h3 class="text-lg font-bold mb-2">Manage Member Details</h3>
+    <form id="member-form" class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="member-id" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Member ID" required>
+      <input id="member-name" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Name" required>
+      <input id="member-phone" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Phone">
+      <select id="member-plan" class="p-3 bg-gray-900 border border-gray-700 rounded">
+        <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+      </select>
+      <input id="member-start" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" required>
+      <input id="member-due" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" readonly>
+      <div class="sm:col-span-2">
+        <label for="member-photo" class="text-sm block mb-1">Upload Photo</label>
+        <input id="member-photo" type="file" accept="image/*" class="w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"/>
+      </div>
+      <div class="sm:col-span-2 flex gap-2">
+        <button id="submit-member" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded">Save</button>
+        <button id="cancel-edit" type="button" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded hidden">Cancel Edit</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Add Existing -->
+  <section id="view-existing" class="hidden">
+    <h3 class="text-lg font-bold mb-2">Add Existing Member</h3>
+    <form id="existing-member-form" class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="existing-member-id" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Member ID" required>
+      <input id="existing-name" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Name" required>
+      <input id="existing-phone-number" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Phone">
+      <select id="existing-membershipType" class="p-3 bg-gray-900 border border-gray-700 rounded">
+        <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+      </select>
+      <input id="existing-startDate" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" required>
+      <input id="calculated-dueDate" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" readonly>
+      <div class="sm:col-span-2">
+        <label for="existing-photo" class="text-sm block mb-1">Upload Photo</label>
+        <input id="existing-photo" type="file" accept="image/*" class="w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"/>
+      </div>
+      <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded sm:col-span-2">Add</button>
+    </form>
+  </section>
+
+  <!-- Add Payment -->
+  <section id="view-payment" class="hidden">
+    <h3 class="text-lg font-bold mb-2">Add Payment / Extend</h3>
+    <form id="add-payment-form" class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="add-payment-member-search" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2" placeholder="Search member…">
+      <select id="add-payment-member-select" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2"></select>
+      <input id="add-payment-current-dueDate" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Current Due" readonly>
+      <select id="add-payment-membershipType" class="p-3 bg-gray-900 border border-gray-700 rounded">
+        <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+      </select>
+      <input id="add-payment-new-dueDate" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="New Due" readonly>
+      <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded sm:col-span-2">Apply Payment</button>
+    </form>
+  </section>
+
+  <!-- ID Card -->
+  <section id="view-idcard" class="hidden">
+    <h3 class="text-lg font-bold mb-2">ID Card</h3>
+    <div class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="id-card-member-search" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2" placeholder="Search member…">
+      <select id="id-card-member-select" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2"></select>
+      <div id="id-card-display" class="sm:col-span-2 hidden">
+        <div class="p-4 rounded-lg bg-gray-900 border border-gray-700">
+          <div class="font-mono text-sm" id="id-card-member-id"></div>
+          <div class="text-xl font-bold" id="id-card-name"></div>
+          <div id="id-card-phone"></div>
+          <div id="id-card-membership-type"></div>
+          <div id="id-card-start-date"></div>
+          <div id="id-card-due-date"></div>
+          <div id="id-card-fee"></div>
+          <div id="id-card-status"></div>
         </div>
-        <input class="w-full p-3 mb-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 border border-gray-600" id="search-member-input" placeholder="Search by Member ID or Name" type="text" />
-        <div class="space-y-4 max-h-96 overflow-y-auto" id="search-results">
-          <p class="text-gray-400 text-center">Start typing to search for members...</p>
-        </div>
       </div>
+      <p id="no-id-card-selected-message" class="sm:col-span-2 text-gray-400">Choose a member to view the ID card.</p>
     </div>
-    
-    <!-- Photo View Modal -->
-    <div class="fixed inset-0 flex items-center justify-center z-50 hidden" id="photo-view-modal" style="background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(12px);">
-      <div class="bg-gray-900 p-4 rounded-2xl shadow-xl border border-gray-700">
-        <img class="max-w-xs max-h-xs sm:max-w-sm sm:max-h-sm md:max-w-md md:max-h-md lg:max-w-lg lg:max-h-lg w-full h-auto rounded-lg" id="modal-photo" />
-        <p class="mt-4 text-center text-white text-lg font-bold" id="modal-photo-name"></p>
-        <button class="mt-4 w-full py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150 ease-in-out" id="close-photo-modal">
-          Close
-        </button>
-      </div>
+  </section>
+
+</main>
+
+<!-- Reactivate Modal -->
+<div id="reactivate-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+  <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl w-full max-w-sm">
+    <h3 class="text-lg font-semibold mb-3">Reactivate Member</h3>
+    <p id="reactivate-who" class="text-sm text-gray-300 mb-3"></p>
+    <label class="text-sm mb-1 block">Choose plan</label>
+    <select id="reactivate-plan" class="w-full p-3 bg-gray-900 border border-gray-700 rounded mb-4">
+      <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+    </select>
+    <div class="flex gap-2">
+      <button id="reactivate-confirm" class="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded">Reactivate</button>
+      <button id="reactivate-cancel" class="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded">Cancel</button>
     </div>
-    
-    <!-- Message Prompt Box -->
-    <div id="prompt-box" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 p-6 rounded-lg shadow-2xl text-white text-center z-50 hidden"></div>
+  </div>
+</div>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-      import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-      import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+<!-- Custom Confirmation Modal for Deletion -->
+<div id="confirm-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+  <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl w-full max-w-sm">
+    <h3 class="text-lg font-semibold mb-3">Confirm Deletion</h3>
+    <p id="confirm-who" class="text-sm text-gray-300 mb-3">Are you sure you want to delete this member? This action cannot be undone.</p>
+    <div class="flex gap-2">
+      <button id="confirm-yes" class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 rounded">Delete</button>
+      <button id="confirm-no" class="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded">Cancel</button>
+    </div>
+  </div>
+</div>
 
-      // --- Global variables for the Canvas environment ---
-      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+<!-- Notifications -->
+<div id="message-display" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 border border-gray-700 px-4 py-2 rounded-lg hidden"></div>
 
-      let app;
-      let db;
-      let auth;
-      let userId;
-      let isAuthReady = false;
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs, query, where, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      // --- UI Elements ---
-      const splashScreen = document.getElementById('splash-screen');
-      const passwordModal = document.getElementById('password-entry-modal');
-      const passwordInput = document.getElementById('app-password-input');
-      const submitPasswordBtn = document.getElementById('submit-app-password');
-      const mainAppSection = document.getElementById('main-app-section');
-      const userIdDisplay = document.getElementById('user-id-value');
-      const signOutButton = document.getElementById('signout-button');
-      const memberForm = document.getElementById('member-form');
-      const memberIdInput = document.getElementById('member-id');
-      const fullNameInput = document.getElementById('full-name');
-      const genderSelect = document.getElementById('gender');
-      const phoneNumberInput = document.getElementById('phone-number');
-      const memberPhotoInput = document.getElementById('member-photo');
-      const joinDateInput = document.getElementById('join-date');
-      const memberStatusSelect = document.getElementById('member-status');
-      const saveButton = document.getElementById('save-button');
-      const deleteButton = document.getElementById('delete-button');
-      const resetButton = document.getElementById('reset-button');
-      const membersListContainer = document.getElementById('members-list');
-      const inactiveMembersListContainer = document.getElementById('inactive-members-list');
-      const searchMemberInput = document.getElementById('search-member-input');
-      const searchResultsDiv = document.getElementById('search-results');
-      const paymentMemberIdInput = document.getElementById('payment-member-id');
-      const paymentAmountInput = document.getElementById('payment-amount');
-      const paymentTypeSelect = document.getElementById('payment-type');
-      const paymentDateInput = document.getElementById('payment-date');
-      const savePaymentButton = document.getElementById('save-payment');
-      const idCardSearchInput = document.getElementById('id-card-search-input');
-      const idCardDisplay = document.getElementById('id-card-display');
-      const photoViewModal = document.getElementById('photo-view-modal');
-      const modalPhoto = document.getElementById('modal-photo');
-      const modalPhotoName = document.getElementById('modal-photo-name');
-      const closePhotoModalBtn = document.getElementById('close-photo-modal');
-      const messageDisplay = document.getElementById('message-display');
-      const firebaseConfigDisplay = document.getElementById('firebase-config-display');
-      const appIdDisplay = document.getElementById('app-id-display');
-      const promptBox = document.getElementById('prompt-box');
+  // Global variables provided by the Canvas environment
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+  const firebaseApp = initializeApp(firebaseConfig);
+  const db = getFirestore(firebaseApp);
+  const auth = getAuth(firebaseApp);
 
-      const dashboardView = document.getElementById('dashboard-view');
-      const contentViewsContainer = document.getElementById('content-views');
-      const backToDashboardBtn = document.getElementById('back-to-dashboard');
+  let userId;
+  let allMembers = [];
+  let currentMembers = [];
+  let overdueMembers = [];
+  let inactiveMembers = [];
+  let allPayments = [];
+  let isAppPasswordVerified = false;
 
-      const menuToggleBtn = document.getElementById('menu-toggle');
-      const searchToggleBtn = document.getElementById('search-toggle');
-      const sidebarMenu = document.getElementById('sidebar-menu');
-      const closeMenuBtn = document.getElementById('close-menu');
-      const searchModal = document.getElementById('search-modal');
-      const closeSearchBtn = document.getElementById('close-search');
+  // DOM elements
+  const splashScreen = document.getElementById('splash-screen');
+  const topBar = document.getElementById('top-bar');
+  const mainAppSection = document.getElementById('main-app-section');
+  const authSection = document.getElementById('auth-section');
+  const hamburgerBtn = document.getElementById('hamburger-btn');
+  const hamburgerDrawer = document.getElementById('hamburger-drawer');
+  const drawerCloseBtn = document.getElementById('drawer-close');
+  const drawerLinks = document.querySelectorAll('.drawer-link');
+  const signoutButton = document.getElementById('signout-button');
+  const authEmailInput = document.getElementById('auth-email');
+  const authPasswordInput = document.getElementById('auth-password');
+  const signInButton = document.getElementById('signin-button');
+  const signUpButton = document.getElementById('signup-button');
+  const anonymousSignInButton = document.getElementById('anonymous-signin-button');
+  const appPasswordInput = document.getElementById('app-password-input');
+  const submitAppPasswordButton = document.getElementById('submit-app-password');
+  const passwordEntryModal = document.getElementById('password-entry-modal');
+  const messageDisplay = document.getElementById('message-display');
+  const memberForm = document.getElementById('member-form');
+  const memberIdInput = document.getElementById('member-id');
+  const memberNameInput = document.getElementById('member-name');
+  const memberPhoneInput = document.getElementById('member-phone');
+  const memberPlanSelect = document.getElementById('member-plan');
+  const memberStartInput = document.getElementById('member-start');
+  const memberDueInput = document.getElementById('member-due');
+  const memberPhotoInput = document.getElementById('member-photo');
+  const submitMemberButton = document.getElementById('submit-member');
+  const cancelEditButton = document.getElementById('cancel-edit');
+  const existingMemberForm = document.getElementById('existing-member-form');
+  const existingMemberIdInput = document.getElementById('existing-member-id');
+  const existingNameInput = document.getElementById('existing-name');
+  const existingPhoneNumberInput = document.getElementById('existing-phone-number');
+  const existingMembershipTypeSelect = document.getElementById('existing-membershipType');
+  const existingStartDateInput = document.getElementById('existing-startDate');
+  const existingPhotoInput = document.getElementById('existing-photo');
+  const calculatedDueDateInput = document.getElementById('calculated-dueDate');
+  const addPaymentForm = document.getElementById('add-payment-form');
+  const addPaymentMemberSearchInput = document.getElementById('add-payment-member-search');
+  const addPaymentMemberSelect = document.getElementById('add-payment-member-select');
+  const addPaymentCurrentDueDateInput = document.getElementById('add-payment-current-dueDate');
+  const addPaymentMembershipTypeSelect = document.getElementById('add-payment-membershipType');
+  const addPaymentNewDueDateInput = document.getElementById('add-payment-new-dueDate');
+  const idCardMemberSearch = document.getElementById('id-card-member-search');
+  const idCardMemberSelect = document.getElementById('id-card-member-select');
+  const idCardDisplay = document.getElementById('id-card-display');
+  const idCardName = document.getElementById('id-card-name');
+  const idCardMemberId = document.getElementById('id-card-member-id');
+  const idCardPhone = document.getElementById('id-card-phone');
+  const idCardType = document.getElementById('id-card-membership-type');
+  const idCardStart = document.getElementById('id-card-start-date');
+  const idCardDue = document.getElementById('id-card-due-date');
+  const idCardFee = document.getElementById('id-card-fee');
+  const idCardStatus = document.getElementById('id-card-status');
+  const noIdCardSelectedMessage = document.getElementById('no-id-card-selected-message');
+  const reactivateModal = document.getElementById('reactivate-modal');
+  const reactivateWho = document.getElementById('reactivate-who');
+  const reactivatePlan = document.getElementById('reactivate-plan');
+  const reactivateConfirm = document.getElementById('reactivate-confirm');
+  const reactivateCancel = document.getElementById('reactivate-cancel');
+  const countCurrent = document.getElementById('count-current');
+  const countOverdue = document.getElementById('count-overdue');
+  const countInactive = document.getElementById('count-inactive');
+  const countPaid = document.getElementById('count-paid');
+  const dashOverdueSearch = document.getElementById('dash-overdue-search');
+  const overdueTbody = document.getElementById('overdue-tbody');
+  const noOverdue = document.getElementById('no-overdue');
+  const currentSearch = document.getElementById('current-search');
+  const currentTbody = document.getElementById('current-tbody');
+  const noCurrent = document.getElementById('no-current');
+  const overdueSearch = document.getElementById('overdue-search');
+  const overdue2Tbody = document.getElementById('overdue2-tbody');
+  const noOverdue2 = document.getElementById('no-overdue2');
+  const inactiveSearch = document.getElementById('inactive-search');
+  const inactiveTbody = document.getElementById('inactive-tbody');
+  const noInactive = document.getElementById('no-inactive');
+  const confirmModal = document.getElementById('confirm-modal');
+  const confirmWho = document.getElementById('confirm-who');
+  const confirmYes = document.getElementById('confirm-yes');
+  const confirmNo = document.getElementById('confirm-no');
+  const paymentHistorySearch = document.getElementById('payment-history-search');
+  const paymentHistoryTbody = document.getElementById('payment-history-tbody');
+  const noPaymentHistory = document.getElementById('no-payment-history');
+  
+  let currentEditMemberId = null;
+  let memberToDeleteId = null;
 
-      // --- Dashboard Stats Elements ---
-      const totalMembersCount = document.getElementById('total-members-count');
-      const activeMembersCount = document.getElementById('active-members-count');
-      const inactiveMembersCount = document.getElementById('inactive-members-count');
-      const overdueMembersCount = document.getElementById('overdue-members-count');
+  // CLOUDINARY CONFIGURATION
+  const CLOUDINARY_CLOUD_NAME = 'dlt0f5v7c'; // Cloudinary cloud name
+  const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  
+  // App password for authentication
+  const APP_PASSWORD = '2003';
 
-      // --- View Management ---
-      function showView(viewId) {
-          dashboardView.classList.add('hidden');
-          contentViewsContainer.classList.add('hidden');
-          document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  // Splash screen timeout
+  window.onload = () => {
+    setTimeout(() => {
+      splashScreen.classList.add('hidden');
+      passwordEntryModal.classList.remove('hidden');
+    }, 2500);
+  };
 
-          if (viewId === 'dashboard') {
-              dashboardView.classList.remove('hidden');
-              contentViewsContainer.classList.add('hidden');
-          } else {
-              contentViewsContainer.classList.remove('hidden');
-              document.getElementById(`content-${viewId}`).classList.remove('hidden');
-          }
-      }
+  // Utility functions
+  function showMessage(msg, type = 'info') {
+    messageDisplay.textContent = msg;
+    messageDisplay.className = `fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg z-50 animate-bounce`;
+    if (type === 'error') {
+      messageDisplay.classList.add('bg-red-800', 'border', 'border-red-700');
+    } else {
+      messageDisplay.classList.add('bg-gray-800', 'border', 'border-gray-700');
+    }
+    messageDisplay.classList.remove('hidden');
+    setTimeout(() => {
+      messageDisplay.classList.add('hidden');
+    }, 3000);
+  }
 
-      // --- Auth and Init ---
-      async function initFirebase() {
-        try {
-          if (firebase.apps.length === 0) {
-            app = initializeApp(firebaseConfig);
-          } else {
-            app = firebase.app();
-          }
-          auth = getAuth(app);
-          db = getFirestore(app);
+  function daysBetween(d1, d2) {
+    const diff = new Date(d2).getTime() - new Date(d1).getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
 
-          onAuthStateChanged(auth, async (user) => {
-            if (user) {
-              userId = user.uid;
-              isAuthReady = true;
-              setupRealtimeListeners();
-              
-              passwordModal.classList.add('hidden');
-              mainAppSection.classList.remove('hidden');
-              mainAppSection.classList.remove('opacity-0', 'scale-95');
-              
-              userIdDisplay.textContent = userId;
-              appIdDisplay.value = appId;
-              firebaseConfigDisplay.value = JSON.stringify(firebaseConfig, null, 2);
-            } else {
-              userId = null;
-              isAuthReady = true;
-              passwordModal.classList.remove('hidden');
-            }
+  function ddmmyyyy(isoDate) {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  function calculateDueDate(startDate, plan) {
+    if (!startDate) return null;
+    const date = new Date(startDate);
+    switch (plan) {
+      case 'Monthly': date.setMonth(date.getMonth() + 1); break;
+      case 'Quarterly': date.setMonth(date.getMonth() + 3); break;
+      case 'HalfYearly': date.setMonth(date.getMonth() + 6); break;
+      case 'Annual': date.setFullYear(date.getFullYear() + 1); break;
+    }
+    return date.toISOString().split('T')[0];
+  }
+
+  function updateMainView(viewId) {
+    const sections = document.querySelectorAll('main section');
+    sections.forEach(sec => sec.classList.add('hidden'));
+    document.getElementById(`view-${viewId}`).classList.remove('hidden');
+  }
+
+  function handleAuthStatus(user) {
+    if (user && isAppPasswordVerified) {
+      authSection.classList.add('hidden');
+      mainAppSection.classList.remove('hidden');
+      topBar.classList.remove('hidden');
+      userId = user.uid;
+      console.log("Authentication successful. User ID:", userId);
+      // Initialize Firebase listener after successful auth
+      setupFirestoreListeners(userId);
+    } else if (user && !isAppPasswordVerified) {
+      // Do nothing, the password modal is already showing
+    } else {
+      authSection.classList.remove('hidden');
+      mainAppSection.classList.add('hidden');
+      topBar.classList.add('hidden');
+      console.log("User is not authenticated. Showing sign-in screen.");
+    }
+  }
+
+  // Cloudinary image upload helper
+  async function uploadImage(file) {
+      if (!file) return null;
+      showMessage('Uploading photo...', 'info');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'ml_default'); // Use the default unsigned upload preset
+
+      try {
+          const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+              method: 'POST',
+              body: formData,
           });
 
-          if (initialAuthToken) {
-            await signInWithCustomToken(auth, initialAuthToken);
-          } else {
-            await signInAnonymously(auth);
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Cloudinary upload failed: ${response.status} ${response.statusText} - ${errorText}`);
           }
 
-        } catch (error) {
-          console.error("Error initializing Firebase:", error);
-          showMessage(`Error initializing Firebase: ${error.message}`, 'error');
-        }
+          const data = await response.json();
+          showMessage('Photo uploaded!', 'info');
+          return data.secure_url;
+      } catch (error) {
+          console.error('Error uploading to Cloudinary:', error);
+          showMessage(`Photo upload failed: ${error.message}`, 'error');
+          return null;
       }
+  }
 
-      // --- Authentication Logic (Password Check) ---
-      submitPasswordBtn.addEventListener('click', () => {
-        const enteredPassword = passwordInput.value;
-        if (enteredPassword === '2003') {
-          passwordModal.classList.add('hidden');
-          mainAppSection.classList.remove('hidden');
-          mainAppSection.classList.remove('opacity-0', 'scale-95');
-        } else {
-          showMessage('Incorrect password. Please try again.', 'error');
-        }
-      });
-      passwordInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          submitPasswordBtn.click();
-        }
-      });
+  // Firebase Authentication
+  onAuthStateChanged(auth, handleAuthStatus);
 
-      // --- Sign Out ---
-      signOutButton.addEventListener('click', async () => {
-        try {
-          await signOut(auth);
-          mainAppSection.classList.add('hidden');
-          passwordModal.classList.remove('hidden');
-          showMessage('Signed out successfully.', 'success');
-        } catch (error) {
-          console.error('Sign out error:', error);
-          showMessage(`Sign out failed: ${error.message}`, 'error');
-        }
-      });
+  signInButton.addEventListener('click', async () => {
+    try {
+      const email = authEmailInput.value;
+      const password = authPasswordInput.value;
+      await signInWithEmailAndPassword(auth, email, password);
+      showMessage('Signed in successfully!');
+    } catch (error) {
+      console.error(error);
+      showMessage('Sign in failed. Please check your credentials.', 'error');
+    }
+  });
 
-      // --- CRUD Operations & Data Display ---
-      async function saveMember(memberData, docId = null) {
-        if (!isAuthReady) return showMessage('Authentication not ready.', 'error');
-        const memberCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
-        try {
-          if (docId) {
-            const memberDocRef = doc(memberCollectionRef, docId);
-            await setDoc(memberDocRef, memberData);
-          } else {
-            await addDoc(memberCollectionRef, memberData);
-          }
-          showMessage('Member saved successfully!', 'success');
-          memberForm.reset();
-        } catch (e) {
-          console.error("Error saving member: ", e);
-          showMessage('Error saving member.', 'error');
-        }
-      }
+  signUpButton.addEventListener('click', async () => {
+    try {
+      const email = authEmailInput.value;
+      const password = authPasswordInput.value;
+      await createUserWithEmailAndPassword(auth, email, password);
+      showMessage('Signed up successfully!');
+    } catch (error) {
+      console.error(error);
+      showMessage('Sign up failed.', 'error');
+    }
+  });
 
-      async function deleteMember(docId) {
-        if (!isAuthReady) return showMessage('Authentication not ready.', 'error');
-        promptBox.innerHTML = `
-          <p class="text-lg mb-4">Are you sure you want to delete this member?</p>
-          <div class="flex justify-center space-x-4">
-            <button id="prompt-ok" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Yes, Delete</button>
-            <button id="prompt-cancel" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
-          </div>
-        `;
-        promptBox.classList.remove('hidden');
-        document.getElementById('prompt-ok').onclick = async () => {
-          promptBox.classList.add('hidden');
-          try {
-            const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', docId);
-            await deleteDoc(memberDocRef);
-            showMessage('Member deleted successfully!', 'success');
-            memberForm.reset();
-            saveButton.textContent = 'Add Member';
-            deleteButton.classList.add('hidden');
-          } catch (e) {
-            console.error("Error deleting member: ", e);
-            showMessage('Error deleting member.', 'error');
-          }
-        };
-        document.getElementById('prompt-cancel').onclick = () => {
-          promptBox.classList.add('hidden');
-        };
-      }
+  anonymousSignInButton.addEventListener('click', async () => {
+    try {
+      await signInAnonymously(auth);
+      showMessage('Signed in anonymously!');
+    } catch (error) {
+      console.error(error);
+      showMessage('Anonymous sign in failed.', 'error');
+    }
+  });
 
-      async function markAsInactive(docId) {
-        if (!isAuthReady) return showMessage('Authentication not ready.', 'error');
-        try {
-          const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', docId);
-          await updateDoc(memberDocRef, { status: 'Inactive' });
-          showMessage('Member marked as inactive.', 'success');
-        } catch (e) {
-          console.error("Error marking member as inactive: ", e);
-          showMessage('Error marking member as inactive.', 'error');
-        }
-      }
+  signoutButton.addEventListener('click', async () => {
+    await signOut(auth);
+    showMessage('Signed out.');
+    // Re-show auth section and password modal after sign out
+    isAppPasswordVerified = false;
+    authSection.classList.remove('hidden');
+    mainAppSection.classList.add('hidden');
+    topBar.classList.add('hidden');
+    passwordEntryModal.classList.remove('hidden');
+    document.body.classList.remove('drawer-open');
+    hamburgerDrawer.classList.remove('open');
+  });
 
-      function renderDashboard(allMembers) {
-          const activeMembers = allMembers.filter(member => member.status === 'Active');
-          const inactiveMembers = allMembers.filter(member => member.status === 'Inactive' || member.status === 'Suspended');
-          const overdueMembers = allMembers.filter(member => {
-            if (member.status === 'Active' && member.dueDate) {
-              return new Date(member.dueDate) < new Date();
-            }
-            return false;
-          });
+  submitAppPasswordButton.addEventListener('click', async () => {
+    if (appPasswordInput.value === APP_PASSWORD) {
+      isAppPasswordVerified = true;
+      passwordEntryModal.classList.add('hidden');
+      authSection.classList.remove('hidden'); // Show auth section after password is correct
+      showMessage('App password correct! Please sign in.');
+    } else {
+      showMessage('Incorrect app password.', 'error');
+    }
+  });
 
-          totalMembersCount.textContent = allMembers.length;
-          activeMembersCount.textContent = activeMembers.length;
-          inactiveMembersCount.textContent = inactiveMembers.length;
-          overdueMembersCount.textContent = overdueMembers.length;
+  // Firebase and Firestore Logic
+  async function setupFirestoreListeners(uid) {
+    const membersCollectionRef = collection(db, 'artifacts', appId, 'users', uid, 'members');
+    const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', uid, 'payments');
 
-          renderMembersList(membersListContainer, activeMembers, 'active');
-          renderMembersList(inactiveMembersListContainer, inactiveMembers, 'inactive');
-      }
-
-      function renderMembersList(container, members, type) {
-        container.innerHTML = '';
-        if (members.length === 0) {
-          container.innerHTML = `<p class="text-gray-400 text-center">No ${type} members found.</p>`;
-        }
-        members.forEach(member => {
-          const memberDiv = document.createElement('div');
-          memberDiv.className = 'member-card bg-gray-800 p-4 rounded-lg shadow flex justify-between items-center space-x-4 border border-gray-600';
-          memberDiv.dataset.id = member.id;
-          
-          let actionButton = '';
-          if (type === 'active') {
-            actionButton = `<button class="inactive-btn text-yellow-400 hover:text-yellow-500 font-semibold text-xl">💤</button>`;
-          } else {
-            actionButton = `<button class="activate-btn bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-lg text-sm">Activate</button>`;
-          }
-          
-          memberDiv.innerHTML = `
-            <div class="flex items-center space-x-3">
-              <img src="${member.photoUrl || 'https://placehold.co/40x40/4a5568/a0aec0?text=P'}" onerror="this.src='https://placehold.co/40x40/4a5568/a0aec0?text=P';" alt="Member Photo" class="member-photo">
-              <div>
-                <p class="text-white font-medium ${type === 'inactive' ? 'line-through-name' : ''}">${member.fullName}</p>
-                <p class="text-gray-400 text-sm">ID: ${member.memberId}</p>
-                <p class="text-gray-400 text-sm">Status: ${member.status}</p>
-              </div>
-            </div>
-            <div class="flex space-x-2">
-              ${actionButton}
-              <button class="edit-btn text-blue-400 hover:text-blue-500 font-semibold text-sm">Edit</button>
-            </div>
-          `;
-          memberDiv.querySelector('.edit-btn').addEventListener('click', () => {
-            fillFormForEdit(member.id);
-          });
-          if (type === 'active') {
-            memberDiv.querySelector('.inactive-btn').addEventListener('click', () => {
-              markAsInactive(member.id);
-            });
-          } else {
-            memberDiv.querySelector('.activate-btn').addEventListener('click', () => {
-              promptForPaymentAndActivate(member.id);
-            });
-          }
-          container.appendChild(memberDiv);
-        });
-      }
-
-      async function promptForPaymentAndActivate(docId) {
-        promptBox.innerHTML = `
-          <p class="text-lg mb-4">Select payment type to reactivate:</p>
-          <select id="payment-prompt-select" class="w-full p-3 mb-4 bg-gray-800 text-white rounded-lg border border-gray-600">
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="half-yearly">Half-Yearly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-          <div class="flex justify-center space-x-4">
-            <button id="prompt-ok" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">OK</button>
-            <button id="prompt-cancel" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Cancel</button>
-          </div>
-        `;
-        promptBox.classList.remove('hidden');
-
-        document.getElementById('prompt-ok').onclick = async () => {
-          const paymentType = document.getElementById('payment-prompt-select').value;
-          promptBox.classList.add('hidden');
-          try {
-            const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', docId);
-            await updateDoc(memberDocRef, {
-              status: 'Active',
-              dueDate: calculateDueDate(paymentType)
-            });
-            const paymentsColRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
-            await addDoc(paymentsColRef, {
-              memberId: memberDocRef.id,
-              amount: 0,
-              paymentType: paymentType,
-              paymentDate: new Date().toISOString().slice(0, 10),
-              timestamp: new Date().toISOString()
-            });
-            showMessage('Member activated successfully!', 'success');
-          } catch (e) {
-            console.error("Error activating member: ", e);
-            showMessage('Error activating member.', 'error');
-          }
-        };
-        document.getElementById('prompt-cancel').onclick = () => {
-          promptBox.classList.add('hidden');
-        };
-      }
-
-      function calculateDueDate(paymentType) {
-        const date = new Date();
-        switch (paymentType) {
-          case 'monthly':
-            date.setMonth(date.getMonth() + 1);
-            break;
-          case 'quarterly':
-            date.setMonth(date.getMonth() + 3);
-            break;
-          case 'half-yearly':
-            date.setMonth(date.getMonth() + 6);
-            break;
-          case 'yearly':
-            date.setFullYear(date.getFullYear() + 1);
-            break;
-        }
-        return date.toISOString().slice(0, 10);
-      }
-
-      function setupRealtimeListeners() {
-        if (!isAuthReady || !userId) return;
-        const membersColRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
-        onSnapshot(membersColRef, (snapshot) => {
-          const allMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          renderDashboard(allMembers);
-        }, (error) => {
-            console.error("Error fetching members:", error);
-            showMessage("Error fetching members. Please try again.", 'error');
-        });
-      }
-
-      // --- Form and Button Handlers ---
-      memberForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const docId = saveButton.dataset.docId || null;
-        const memberData = {
-          memberId: memberIdInput.value,
-          fullName: fullNameInput.value,
-          gender: genderSelect.value,
-          phoneNumber: phoneNumberInput.value,
-          photoUrl: memberPhotoInput.value,
-          joinDate: joinDateInput.value,
-          status: memberStatusSelect.value,
-          createdAt: new Date().toISOString(),
-          dueDate: memberStatusSelect.value === 'Active' ? calculateDueDate('monthly') : null
-        };
-        await saveMember(memberData, docId);
-      });
-
-      resetButton.addEventListener('click', () => {
-        memberForm.reset();
-        saveButton.textContent = 'Add Member';
-        deleteButton.classList.add('hidden');
-        delete saveButton.dataset.docId;
-      });
-
-      deleteButton.addEventListener('click', async () => {
-        const docId = deleteButton.dataset.docId;
-        if (docId) {
-          await deleteMember(docId);
-        }
-      });
-
-      async function fillFormForEdit(docId) {
-        const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', docId);
-        const docSnap = await getDoc(memberDocRef);
-        if (docSnap.exists()) {
-          const memberData = docSnap.data();
-          memberIdInput.value = memberData.memberId;
-          fullNameInput.value = memberData.fullName;
-          genderSelect.value = memberData.gender;
-          phoneNumberInput.value = memberData.phoneNumber;
-          memberPhotoInput.value = memberData.photoUrl;
-          joinDateInput.value = memberData.joinDate;
-          memberStatusSelect.value = memberData.status;
-          saveButton.textContent = 'Update Member';
-          saveButton.dataset.docId = docId;
-          deleteButton.classList.remove('hidden');
-          showView('manage-member');
-        } else {
-          showMessage('Member not found.', 'error');
-        }
-      }
-
-      // --- Payment Logic ---
-      savePaymentButton.addEventListener('click', async () => {
-        const memberId = paymentMemberIdInput.value;
-        const amount = parseFloat(paymentAmountInput.value);
-        const paymentType = paymentTypeSelect.value;
-        const paymentDate = paymentDateInput.value;
-
-        if (!memberId || !amount || !paymentDate) {
-          showMessage('Please fill out all payment fields.', 'error');
-          return;
-        }
-
-        try {
-          const membersColRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
-          const q = query(membersColRef, where('memberId', '==', memberId));
-          const querySnapshot = await getDocs(q);
-
-          if (querySnapshot.empty) {
-            showMessage('Member not found with this ID.', 'error');
-            return;
-          }
-
-          const memberDoc = querySnapshot.docs[0];
-          const memberDocRef = memberDoc.ref;
-          
-          await updateDoc(memberDocRef, {
-            status: 'Active',
-            dueDate: calculateDueDate(paymentType)
-          });
-
-          const paymentsColRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
-          await addDoc(paymentsColRef, {
-            memberDocId: memberDoc.id,
-            memberId,
-            amount,
-            paymentType,
-            paymentDate,
-            timestamp: new Date().toISOString()
-          });
-
-          showMessage('Payment added successfully!', 'success');
-          paymentMemberIdInput.value = '';
-          paymentAmountInput.value = '';
-          paymentDateInput.value = '';
-        } catch (e) {
-          console.error("Error adding payment: ", e);
-          showMessage('Error adding payment.', 'error');
-        }
-      });
-
-      // --- ID Card View Logic ---
-      idCardSearchInput.addEventListener('input', async (e) => {
-        const queryText = e.target.value.toLowerCase();
-        idCardDisplay.innerHTML = '<p class="text-gray-400 text-center">Searching...</p>';
-        if (queryText.length > 0) {
-          const membersColRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
-          const membersSnapshot = await getDocs(membersColRef);
-          const membersList = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          const member = membersList.find(member =>
-            (member.memberId && member.memberId.toLowerCase().includes(queryText)) || (member.fullName && member.fullName.toLowerCase().includes(queryText))
-          );
-          renderIdCard(member);
-        } else {
-          idCardDisplay.innerHTML = '<p class="text-gray-400 text-center">Search for a member to view their ID card.</p>';
-        }
-      });
-
-      function renderIdCard(member) {
-        if (!member) {
-          idCardDisplay.innerHTML = '<p class="text-gray-400 text-center">Member not found.</p>';
-          return;
-        }
-        const formattedJoinDate = member.joinDate ? new Date(member.joinDate).toLocaleDateString() : 'N/A';
-        const photoUrl = member.photoUrl || 'https://placehold.co/120x120/4a5568/a0aec0?text=NO+PHOTO';
-        idCardDisplay.innerHTML = `
-          <div class="bg-gradient-to-br from-indigo-700 to-blue-500 p-8 rounded-xl shadow-lg w-full max-w-sm text-white relative">
-            <div class="absolute top-4 right-4 text-sm font-bold opacity-30">ID: ${member.memberId}</div>
-            <div class="flex items-center space-x-6">
-              <img src="${photoUrl}" onerror="this.src='https://placehold.co/120x120/4a5568/a0aec0?text=NO+PHOTO';" alt="Member Photo" class="id-card-photo">
-              <div>
-                <h3 class="text-2xl font-bold">${member.fullName}</h3>
-                <p class="text-gray-200">Status: ${member.status}</p>
-                <p class="text-gray-300 text-sm">Joined: ${formattedJoinDate}</p>
-              </div>
-            </div>
-            <div class="mt-6 text-sm text-gray-200">
-              <p><strong>Phone:</strong> ${member.phoneNumber}</p>
-              <p><strong>Gender:</strong> ${member.gender}</p>
-            </div>
-            <div class="mt-4 border-t border-gray-400 pt-2 text-xs text-center">
-              <p>AlphaCore Fitness</p>
-            </div>
-          </div>
-          <button class="mt-4 w-full py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 ease-in-out" onclick="openPhotoModal('${member.photoUrl}', '${member.fullName}')">
-            View Photo
-          </button>
-        `;
-      }
-
-      function openPhotoModal(photoUrl, name) {
-        modalPhoto.src = photoUrl || 'https://placehold.co/400x400/4a5568/a0aec0?text=NO+PHOTO';
-        modalPhoto.onerror = () => modalPhoto.src = 'https://placehold.co/400x400/4a5568/a0aec0?text=NO+PHOTO';
-        modalPhotoName.textContent = name;
-        photoViewModal.classList.remove('hidden');
-      }
-
-      closePhotoModalBtn.addEventListener('click', () => {
-        photoViewModal.classList.add('hidden');
-      });
-
-      // --- UI/UX Helpers ---
-      function showMessage(message, type = 'info') {
-        messageDisplay.textContent = message;
-        messageDisplay.className = `fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out block`;
-        if (type === 'success') {
-          messageDisplay.style.backgroundColor = '#10B981';
-        } else if (type === 'error') {
-          messageDisplay.style.backgroundColor = '#EF4444';
-        } else {
-          messageDisplay.style.backgroundColor = '#3B82F6';
-        }
-        setTimeout(() => {
-          messageDisplay.classList.remove('block');
-          messageDisplay.classList.add('hidden');
-        }, 3000);
-      }
+    // Listen for real-time updates to members collection
+    onSnapshot(membersCollectionRef, (snapshot) => {
+      allMembers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // --- Hamburger Menu & Search Modal Logic ---
-      menuToggleBtn.addEventListener('click', () => {
-        sidebarMenu.classList.remove('closed');
-        sidebarMenu.classList.add('open');
-      });
-      closeMenuBtn.addEventListener('click', () => {
-        sidebarMenu.classList.remove('open');
-        sidebarMenu.classList.add('closed');
-      });
-      document.querySelectorAll('#sidebar-menu button').forEach(button => {
-        button.addEventListener('click', () => {
-          const view = button.dataset.view;
-          if (view) {
-            showView(view);
-            closeMenuBtn.click();
-          }
-        });
-      });
-      backToDashboardBtn.addEventListener('click', () => {
-        showView('dashboard');
-      });
-      searchToggleBtn.addEventListener('click', () => {
-        searchModal.classList.remove('hidden');
-      });
-      closeSearchBtn.addEventListener('click', () => {
-        searchModal.classList.add('hidden');
+      const today = new Date();
+      
+      currentMembers = allMembers.filter(m => {
+        if (!m.status || m.status === 'Active') {
+          return m.dueDate && new Date(m.dueDate) >= today;
+        }
+        return false;
       });
       
-      searchMemberInput.addEventListener('input', async (e) => {
-        const queryText = e.target.value.toLowerCase();
-        searchResultsDiv.innerHTML = '<p class="text-gray-400 text-center">Searching...</p>';
-        const membersColRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
-        const membersSnapshot = await getDocs(membersColRef);
-        const allMembersList = membersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      overdueMembers = allMembers.filter(m => {
+        return m.dueDate && new Date(m.dueDate) < today && new Date(m.dueDate) >= new Date(today.getTime() - (90 * 24 * 60 * 60 * 1000));
+      });
+      
+      inactiveMembers = allMembers.filter(m => {
+        return m.status === 'Inactive' || (m.dueDate && new Date(m.dueDate) < new Date(today.getTime() - (90 * 24 * 60 * 60 * 1000)));
+      });
+      
+      countCurrent.textContent = currentMembers.length;
+      countOverdue.textContent = overdueMembers.length;
+      countInactive.textContent = inactiveMembers.length;
+      countPaid.textContent = allMembers.length - overdueMembers.length - inactiveMembers.length;
+      
+      renderTables();
+      populateSelects();
+    }, (error) => {
+      console.error("Error fetching data: ", error);
+      showMessage("Failed to load data. Please check your connection.", "error");
+    });
+    
+    // Listen for real-time updates to payments collection
+    onSnapshot(paymentsCollectionRef, (snapshot) => {
+      allPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderPaymentHistory();
+    }, (error) => {
+      console.error("Error fetching payments: ", error);
+      showMessage("Failed to load payment history.", "error");
+    });
+  }
 
-        const filteredMembers = allMembersList.filter(member =>
-          (member.memberId && member.memberId.toLowerCase().includes(queryText)) ||
-          (member.fullName && member.fullName.toLowerCase().includes(queryText))
-        );
+  async function addMember(memberData) {
+    try {
+      const membersCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
+      const docRef = await addDoc(membersCollectionRef, {
+        ...memberData,
+        createdAt: serverTimestamp(),
+      });
+      
+      // Add initial payment record
+      const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+      await addDoc(paymentsCollectionRef, {
+          memberId: memberData.memberId,
+          memberName: memberData.name,
+          membershipType: memberData.membershipType,
+          paymentDate: new Date(memberData.startDate),
+          createdAt: serverTimestamp(),
+      });
+
+      showMessage('Member added successfully!');
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      showMessage('Failed to add member.', 'error');
+    }
+  }
+
+  async function updateMember(docId, memberData) {
+    try {
+      const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', docId);
+      await updateDoc(memberDocRef, {
+        ...memberData,
+        updatedAt: serverTimestamp(),
+      });
+      showMessage('Member updated successfully!');
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      showMessage('Failed to update member.', 'error');
+    }
+  }
+
+  async function deleteMember(docId) {
+    try {
+      const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', docId);
+      await deleteDoc(memberDocRef);
+      showMessage('Member deleted successfully!');
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      showMessage('Failed to delete member.', 'error');
+    }
+  }
+  
+  // DOM Rendering functions
+  function renderMemberTable(tableBody, members, query, memberClass, daysCalc) {
+    tableBody.innerHTML = '';
+    const filteredMembers = members.filter(m => JSON.stringify(m).toLowerCase().includes(query.toLowerCase()));
+    
+    if (filteredMembers.length === 0) {
+      const noDataElement = tableBody.nextElementSibling;
+      if (noDataElement) noDataElement.classList.remove('hidden');
+    } else {
+      const noDataElement = tableBody.nextElementSibling;
+      if (noDataElement) noDataElement.classList.add('hidden');
+      
+      filteredMembers.forEach(member => {
+        const row = document.createElement('tr');
+        row.classList.add(memberClass, 'border-b', 'border-gray-700');
         
-        renderSearchResults(filteredMembers);
+        const photoUrl = member.photoURL || `https://placehold.co/50x50/1f2937/d1d5db?text=No+Photo`;
+        const days = daysCalc(member);
+
+        row.innerHTML = `
+          <td class="px-4 py-2"><img src="${photoUrl}" alt="${member.name}" class="h-10 w-10 rounded-full object-cover"/></td>
+          <td class="px-4 py-2 font-mono text-sm">${member.memberId || ''}</td>
+          <td class="px-4 py-2">${member.name || ''}</td>
+          <td class="px-4 py-2">${member.phoneNumber || ''}</td>
+          <td class="px-4 py-2">${member.membershipType || ''}</td>
+          <td class="px-4 py-2">${ddmmyyyy(member.startDate)}</td>
+          <td class="px-4 py-2">${ddmmyyyy(member.dueDate)}</td>
+          <td class="px-4 py-2 font-bold">${days}</td>
+          <td class="px-4 py-2 space-x-2">
+            <button data-action="edit" data-id="${member.id}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded">Edit</button>
+            <button data-action="reactivate" data-id="${member.id}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded">Reactivate</button>
+            <button data-action="delete" data-id="${member.id}" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
       });
+    }
+  }
 
-      function renderSearchResults(results) {
-        searchResultsDiv.innerHTML = '';
-        if (results.length === 0) {
-          searchResultsDiv.innerHTML = '<p class="text-gray-400 text-center">No matching members found.</p>';
-          return;
-        }
-        results.forEach(member => {
-          const resultDiv = document.createElement('div');
-          resultDiv.className = 'bg-gray-700 p-4 rounded-lg shadow-sm flex justify-between items-center cursor-pointer hover:bg-gray-600 transition duration-150 ease-in-out border border-gray-600';
-          resultDiv.innerHTML = `
-            <div class="flex items-center space-x-3">
-              <img src="${member.photoUrl || 'https://placehold.co/40x40/4a5568/a0aec0?text=P'}" onerror="this.src='https://placehold.co/40x40/4a5568/a0aec0?text=P';" alt="Member Photo" class="member-photo">
-              <div>
-                <p class="text-white font-medium">${member.fullName}</p>
-                <p class="text-gray-400 text-sm">ID: ${member.memberId}</p>
-              </div>
-            </div>
-          `;
-          resultDiv.addEventListener('click', () => {
-            paymentMemberIdInput.value = member.memberId;
-            showView('add-payment');
-            searchModal.classList.add('hidden');
-          });
-          searchResultsDiv.appendChild(resultDiv);
-        });
+  function renderPaymentHistory() {
+    paymentHistoryTbody.innerHTML = '';
+    const query = paymentHistorySearch.value.toLowerCase();
+    
+    const filteredPayments = allPayments.filter(p => 
+      (p.memberName && p.memberName.toLowerCase().includes(query)) ||
+      (p.memberId && p.memberId.toLowerCase().includes(query))
+    ).sort((a,b) => b.createdAt.toDate() - a.createdAt.toDate());
+
+    if (filteredPayments.length === 0) {
+      noPaymentHistory.classList.remove('hidden');
+    } else {
+      noPaymentHistory.classList.add('hidden');
+      filteredPayments.forEach((payment, index) => {
+        const row = document.createElement('tr');
+        row.classList.add('bg-gray-800', 'border-b', 'border-gray-700');
+        row.innerHTML = `
+          <td class="px-4 py-2">${index + 1}</td>
+          <td class="px-4 py-2">${payment.memberId || ''}</td>
+          <td class="px-4 py-2">${payment.memberName || ''}</td>
+          <td class="px-4 py-2">${payment.membershipType || ''}</td>
+          <td class="px-4 py-2">${payment.createdAt ? ddmmyyyy(payment.createdAt.toDate()) : 'N/A'}</td>
+        `;
+        paymentHistoryTbody.appendChild(row);
+      });
+    }
+  }
+  
+  function renderTables() {
+    renderMemberTable(overdueTbody, overdueMembers, dashOverdueSearch.value, 'row-overdue', m => daysBetween(m.dueDate, new Date().toISOString().split('T')[0]));
+    renderMemberTable(currentTbody, currentMembers, currentSearch.value, 'row-normal', m => daysBetween(new Date().toISOString().split('T')[0], m.dueDate));
+    renderMemberTable(overdue2Tbody, overdueMembers, overdueSearch.value, 'row-overdue', m => daysBetween(m.dueDate, new Date().toISOString().split('T')[0]));
+    renderMemberTable(inactiveTbody, inactiveMembers, inactiveSearch.value, 'row-inactive', m => m.status || 'Inactive');
+    renderPaymentHistory();
+  }
+
+  function populateSelects() {
+    // Add Payment Select
+    const paymentList = allMembers.filter(m => new Date(m.dueDate) >= new Date()).sort((a,b)=>a.name.localeCompare(b.name));
+    addPaymentMemberSelect.innerHTML = '<option value="">Select member…</option>' + paymentList.map(m=>`<option value="${m.id}">${m.name} (${m.memberId})</option>`).join('');
+    
+    // ID Card Select
+    const idCardList = allMembers.sort((a,b)=>a.name.localeCompare(b.name));
+    idCardMemberSelect.innerHTML = '<option value="">Select member…</option>' + idCardList.map(m=>`<option value="${m.id}">${m.name} (${m.memberId})</option>`).join('');
+  }
+  
+  // Event listeners
+  hamburgerBtn.addEventListener('click', () => {
+    hamburgerDrawer.classList.toggle('open');
+    document.body.classList.toggle('drawer-open');
+  });
+
+  drawerCloseBtn.addEventListener('click', () => {
+    hamburgerDrawer.classList.remove('open');
+    document.body.classList.remove('drawer-open');
+  });
+
+  drawerLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const target = e.currentTarget.dataset.target;
+      updateMainView(target);
+      hamburgerDrawer.classList.remove('open');
+      document.body.classList.remove('drawer-open');
+    });
+  });
+
+  // Handle table actions (edit, reactivate, delete)
+  document.addEventListener('click', async (e) => {
+    if (e.target.dataset.action === 'edit') {
+      const memberId = e.target.dataset.id;
+      const member = allMembers.find(m => m.id === memberId);
+      if (member) {
+        currentEditMemberId = member.id;
+        memberIdInput.value = member.memberId || '';
+        memberNameInput.value = member.name || '';
+        memberPhoneInput.value = member.phoneNumber || '';
+        memberPlanSelect.value = member.membershipType || 'Monthly';
+        memberStartInput.value = member.startDate;
+        memberDueInput.value = member.dueDate;
+        
+        memberIdInput.readOnly = true;
+        submitMemberButton.textContent = 'Update';
+        cancelEditButton.classList.remove('hidden');
+        updateMainView('manage');
       }
+    } else if (e.target.dataset.action === 'reactivate') {
+      const memberId = e.target.dataset.id;
+      const member = allMembers.find(m => m.id === memberId);
+      if (member) {
+        reactivateModal.dataset.memberId = memberId;
+        reactivateWho.textContent = `Reactivate ${member.name} (${member.memberId})`;
+        reactivatePlan.value = member.membershipType || 'Monthly';
+        reactivateModal.classList.remove('hidden');
+      }
+    } else if (e.target.dataset.action === 'delete') {
+      const memberId = e.target.dataset.id;
+      const member = allMembers.find(m => m.id === memberId);
+      if (member) {
+        memberToDeleteId = memberId;
+        confirmWho.textContent = `Are you sure you want to delete ${member.name}? This action cannot be undone.`;
+        confirmModal.classList.remove('hidden');
+      }
+    }
+  });
 
-      window.openPhotoModal = openPhotoModal;
-      window.onload = function () {
-        setTimeout(() => {
-          splashScreen.classList.add('hidden');
-          initFirebase();
-        }, 2000);
-      };
-    </script>
-  </body>
+  // Handle confirmation modal buttons
+  confirmYes.addEventListener('click', async () => {
+    if (memberToDeleteId) {
+      await deleteMember(memberToDeleteId);
+      memberToDeleteId = null;
+    }
+    confirmModal.classList.add('hidden');
+  });
+
+  confirmNo.addEventListener('click', () => {
+    memberToDeleteId = null;
+    confirmModal.classList.add('hidden');
+  });
+
+
+  // Form submission
+  memberForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const photoFile = memberPhotoInput.files[0];
+    const photoURL = await uploadImage(photoFile);
+
+    const memberData = {
+      memberId: memberIdInput.value,
+      name: memberNameInput.value,
+      phoneNumber: memberPhoneInput.value,
+      membershipType: memberPlanSelect.value,
+      startDate: memberStartInput.value,
+      dueDate: memberDueInput.value,
+      photoURL: photoURL
+    };
+
+    if (currentEditMemberId) {
+      await updateMember(currentEditMemberId, memberData);
+      currentEditMemberId = null;
+      memberIdInput.readOnly = false;
+      memberForm.reset();
+      submitMemberButton.textContent = 'Update';
+      cancelEditButton.classList.add('hidden');
+    } else {
+      await addMember(memberData);
+      memberForm.reset();
+    }
+  });
+  
+  existingMemberForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const photoFile = existingPhotoInput.files[0];
+    const photoURL = await uploadImage(photoFile);
+    
+    const memberData = {
+      memberId: existingMemberIdInput.value,
+      name: existingNameInput.value,
+      phoneNumber: existingPhoneNumberInput.value,
+      membershipType: existingMembershipTypeSelect.value,
+      startDate: existingStartDateInput.value,
+      dueDate: calculatedDueDateInput.value,
+      photoURL: photoURL
+    };
+    
+    await addMember(memberData);
+    existingMemberForm.reset();
+  });
+  
+  addPaymentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const memberId = addPaymentMemberSelect.value;
+    const membershipType = addPaymentMembershipTypeSelect.value;
+    
+    if (memberId) {
+      const member = allMembers.find(m => m.id === memberId);
+      const newDueDate = calculateDueDate(member.dueDate, membershipType);
+      
+      await updateMember(memberId, { dueDate: newDueDate, membershipType: membershipType, status: 'Active' });
+      
+      const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+      await addDoc(paymentsCollectionRef, {
+        memberId: member.memberId,
+        memberName: member.name,
+        membershipType: membershipType,
+        paymentDate: new Date(),
+        createdAt: serverTimestamp(),
+      });
+      
+      addPaymentForm.reset();
+    }
+  });
+
+  reactivateConfirm.addEventListener('click', async () => {
+    const memberId = reactivateModal.dataset.memberId;
+    const member = allMembers.find(m => m.id === memberId);
+    if (member) {
+      const plan = reactivatePlan.value;
+      const today = new Date().toISOString().split('T')[0];
+      const newDueDate = calculateDueDate(today, plan);
+      
+      await updateMember(memberId, {
+        membershipType: plan,
+        startDate: today,
+        dueDate: newDueDate,
+        status: 'Active'
+      });
+      
+      const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+      await addDoc(paymentsCollectionRef, {
+        memberId: member.memberId,
+        memberName: member.name,
+        membershipType: plan,
+        paymentDate: new Date(),
+        createdAt: serverTimestamp(),
+      });
+      
+      reactivateModal.classList.add('hidden');
+    }
+  });
+  
+  reactivateCancel.addEventListener('click', () => {
+    reactivateModal.classList.add('hidden');
+  });
+
+  cancelEditButton.addEventListener('click', () => {
+    currentEditMemberId = null;
+    memberIdInput.readOnly = false;
+    memberForm.reset();
+    submitMemberButton.textContent = 'Save';
+    cancelEditButton.classList.add('hidden');
+  });
+
+  // Auto-calculate due date
+  memberStartInput.addEventListener('change', () => {
+    memberDueInput.value = calculateDueDate(memberStartInput.value, memberPlanSelect.value);
+  });
+  memberPlanSelect.addEventListener('change', () => {
+    memberDueInput.value = calculateDueDate(memberStartInput.value, memberPlanSelect.value);
+  });
+  
+  existingStartDateInput.addEventListener('change', () => {
+    calculatedDueDateInput.value = calculateDueDate(existingStartDateInput.value, existingMembershipTypeSelect.value);
+  });
+  existingMembershipTypeSelect.addEventListener('change', () => {
+    calculatedDueDateInput.value = calculateDueDate(existingStartDateInput.value, existingMembershipTypeSelect.value);
+  });
+  
+  addPaymentMemberSelect.addEventListener('change', () => {
+    const member = allMembers.find(m => m.id === addPaymentMemberSelect.value);
+    if (member) {
+      addPaymentCurrentDueDateInput.value = ddmmyyyy(member.dueDate);
+      addPaymentMembershipTypeSelect.value = member.membershipType || 'Monthly';
+      addPaymentNewDueDateInput.value = ddmmyyyy(calculateDueDate(member.dueDate, addPaymentMembershipTypeSelect.value));
+    } else {
+      addPaymentCurrentDueDateInput.value = '';
+      addPaymentNewDueDateInput.value = '';
+    }
+  });
+  
+  addPaymentMembershipTypeSelect.addEventListener('change', () => {
+    const member = allMembers.find(m => m.id === addPaymentMemberSelect.value);
+    if (member) {
+      addPaymentNewDueDateInput.value = ddmmyyyy(calculateDueDate(member.dueDate, addPaymentMembershipTypeSelect.value));
+    }
+  });
+  
+  // Search filtering
+  dashOverdueSearch.addEventListener('input', () => renderTables());
+  currentSearch.addEventListener('input', () => renderTables());
+  overdueSearch.addEventListener('input', () => renderTables());
+  inactiveSearch.addEventListener('input', () => renderTables());
+  paymentHistorySearch.addEventListener('input', () => renderPaymentHistory());
+  
+  // ID Card population
+  idCardMemberSelect.addEventListener('change', () => {
+    const member = allMembers.find(m => m.id === idCardMemberSelect.value);
+    if (member) {
+      idCardDisplay.classList.remove('hidden');
+      noIdCardSelectedMessage.classList.add('hidden');
+      idCardName.textContent = member.name || '';
+      idCardMemberId.textContent = 'ID: ' + (member.memberId || '');
+      idCardPhone.textContent = 'Phone: ' + (member.phoneNumber || '');
+      idCardType.textContent = 'Plan: ' + (member.membershipType || '');
+      idCardStart.textContent = 'Start: ' + ddmmyyyy(member.startDate);
+      idCardDue.textContent = 'Due: ' + ddmmyyyy(member.dueDate);
+      idCardFee.textContent = 'Fee: ' + (member.fee || ''); // Assuming fee field might exist
+      
+      const today = new Date();
+      const dueDate = new Date(member.dueDate);
+      if (dueDate < today) {
+        const days = daysBetween(member.dueDate, today.toISOString().split('T')[0]);
+        idCardStatus.textContent = `Status: Overdue by ${days} days`;
+        idCardStatus.className = 'text-red-400 font-bold';
+      } else {
+        const days = daysBetween(today.toISOString().split('T')[0], member.dueDate);
+        idCardStatus.textContent = `Status: Active (${days} days left)`;
+        idCardStatus.className = 'text-emerald-400 font-bold';
+      }
+    } else {
+      idCardDisplay.classList.add('hidden');
+      noIdCardSelectedMessage.classList.remove('hidden');
+    }
+  });
+
+  // Auth token sign-in
+  if (initialAuthToken) {
+    console.log("Attempting sign-in with custom token...");
+    signInWithCustomToken(auth, initialAuthToken).catch((error) => {
+      console.error('Error signing in with custom token:', error);
+      showMessage('Failed to sign in automatically.', 'error');
+      // Fallback to anonymous sign-in if custom token fails
+      console.log("Falling back to anonymous sign-in...");
+      signInAnonymously(auth);
+    });
+  } else {
+    console.log("No custom token provided. Signing in anonymously...");
+    signInAnonymously(auth);
+  }
+
+  // Clock
+  function updateTime() {
+    const now = new Date();
+    const time = now.toLocaleTimeString();
+    const date = now.toLocaleDateString();
+    const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+    document.getElementById('current-time').textContent = time;
+    document.getElementById('current-date').textContent = date;
+    document.getElementById('current-day').textContent = day;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+</script>
+</body>
 </html>
