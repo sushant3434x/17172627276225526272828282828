@@ -107,6 +107,987 @@
 </aside>
 
 <!-- Auth Screen -->
+<section id="auth-section" class="max-w-md mx-auto mt-10 p-6 bg-gray-800 rounded-xl border border-gray-700 hidden">
+  <h2 class="text-xl font-semibold mb-4 text-center">Sign in to Alpha Core Fitness</h2>
+  <p class="text-sm text-center text-gray-400 mb-6">Click the button below to sign in and access the dashboard.</p>
+  <div class="flex justify-center">
+    <button id="signin-button" class="px-6 py-3 bg-indigo-600 rounded-lg hover:bg-indigo-700 font-semibold transition-colors">Sign In</button>
+  </div>
+</section>
+
+<!-- Main App -->
+<main id="main-app-section" class="hidden max-w-6xl mx-auto px-4 py-6 space-y-10">
+
+  <!-- Dashboard -->
+  <section id="view-dashboard" class="space-y-6 hidden">
+    <!-- Counts -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Current</div>
+        <div id="count-current" class="text-2xl font-bold">0</div>
+      </div>
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Overdue</div>
+        <div id="count-overdue" class="text-2xl font-bold text-red-400">0</div>
+      </div>
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Inactive 💤</div>
+        <div id="count-inactive" class="text-2xl font-bold text-yellow-300">0</div>
+      </div>
+      <div class="p-4 rounded-xl border border-gray-700 bg-gray-800 text-center">
+        <div class="text-xs text-gray-400">Paid</div>
+        <div id="count-paid" class="text-2xl font-bold text-emerald-300">0</div>
+      </div>
+    </div>
+
+    <!-- Expanded Overdue -->
+    <div class="bg-gray-800 border border-red-800 rounded-xl">
+      <div class="flex items-center justify-between p-4">
+        <h3 class="text-lg font-bold text-red-400">Overdue Members</h3>
+        <input id="dash-overdue-search" placeholder="Search overdue…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+      </div>
+      <div id="overdue-container" class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-red-900">
+            <tr>
+              <th class="px-4 py-2 text-left text-red-200">Photo</th>
+              <th class="px-4 py-2 text-left text-red-200">Member ID</th>
+              <th class="px-4 py-2 text-left text-red-200">Name</th>
+              <th class="px-4 py-2 text-left text-red-200">Phone</th>
+              <th class="px-4 py-2 text-left text-red-200">Type</th>
+              <th class="px-4 py-2 text-left text-red-200">Start</th>
+              <th class="px-4 py-2 text-left text-red-200">Due</th>
+              <th class="px-4 py-2 text-left text-red-200">Days Overdue</th>
+              <th class="px-4 py-2 text-left text-red-200">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="overdue-tbody" class="divide-y divide-gray-700"></tbody>
+        </table>
+        <p id="no-overdue" class="p-4 text-center text-gray-400 hidden">No overdue members. 🎉</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Current Members -->
+  <section id="view-current" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold">Current Members</h3>
+      <input id="current-search" placeholder="Search current…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-gray-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-indigo-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-indigo-200">Photo</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Name</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Phone</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Type</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Start</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Due</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Days Left</th>
+            <th class="px-4 py-2 text-left text-indigo-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="current-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-current" class="p-4 text-center text-gray-400 hidden">No current members.</p>
+    </div>
+  </section>
+
+  <!-- Overdue (separate view) -->
+  <section id="view-overdue" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-red-400">Overdue</h3>
+      <input id="overdue-search" placeholder="Search overdue…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-red-800">
+      <table class="min-w-full text-sm">
+        <thead class="bg-red-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-red-200">Photo</th>
+            <th class="px-4 py-2 text-left text-red-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-red-200">Name</th>
+            <th class="px-4 py-2 text-left text-red-200">Phone</th>
+            <th class="px-4 py-2 text-left text-red-200">Type</th>
+            <th class="px-4 py-2 text-left text-red-200">Start</th>
+            <th class="px-4 py-2 text-left text-red-200">Due</th>
+            <th class="px-4 py-2 text-left text-red-200">Days Overdue</th>
+            <th class="px-4 py-2 text-left text-red-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="overdue2-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-overdue2" class="p-4 text-center text-gray-400 hidden">No overdue members.</p>
+    </div>
+  </section>
+
+  <!-- Inactive -->
+  <section id="view-inactive" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-yellow-300">Inactive Members 💤</h3>
+      <input id="inactive-search" placeholder="Search inactive…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-yellow-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-yellow-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-yellow-200">Photo</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Name</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Phone</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Last Type</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Start</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Due</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Status</th>
+            <th class="px-4 py-2 text-left text-yellow-200">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inactive-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-inactive" class="p-4 text-center text-gray-400 hidden">No inactive members.</p>
+    </div>
+  </section>
+
+  <!-- Payments History -->
+  <section id="view-payments-history" class="space-y-4 hidden">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold">Payments History</h3>
+      <input id="payments-search" placeholder="Search payments…" class="p-2 bg-gray-900 border border-gray-700 rounded w-60">
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-gray-700">
+      <table class="min-w-full text-sm">
+        <thead class="bg-emerald-900">
+          <tr>
+            <th class="px-4 py-2 text-left text-emerald-200">Member Name</th>
+            <th class="px-4 py-2 text-left text-emerald-200">Member ID</th>
+            <th class="px-4 py-2 text-left text-emerald-200">Plan</th>
+            <th class="px-4 py-2 text-left text-emerald-200">Amount</th>
+            <th class="px-4 py-2 text-left text-emerald-200">Payment Date</th>
+          </tr>
+        </thead>
+        <tbody id="payments-tbody" class="divide-y divide-gray-700"></tbody>
+      </table>
+      <p id="no-payments" class="p-4 text-center text-gray-400 hidden">No payments have been recorded yet.</p>
+    </div>
+  </section>
+
+  <!-- Manage Member (add/update) -->
+  <section id="view-manage" class="hidden">
+    <h3 class="text-lg font-bold mb-2">Manage Member Details</h3>
+    <form id="member-form" class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="member-id" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Member ID" required>
+      <input id="member-name" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Name" required>
+      <input id="member-phone" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Phone">
+      <select id="member-plan" class="p-3 bg-gray-900 border border-gray-700 rounded">
+        <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+      </select>
+      <input id="member-start" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" required>
+      <input id="member-due" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" readonly>
+      <div class="sm:col-span-2 flex gap-2">
+        <button id="submit-member" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded">Save</button>
+        <button id="cancel-edit" type="button" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded hidden">Cancel Edit</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Add Existing -->
+  <section id="view-existing" class="hidden">
+    <h3 class="text-lg font-bold mb-2">Add Existing Member</h3>
+    <form id="existing-member-form" class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="existing-member-id" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Member ID" required>
+      <input id="existing-name" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Name" required>
+      <input id="existing-phone-number" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Phone">
+      <select id="existing-membershipType" class="p-3 bg-gray-900 border border-gray-700 rounded">
+        <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+      </select>
+      <input id="existing-startDate" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" required>
+      <input id="calculated-dueDate" type="date" class="p-3 bg-gray-900 border border-gray-700 rounded" readonly>
+      <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded sm:col-span-2">Add</button>
+    </form>
+  </section>
+
+  <!-- Add Payment -->
+  <section id="view-payment" class="hidden">
+    <h3 class="text-lg font-bold mb-2">Add Payment / Extend</h3>
+    <form id="add-payment-form" class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="add-payment-member-search" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2" placeholder="Search member…">
+      <select id="add-payment-member-select" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2"></select>
+      <input id="add-payment-current-dueDate" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="Current Due" readonly>
+      <select id="add-payment-membershipType" class="p-3 bg-gray-900 border border-gray-700 rounded">
+        <option>Monthly</option><option>Quarterly</option><option>HalfYearly</option><option>Annual</option>
+      </select>
+      <input id="add-payment-new-dueDate" class="p-3 bg-gray-900 border border-gray-700 rounded" placeholder="New Due" readonly>
+      <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded sm:col-span-2">Apply Payment</button>
+    </form>
+  </section>
+
+  <!-- ID Card -->
+  <section id="view-idcard" class="hidden">
+    <h3 class="text-lg font-bold mb-2">ID Card</h3>
+    <div class="grid sm:grid-cols-2 gap-4 bg-gray-800 border border-gray-700 p-4 rounded-xl">
+      <input id="id-card-member-search" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2" placeholder="Search member…">
+      <select id="id-card-member-select" class="p-3 bg-gray-900 border border-gray-700 rounded sm:col-span-2"></select>
+      <div id="id-card-display" class="sm:col-span-2 hidden">
+        <div class="p-4 rounded-lg bg-gray-900 border border-gray-700">
+          <div class="font-mono text-sm" id="id-card-member-id"></div>
+          <div class="text-xl font-bold" id="id-card-name"></div>
+          <div id="id-card-phone"></div>
+          <div id="id-card-membership-type"></div>
+          <div id="id-card-start-date"></div>
+          <div id="id-card-due-date"></div>
+          <div id="id-card-fee"></div>
+          <div id="id-card-status"></div>
+        </div>
+      </div>
+      <p id="no-id-card-selected-message" class="sm:col-span-2 text-gray-400">Choose a member to view their ID card.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Info/Error Message Box -->
+<div id="message-box" class="fixed bottom-4 right-4 p-4 rounded-lg text-sm transition-opacity duration-300 opacity-0 z-50 pointer-events-none"></div>
+
+<script type="module">
+  // @ts-nocheck
+  // Firebase SDK imports must be at the top level of the module script
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, updateDoc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // This is your provided Firebase configuration.
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
+    authDomain: "alpha-core-fitness-data.firebaseapp.com",
+    projectId: "alpha-core-fitness-data",
+    storageBucket: "alpha-core-fitness-data.firebasestorage.app",
+    messagingSenderId: "311733734225",
+    appId: "1:311733734225:web:697ef2dc197ebb2e662170",
+    measurementId: "G-C5EKPN2K2J"
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // This is the new, definitive fix for the 'tailwind is not defined' error.
+    // By placing the config here, we ensure the `tailwind` object is fully
+    // loaded and available before we attempt to configure it.
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gray-950': '#08080c',
+          }
+        }
+      }
+    };
+
+    let app;
+    let db;
+    let auth;
+    let userId;
+    let appId = 'alpha-core-fitness-data'; // Using your project ID as the app ID
+
+    let allMembers = [];
+
+    // DOM elements
+    const splashScreen = document.getElementById('splash-screen');
+    const authSection = document.getElementById('auth-section');
+    const mainAppSection = document.getElementById('main-app-section');
+    const topBar = document.getElementById('top-bar');
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const drawer = document.getElementById('hamburger-drawer');
+    const drawerCloseBtn = document.getElementById('drawer-close');
+    const drawerLinks = document.querySelectorAll('.drawer-link');
+    const signoutButton = document.getElementById('signout-button');
+    const messageBox = document.getElementById('message-box');
+    const signinButton = document.getElementById('signin-button');
+    
+    const memberForm = document.getElementById('member-form');
+    const memberIdInput = document.getElementById('member-id');
+    const memberNameInput = document.getElementById('member-name');
+    const memberPhoneInput = document.getElementById('member-phone');
+    const memberPlanInput = document.getElementById('member-plan');
+    const memberStartInput = document.getElementById('member-start');
+    const memberDueInput = document.getElementById('member-due');
+    const submitMemberBtn = document.getElementById('submit-member');
+    const cancelEditBtn = document.getElementById('cancel-edit');
+
+    const existingMemberForm = document.getElementById('existing-member-form');
+    const existingMemberIdInput = document.getElementById('existing-member-id');
+    const existingNameInput = document.getElementById('existing-name');
+    const existingPhoneInput = document.getElementById('existing-phone-number');
+    const existingMembershipType = document.getElementById('existing-membershipType');
+    const existingStartDate = document.getElementById('existing-startDate');
+    const calculatedDueDate = document.getElementById('calculated-dueDate');
+
+    const addPaymentForm = document.getElementById('add-payment-form');
+    const addPaymentSearch = document.getElementById('add-payment-member-search');
+    const addPaymentSelect = document.getElementById('add-payment-member-select');
+    const addPaymentCurrentDue = document.getElementById('add-payment-current-dueDate');
+    const addPaymentMembershipType = document.getElementById('add-payment-membershipType');
+    const addPaymentNewDue = document.getElementById('add-payment-new-dueDate');
+
+    const idCardSearch = document.getElementById('id-card-member-search');
+    const idCardSelect = document.getElementById('id-card-member-select');
+    const idCardDisplay = document.getElementById('id-card-display');
+    const idCardName = document.getElementById('id-card-name');
+    const idCardMemberId = document.getElementById('id-card-member-id');
+    const idCardPhone = document.getElementById('id-card-phone');
+    const idCardType = document.getElementById('id-card-membership-type');
+    const idCardStart = document.getElementById('id-card-start-date');
+    const idCardDue = document.getElementById('id-card-due-date');
+    const idCardFee = document.getElementById('id-card-fee');
+    const idCardStatus = document.getElementById('id-card-status');
+    
+    const currentTbody = document.getElementById('current-tbody');
+    const overdueTbody = document.getElementById('overdue-tbody');
+    const overdue2Tbody = document.getElementById('overdue2-tbody');
+    const inactiveTbody = document.getElementById('inactive-tbody');
+    const paymentsTbody = document.getElementById('payments-tbody');
+
+    const countCurrent = document.getElementById('count-current');
+    const countOverdue = document.getElementById('count-overdue');
+    const countInactive = document.getElementById('count-inactive');
+    const countPaid = document.getElementById('count-paid');
+
+    const noCurrent = document.getElementById('no-current');
+    const noOverdue = document.getElementById('no-overdue');
+    const noOverdue2 = document.getElementById('no-overdue2');
+    const noInactive = document.getElementById('no-inactive');
+    const noPayments = document.getElementById('no-payments');
+
+    let currentEditingMemberId = null;
+
+    // Helper functions
+    const showMessage = (message, type = 'info') => {
+      messageBox.textContent = message;
+      messageBox.style.opacity = '1';
+      messageBox.classList.add('pointer-events-auto');
+
+      if (type === 'error') {
+        messageBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-sm transition-opacity duration-300 opacity-100 z-50 pointer-events-auto bg-red-800 text-white';
+      } else if (type === 'success') {
+        messageBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-sm transition-opacity duration-300 opacity-100 z-50 pointer-events-auto bg-green-800 text-white';
+      } else {
+        messageBox.className = 'fixed bottom-4 right-4 p-4 rounded-lg text-sm transition-opacity duration-300 opacity-100 z-50 pointer-events-auto bg-gray-800 text-white';
+      }
+
+      setTimeout(() => {
+        messageBox.style.opacity = '0';
+        messageBox.classList.remove('pointer-events-auto');
+      }, 3000);
+    };
+
+    const getDueDate = (startDate, plan) => {
+      if (!startDate || !plan) return '';
+      const date = new Date(startDate);
+      
+      switch (plan) {
+        case 'Monthly':
+          date.setMonth(date.getMonth() + 1);
+          break;
+        case 'Quarterly':
+          date.setMonth(date.getMonth() + 3);
+          break;
+        case 'HalfYearly':
+          date.setMonth(date.getMonth() + 6);
+          break;
+        case 'Annual':
+          date.setFullYear(date.getFullYear() + 1);
+          break;
+        default:
+          return '';
+      }
+      return date.toISOString().split('T')[0];
+    };
+
+    const ddmmyyyy = (dateStr) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+
+    const daysDiff = (dateStr) => {
+      if (!dateStr) return 'N/A';
+      const oneDay = 24 * 60 * 60 * 1000;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = new Date(dateStr);
+      due.setHours(0, 0, 0, 0);
+      const diff = Math.round((due - today) / oneDay);
+      return diff;
+    };
+
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    };
+
+    const getMembershipFee = (plan) => {
+      switch (plan) {
+        case 'Monthly': return 500;
+        case 'Quarterly': return 1200;
+        case 'HalfYearly': return 2200;
+        case 'Annual': return 4000;
+        default: return 0;
+      }
+    };
+
+    const getMemberStatus = (member) => {
+      const days = daysDiff(member.dueDate);
+      if (days >= 0) {
+        return 'current';
+      } else if (days < 0 && days >= -30) {
+        return 'overdue';
+      } else {
+        return 'inactive';
+      }
+    };
+
+    const renderTable = (members, tbody, type) => {
+      let rows = '';
+      
+      if (members.length === 0) {
+        document.getElementById(`no-${type}`).classList.remove('hidden');
+      } else {
+        document.getElementById(`no-${type}`).classList.add('hidden');
+      }
+
+      members.forEach(m => {
+        const days = daysDiff(m.dueDate);
+        const isOverdue = days < 0;
+        const daysLeft = isOverdue ? Math.abs(days) : days;
+        const daysText = isOverdue ? `${daysLeft} days overdue` : `${daysLeft} days left`;
+        
+        const rowClass = isOverdue ? 'row-overdue' : (getMemberStatus(m) === 'inactive' ? 'row-inactive' : 'row-normal');
+        const nameClass = m.isRemoved ? 'line-through-name' : '';
+        const statusText = m.isRemoved ? 'Removed' : (isOverdue ? 'Overdue' : 'Active');
+        const actionButtons = `
+          <div class="flex gap-2">
+            <button class="edit-btn px-2 py-1 bg-yellow-600 rounded-md hover:bg-yellow-700 text-white" data-id="${m.id}">Edit</button>
+            <button class="remove-btn px-2 py-1 bg-red-600 rounded-md hover:bg-red-700 text-white" data-id="${m.id}">Remove</button>
+            <button class="mark-paid-btn px-2 py-1 bg-green-600 rounded-md hover:bg-green-700 text-white" data-id="${m.id}">Mark Paid</button>
+          </div>`;
+
+        rows += `
+          <tr data-id="${m.id}" class="${rowClass} hover:bg-gray-700 transition-colors">
+            <td class="px-4 py-2 border-r border-gray-700"><img src="https://placehold.co/40x40/4b5563/ffffff?text=U" alt="Profile" class="rounded-full"></td>
+            <td class="px-4 py-2 border-r border-gray-700">${m.memberId || ''}</td>
+            <td class="px-4 py-2 border-r border-gray-700 ${nameClass}">${m.name || ''}</td>
+            <td class="px-4 py-2 border-r border-gray-700">${m.phoneNumber || ''}</td>
+            <td class="px-4 py-2 border-r border-gray-700">${m.membershipType || ''}</td>
+            <td class="px-4 py-2 border-r border-gray-700">${ddmmyyyy(m.startDate)}</td>
+            <td class="px-4 py-2 border-r border-gray-700">${ddmmyyyy(m.dueDate)}</td>
+            <td class="px-4 py-2 border-r border-gray-700">${daysLeft}</td>
+            <td class="px-4 py-2">${actionButtons}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = rows;
+
+      document.querySelectorAll('.edit-btn').forEach(btn => btn.onclick = (e) => handleEdit(e.target.dataset.id));
+      document.querySelectorAll('.remove-btn').forEach(btn => btn.onclick = (e) => handleRemove(e.target.dataset.id));
+      document.querySelectorAll('.mark-paid-btn').forEach(btn => btn.onclick = (e) => handleMarkPaid(e.target.dataset.id));
+    };
+    
+    const updateCounts = (members) => {
+      const current = members.filter(m => getMemberStatus(m) === 'current').length;
+      const overdue = members.filter(m => getMemberStatus(m) === 'overdue').length;
+      const inactive = members.filter(m => getMemberStatus(m) === 'inactive').length;
+      
+      countCurrent.textContent = current;
+      countOverdue.textContent = overdue;
+      countInactive.textContent = inactive;
+    };
+    
+    const renderPaymentsTable = (payments) => {
+        let rows = '';
+        if (payments.length === 0) {
+            noPayments.classList.remove('hidden');
+        } else {
+            noPayments.classList.add('hidden');
+        }
+
+        payments.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate());
+
+        payments.forEach(p => {
+            rows += `
+                <tr class="bg-gray-800 hover:bg-gray-700 transition-colors">
+                    <td class="px-4 py-2 border-r border-gray-700">${p.memberName || ''}</td>
+                    <td class="px-4 py-2 border-r border-gray-700">${p.memberId || ''}</td>
+                    <td class="px-4 py-2 border-r border-gray-700">${p.plan || ''}</td>
+                    <td class="px-4 py-2 border-r border-gray-700">${formatCurrency(p.amount)}</td>
+                    <td class="px-4 py-2">${p.timestamp ? ddmmyyyy(p.timestamp.toDate().toISOString().split('T')[0]) : 'N/A'}</td>
+                </tr>
+            `;
+        });
+        paymentsTbody.innerHTML = rows;
+    };
+
+    const renderMemberData = (members) => {
+      allMembers = members;
+      updateCounts(allMembers);
+
+      const currentMembers = allMembers.filter(m => getMemberStatus(m) === 'current');
+      const overdueMembers = allMembers.filter(m => getMemberStatus(m) === 'overdue');
+      const inactiveMembers = allMembers.filter(m => getMemberStatus(m) === 'inactive');
+
+      renderTable(currentMembers, currentTbody, 'current');
+      renderTable(overdueMembers, overdueTbody, 'overdue');
+      renderTable(overdueMembers, overdue2Tbody, 'overdue2');
+      renderTable(inactiveMembers, inactiveTbody, 'inactive');
+
+      populatePaymentSelect();
+      populateIdCardSelect();
+    };
+
+    const populatePaymentSelect = (q = '') => {
+      const list = allMembers.filter(m => (m.name || '').toLowerCase().includes(q.toLowerCase()) || (m.memberId || '').toLowerCase().includes(q.toLowerCase()));
+      addPaymentSelect.innerHTML = '<option value="">Select member…</option>' + list.map(m => `<option value="${m.id}">${m.name} (${m.memberId})</option>`).join('');
+    };
+
+    const populateIdCardSelect = (q = '') => {
+      const list = allMembers.filter(m => (m.name || '').toLowerCase().includes(q.toLowerCase()) || (m.memberId || '').toLowerCase().includes(q.toLowerCase()));
+      idCardSelect.innerHTML = '<option value="">Select member…</option>' + list.map(m => `<option value="${m.id}">${m.name} (${m.memberId})</option>`).join('');
+    };
+
+    // Main Firestore Logic
+    const setupFirestore = () => {
+      if (!db || !auth || !userId) {
+          console.error("Firebase not initialized or user not authenticated.");
+          return;
+      }
+      
+      const membersCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
+      const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+
+      // Set up real-time listener for members
+      onSnapshot(membersCollectionRef, (querySnapshot) => {
+        const members = [];
+        querySnapshot.forEach((doc) => {
+          members.push({ id: doc.id, ...doc.data() });
+        });
+        renderMemberData(members);
+      }, (error) => {
+        console.error("Error fetching documents:", error);
+        showMessage("Error fetching data.", 'error');
+      });
+
+      // Set up real-time listener for payments
+      onSnapshot(paymentsCollectionRef, (querySnapshot) => {
+        const payments = [];
+        querySnapshot.forEach((doc) => {
+          payments.push({ id: doc.id, ...doc.data() });
+        });
+        renderPaymentsTable(payments);
+      }, (error) => {
+        console.error("Error fetching payments:", error);
+        showMessage("Error fetching payments.", 'error');
+      });
+    };
+
+    const handleAddOrUpdateMember = async (e) => {
+      e.preventDefault();
+      const memberData = {
+        memberId: memberIdInput.value,
+        name: memberNameInput.value,
+        phoneNumber: memberPhoneInput.value,
+        membershipType: memberPlanInput.value,
+        startDate: memberStartInput.value,
+        dueDate: memberDueInput.value,
+        isPaid: true
+      };
+
+      try {
+        if (currentEditingMemberId) {
+          // Update member
+          const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', currentEditingMemberId);
+          await setDoc(memberDocRef, memberData, { merge: true });
+          showMessage('Member updated successfully.', 'success');
+        } else {
+          // Add new member
+          const membersCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
+          await addDoc(membersCollectionRef, { ...memberData, createdAt: serverTimestamp() });
+          showMessage('New member added successfully.', 'success');
+        }
+        memberForm.reset();
+        currentEditingMemberId = null;
+        cancelEditBtn.classList.add('hidden');
+        submitMemberBtn.textContent = 'Save';
+      } catch (error) {
+        console.error("Error adding/updating document:", error);
+        showMessage("Failed to save member.", 'error');
+      }
+    };
+
+    const handleEdit = (id) => {
+      const member = allMembers.find(m => m.id === id);
+      if (!member) return;
+      
+      currentEditingMemberId = id;
+      memberIdInput.value = member.memberId;
+      memberNameInput.value = member.name;
+      memberPhoneInput.value = member.phoneNumber;
+      memberPlanInput.value = member.membershipType;
+      memberStartInput.value = member.startDate;
+      memberDueInput.value = member.dueDate;
+
+      submitMemberBtn.textContent = 'Update';
+      cancelEditBtn.classList.remove('hidden');
+      document.getElementById('view-manage').classList.remove('hidden');
+      drawerLinks.forEach(link => link.classList.remove('tab-active'));
+      document.querySelector(`[data-target="manage"]`).classList.add('tab-active');
+      
+      // Scroll to the form
+      document.getElementById('view-manage').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const handleRemove = async (id) => {
+      // Custom modal-like confirmation
+      const isConfirmed = await new Promise(resolve => {
+        const confirmBox = document.createElement('div');
+        confirmBox.className = 'fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50';
+        confirmBox.innerHTML = `
+          <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <p class="text-white mb-4">Are you sure you want to remove this member?</p>
+            <div class="flex justify-center gap-4">
+              <button id="confirm-yes" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white">Yes</button>
+              <button id="confirm-no" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white">No</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(confirmBox);
+        document.getElementById('confirm-yes').onclick = () => { confirmBox.remove(); resolve(true); };
+        document.getElementById('confirm-no').onclick = () => { confirmBox.remove(); resolve(false); };
+      });
+      
+      if (isConfirmed) {
+        try {
+            const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', id);
+            await updateDoc(memberDocRef, { isRemoved: true });
+            showMessage('Member marked as removed.', 'success');
+        } catch (error) {
+            console.error("Error removing member:", error);
+            showMessage("Failed to remove member.", 'error');
+        }
+      }
+    };
+
+    const handleMarkPaid = async (id) => {
+      const member = allMembers.find(m => m.id === id);
+      if (!member) return;
+
+      try {
+          const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', id);
+          const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+
+          // Add a new payment record
+          await addDoc(paymentsCollectionRef, {
+              memberId: member.memberId,
+              memberName: member.name,
+              plan: member.membershipType,
+              amount: getMembershipFee(member.membershipType),
+              timestamp: serverTimestamp()
+          });
+          
+          // Update member's due date
+          const newDueDate = getDueDate(member.dueDate, member.membershipType);
+          await updateDoc(memberDocRef, {
+              dueDate: newDueDate,
+              isPaid: true
+          });
+
+          showMessage(`Payment for ${member.name} applied successfully.`, 'success');
+      } catch (error) {
+          console.error("Error marking as paid:", error);
+          showMessage("Failed to mark as paid.", 'error');
+      }
+    };
+    
+    const handleAddPayment = async (e) => {
+      e.preventDefault();
+      const memberId = addPaymentSelect.value;
+      const newMembershipType = addPaymentMembershipType.value;
+
+      if (!memberId || !newMembershipType) {
+        showMessage('Please select a member and a plan.', 'error');
+        return;
+      }
+
+      const member = allMembers.find(m => m.id === memberId);
+      if (!member) {
+        showMessage('Member not found.', 'error');
+        return;
+      }
+      
+      const newDueDate = getDueDate(member.dueDate, newMembershipType);
+      
+      try {
+        const memberDocRef = doc(db, 'artifacts', appId, 'users', userId, 'members', memberId);
+        const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+
+        // Add a new payment record
+        await addDoc(paymentsCollectionRef, {
+            memberId: member.memberId,
+            memberName: member.name,
+            plan: newMembershipType,
+            amount: getMembershipFee(newMembershipType),
+            timestamp: serverTimestamp()
+        });
+
+        await updateDoc(memberDocRef, {
+          dueDate: newDueDate,
+          membershipType: newMembershipType,
+          isPaid: true
+        });
+        
+        showMessage('Payment added and due date extended.', 'success');
+        addPaymentForm.reset();
+      } catch (error) {
+        console.error("Error adding payment:", error);
+        showMessage('Failed to add payment.', 'error');
+      }
+    };
+
+    // Event Listeners
+    const updateTime = () => {
+      const now = new Date();
+      document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('current-day').textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
+    };
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    const initApp = () => {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        appId = firebaseConfig.projectId;
+
+        // The core of the new initialization logic. This listener is the single
+        // source of truth for UI state.
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // User is signed in. Hide splash, show app.
+                userId = user.uid;
+                authSection.classList.add('hidden');
+                mainAppSection.classList.remove('hidden');
+                topBar.classList.remove('hidden');
+                splashScreen.style.opacity = '0';
+                setTimeout(() => splashScreen.style.display = 'none', 500);
+                setupFirestore();
+                
+                // Set initial view to dashboard
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.querySelector('[data-target="dashboard"]').classList.add('tab-active');
+            } else {
+                // No user is signed in. Hide splash, show auth screen.
+                userId = null;
+                authSection.classList.remove('hidden');
+                mainAppSection.classList.add('hidden');
+                topBar.classList.add('hidden');
+                splashScreen.style.opacity = '0';
+                setTimeout(() => splashScreen.style.display = 'none', 500);
+            }
+        });
+    };
+    
+    // Start the process by trying to sign in with the custom token
+    const signInWithToken = async () => {
+      const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+      if (token) {
+        try {
+          await signInWithCustomToken(auth, token);
+          showMessage("Signed in successfully.", 'success');
+        } catch (error) {
+          console.error("Custom token sign in failed:", error);
+          showMessage("Sign in failed. Please try again.", 'error');
+          // If sign-in fails, the `onAuthStateChanged` listener will handle showing the login UI
+        }
+      } else {
+        // Fallback or a clear state for manual sign-in if no token is provided.
+        // `onAuthStateChanged` will already have shown the login UI.
+        showMessage("No authentication token found. Please sign in.", 'info');
+      }
+    };
+
+    // The sign-in button's job is now to simply trigger the sign-in with the token
+    signinButton.onclick = () => {
+        signInWithToken();
+    };
+    
+    // Initialize the app immediately on DOM load
+    initApp();
+    // And also immediately attempt to sign in
+    signInWithToken();
+
+
+    hamburgerBtn.onclick = () => {
+      drawer.classList.add('open');
+      document.body.classList.add('drawer-open');
+    };
+
+    drawerCloseBtn.onclick = () => {
+      drawer.classList.remove('open');
+      document.body.classList.remove('drawer-open');
+    };
+
+    drawerLinks.forEach(link => {
+      link.onclick = (e) => {
+        const target = e.currentTarget.dataset.target;
+        document.querySelectorAll('main section').forEach(section => {
+          section.classList.add('hidden');
+        });
+        document.getElementById(`view-${target}`).classList.remove('hidden');
+        drawerLinks.forEach(l => l.classList.remove('tab-active'));
+        e.currentTarget.classList.add('tab-active');
+        drawer.classList.remove('open');
+        document.body.classList.remove('drawer-open');
+      };
+    });
+    
+    signoutButton.onclick = async () => {
+      try {
+        await signOut(auth);
+        showMessage("Signed out successfully.", 'success');
+      } catch (error) {
+        console.error('Sign out error:', error);
+      }
+    };
+
+    memberStartInput.onchange = () => {
+      memberDueInput.value = getDueDate(memberStartInput.value, memberPlanInput.value);
+    };
+    memberPlanInput.onchange = memberStartInput.onchange;
+
+    memberForm.onsubmit = handleAddOrUpdateMember;
+    addPaymentForm.onsubmit = handleAddPayment;
+    
+    cancelEditBtn.onclick = () => {
+      memberForm.reset();
+      currentEditingMemberId = null;
+      cancelEditBtn.classList.add('hidden');
+      submitMemberBtn.textContent = 'Save';
+    };
+    
+    existingStartDate.onchange = () => {
+        calculatedDueDate.value = getDueDate(existingStartDate.value, existingMembershipType.value);
+    };
+    existingMembershipType.onchange = existingStartDate.onchange;
+
+    existingMemberForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const memberData = {
+            memberId: existingMemberIdInput.value,
+            name: existingNameInput.value,
+            phoneNumber: existingPhoneInput.value,
+            membershipType: existingMembershipType.value,
+            startDate: existingStartDate.value,
+            dueDate: calculatedDueDate.value,
+            isPaid: true
+        };
+        try {
+            const membersCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'members');
+            await addDoc(membersCollectionRef, { ...memberData, createdAt: serverTimestamp() });
+            showMessage('Existing member added successfully.', 'success');
+            existingMemberForm.reset();
+        } catch (error) {
+            console.error("Error adding existing member:", error);
+            showMessage("Failed to add existing member.", 'error');
+        }
+    };
+
+    addPaymentSearch.oninput = () => populatePaymentSelect(addPaymentSearch.value.toLowerCase());
+    addPaymentSelect.onchange = () => {
+      const member = allMembers.find(m => m.id === addPaymentSelect.value);
+      if (member) {
+        addPaymentCurrentDue.value = ddmmyyyy(member.dueDate);
+      } else {
+        addPaymentCurrentDue.value = '';
+      }
+    };
+    addPaymentMembershipType.onchange = () => {
+      const member = allMembers.find(m => m.id === addPaymentSelect.value);
+      if (!member) return;
+      const newDueDate = getDueDate(member.dueDate, addPaymentMembershipType.value);
+      addPaymentNewDue.value = ddmmyyyy(newDueDate);
+    };
+
+    idCardSearch.oninput = () => populateIdCardSelect(idCardSearch.value.toLowerCase());
+    idCardSelect.onchange = () => {
+      const m = allMembers.find(x => x.id === idCardSelect.value);
+      if (!m) { idCardDisplay.classList.add('hidden'); return; }
+      idCardDisplay.classList.remove('hidden');
+      idCardName.textContent = m.name || '';
+      idCardMemberId.textContent = 'ID: ' + (m.memberId || '');
+      idCardPhone.textContent = 'Phone: ' + (m.phoneNumber || '');
+      idCardType.textContent = 'Plan: ' + (m.membershipType || '');
+      idCardStart.textContent = 'Start: ' + ddmmyyyy(m.startDate);
+      idCardDue.textContent = 'Due: ' + ddmmyyyy(m.dueDate);
+      idCardFee.textContent = 'Fee: ' + formatCurrency(getMembershipFee(m.membershipType));
+      idCardStatus.textContent = 'Status: ' + (getMemberStatus(m) === 'current' ? 'Active' : 'Overdue/Inactive');
+    };
+    
+    // Search inputs
+    document.getElementById('current-search').oninput = (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredMembers = allMembers.filter(m => getMemberStatus(m) === 'current' &&
+          ((m.name && m.name.toLowerCase().includes(searchTerm)) || 
+          (m.memberId && m.memberId.toLowerCase().includes(searchTerm))));
+      renderTable(filteredMembers, currentTbody, 'current');
+    };
+
+    document.getElementById('overdue-search').oninput = (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredMembers = allMembers.filter(m => getMemberStatus(m) === 'overdue' &&
+          ((m.name && m.name.toLowerCase().includes(searchTerm)) || 
+          (m.memberId && m.memberId.toLowerCase().includes(searchTerm))));
+      renderTable(filteredMembers, overdue2Tbody, 'overdue2');
+    };
+
+    document.getElementById('dash-overdue-search').oninput = (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredMembers = allMembers.filter(m => getMemberStatus(m) === 'overdue' &&
+          ((m.name && m.name.toLowerCase().includes(searchTerm)) || 
+          (m.memberId && m.memberId.toLowerCase().includes(searchTerm))));
+      renderTable(filteredMembers, overdueTbody, 'overdue');
+    };
+
+    document.getElementById('inactive-search').oninput = (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filteredMembers = allMembers.filter(m => getMemberStatus(m) === 'inactive' &&
+          ((m.name && m.name.toLowerCase().includes(searchTerm)) || 
+          (m.memberId && m.memberId.toLowerCase().includes(searchTerm))));
+      renderTable(filteredMembers, inactiveTbody, 'inactive');
+    };
+
+    document.getElementById('payments-search').oninput = (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const paymentsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'payments');
+      
+      onSnapshot(paymentsCollectionRef, (querySnapshot) => {
+        const payments = [];
+        querySnapshot.forEach((doc) => {
+          payments.push({ id: doc.id, ...doc.data() });
+        });
+        
+        const filteredPayments = payments.filter(p => (p.memberName && p.memberName.toLowerCase().includes(searchTerm)) || 
+                                                       (p.memberId && p.memberId.toLowerCase().includes(searchTerm)));
+        renderPaymentsTable(filteredPayments);
+      }, (error) => {
+        console.error("Error fetching filtered payments:", error);
+        showMessage("Error fetching payments.", 'error');
+      });
+    };
+  });
+</script>
+</body>
+</html>
+
+<!-- Auth Screen -->
 <section id="auth-section" class="max-w-md mx-auto mt-10 p-6 bg-gray-800 rounded-xl border border-gray-700">
   <h2 class="text-xl font-semibold mb-4">Sign in to Alpha Core Fitness</h2>
   <div class="space-y-3">
