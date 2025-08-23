@@ -392,7 +392,6 @@
   let overdueMembers = [];
   let inactiveMembers = [];
   let allPayments = [];
-  let isAppPasswordVerified = false;
 
   // DOM elements
   const splashScreen = document.getElementById('splash-screen');
@@ -537,24 +536,6 @@
     document.getElementById(`view-${viewId}`).classList.remove('hidden');
   }
 
-  function handleAuthStatus(user) {
-    if (user && isAppPasswordVerified) {
-      passwordEntryModal.classList.add('hidden');
-      mainAppSection.classList.remove('hidden');
-      topBar.classList.remove('hidden');
-      userId = user.uid;
-      console.log("Authentication successful. User ID:", userId);
-      // Initialize Firebase listener after successful auth
-      setupFirestoreListeners(userId);
-    } else {
-      // Show password modal if not verified, or if user signs out
-      passwordEntryModal.classList.remove('hidden');
-      mainAppSection.classList.add('hidden');
-      topBar.classList.add('hidden');
-      console.log("User is not authenticated. Showing password screen.");
-    }
-  }
-
   // Cloudinary image upload helper
   async function uploadImage(file) {
       if (!file) return null;
@@ -586,14 +567,38 @@
   }
 
   // Firebase Authentication
-  onAuthStateChanged(auth, handleAuthStatus);
+  
+  // This listener is for handling initial app load and signouts.
+  // The initial login logic is now handled directly in the password submission.
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // If a user is found (e.g., from a persisted session), show the main app
+        passwordEntryModal.classList.add('hidden');
+        mainAppSection.classList.remove('hidden');
+        topBar.classList.remove('hidden');
+        userId = user.uid;
+        console.log("Authentication successful. User ID:", userId);
+        setupFirestoreListeners(userId);
+    } else {
+        // If no user is signed in, show the password modal
+        mainAppSection.classList.add('hidden');
+        topBar.classList.add('hidden');
+        console.log("User is not authenticated. Showing password screen.");
+    }
+  });
 
   submitAppPasswordButton.addEventListener('click', async () => {
     if (appPasswordInput.value === APP_PASSWORD) {
-      isAppPasswordVerified = true;
       showMessage('App password correct! Signing in...');
       try {
         await signInAnonymously(auth);
+        // After successful sign-in, the onAuthStateChanged listener will fire and handle the UI change.
+        // We can also directly handle the UI change here for a smoother user experience.
+        passwordEntryModal.classList.add('hidden');
+        mainAppSection.classList.remove('hidden');
+        topBar.classList.remove('hidden');
+        userId = auth.currentUser.uid;
+        setupFirestoreListeners(userId);
       } catch (error) {
         console.error("Anonymous sign in failed: ", error);
         showMessage("Failed to sign in. Check your Firebase config.", 'error');
@@ -606,7 +611,7 @@
   signoutButton.addEventListener('click', async () => {
     await signOut(auth);
     showMessage('Signed out.');
-    isAppPasswordVerified = false; // Reset password state on sign out
+    // The onAuthStateChanged listener will handle hiding the main app and showing the password modal.
   });
 
   // Firebase and Firestore Logic
