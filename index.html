@@ -1,18 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Gym Management Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <!-- Firebase SDKs -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gym Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js" type="module"></script>
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+<style>
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(to bottom right, #1a202c, #2d3748);
@@ -127,359 +128,318 @@
     </style>
 </head>
 <body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed">
-
 <div class="fixed inset-0 bg-black flex items-center justify-center z-50 text-white text-4xl font-bold" id="splash-screen">Made with ❤️ by SUSHANT SINGH</div>
-
 <div class="fixed inset-0 flex items-center justify-center z-50 hidden" id="password-entry-modal">
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700" id="password-entry-content">
-        <h2 class="text-3xl font-bold text-white mb-6 text-center text-lg">Enter App Password</h2>
-        <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl mb-3" id="app-password-input" maxlength="4" placeholder="••••" type="password"/>
-        <button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6 mb-3" id="submit-app-password">
+<div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700" id="password-entry-content">
+<h2 class="text-3xl font-bold text-white mb-6 text-center text-lg">Enter App Password</h2>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl mb-3" id="app-password-input" maxlength="4" placeholder="••••" type="password"/>
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6 mb-3" id="submit-app-password">
             Unlock App
         </button>
-    </div>
 </div>
-
+</div>
 <div class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="message-display"></div>
 <div class="fixed top-6 left-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="loading-spinner-modal">
-    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-    <span>Loading...</span>
+<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+<span>Loading...</span>
 </div>
-
 <!-- Sliding Sidebar Navigation -->
 <div class="fixed inset-0 z-40 hidden backdrop" id="backdrop"></div>
 <nav class="fixed top-0 left-0 w-64 h-full bg-gray-900 shadow-xl z-50 flex flex-col pt-6 transform -translate-x-full transition-transform duration-300 ease-in-out" id="sidebar">
-    <div class="flex items-center justify-between p-4 mb-8">
-        <h2 class="text-2xl font-bold text-white">Navigation</h2>
-        <button class="text-gray-400 hover:text-white focus:outline-none" id="close-sidebar-btn">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
-    <div class="flex-1 overflow-y-auto">
- <a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition" id="nav-home">🏠 Home</a>
-<a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition" id="nav-manage-member">👤 Manage Member</a>
-<a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition" id="nav-add-payment">💳 Add Payment</a>
-<a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition" id="nav-id-card">🪪 ID Card View</a>
-<a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition" id="nav-inactive-member">💤 Inactive Members</a>
-            Home
-        </a>
-        <a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" id="nav-manage-member">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-            </svg>
-            Manage Member
-        </a>
-        <a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" id="nav-add-payment">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 12a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5 0a1 1 0 110 2h1a1 1 0 110-2H9z" clip-rule="evenodd" />
-            </svg>
-            Add Payment
-        </a>
-        <a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" id="nav-id-card">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 2a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V4a2 2 0 00-2-2h-2z" />
-                <path fill-rule="evenodd" d="M4 14a2 2 0 012-2h8a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" clip-rule="evenodd" />
-            </svg>
-            ID Card View
-        </a>
-        <a href="#" class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" id="nav-inactive-member">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-            </svg>
-            Inactive Members
-        </a>
-    </div>
+<div class="flex items-center justify-between p-4 mb-8">
+<h2 class="text-2xl font-bold text-white">Navigation</h2>
+<button class="text-gray-400 hover:text-white focus:outline-none" id="close-sidebar-btn">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto">
+            <a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-home">🏠 Home</a>
+        
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-manage-member">👤 Manage Member</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-add-payment">💳 Add Payment</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-id-card">🪪 ID Card View</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-inactive-member">💤 Inactive Members</a>
+</div>
 </nav>
-
 <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
-    <div class="flex justify-between items-center mb-8">
-        <button class="text-white focus:outline-none" id="hamburger-btn">
-            <svg class="h-8 w-8 text-gray-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-            </svg>
-        </button>
-        <h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
-        <div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
-            <div class="text-xl font-semibold text-gray-200" id="current-time"></div>
-            <div id="current-date"></div>
-            <div id="current-day"></div>
-        </div>
-        <button class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out w-full mb-3" id="signout-button">
+<div class="flex justify-between items-center mb-8">
+<button class="text-white focus:outline-none" id="hamburger-btn">
+<svg class="h-8 w-8 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+<div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
+<div class="text-xl font-semibold text-gray-200" id="current-time"></div>
+<div id="current-date"></div>
+<div id="current-day"></div>
+</div>
+<button class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out w-full mb-3" id="signout-button">
             Sign Out
         </button>
-    </div>
-    <div class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600" id="user-id-display">
+</div>
+<div class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600" id="user-id-display">
         Your User ID: <span class="font-mono text-gray-200 font-semibold" id="user-id-value"></span>
-    </div>
-
-    <!-- Main Content Tabs -->
-    <div class="tab-content" id="content-home">
-     <h2 class="text-2xl font-bold text-white mb-6 text-lg">🏠 Dashboard Overview</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
-                <p class="text-gray-400 text-sm">Total Members</p>
-                <p class="text-white text-3xl font-bold" id="total-members-count">0</p>
-            </div>
-            <div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
-                <p class="text-gray-400 text-sm">Active Members</p>
-                <p class="text-green-400 text-3xl font-bold" id="total-active-members-count">0</p>
-            </div>
-            <div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
-                <p class="text-gray-400 text-sm">Overdue Members</p>
-                <p class="text-red-400 text-3xl font-bold" id="overdue-members-count-summary">0</p>
-            </div>
-            <div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
-                <p class="text-gray-400 text-sm">Inactive Members</p>
-                <p class="text-yellow-400 text-3xl font-bold" id="inactive-members-count-summary">0</p>
-            </div>
-        </div>
-
-        <div class="mt-8 bg-gray-700 p-6 rounded-xl shadow-inner border border-gray-600">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-white">Overdue Members</h3>
-                <span class="text-red-400 text-sm font-semibold" id="overdue-members-count-table">0 Overdue</span>
-            </div>
-            <div class="overflow-x-auto pr-2">
-                <table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
-                    <thead class="bg-gray-800 sticky top-0">
-                        <tr>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fee</th>
-                            <th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
-                            <th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-gray-800 divide-y divide-gray-700" id="overdue-list">
-                        <!-- Overdue member rows will be dynamically inserted here -->
-                        <tr>
-                            <td colspan="10" class="px-6 py-4 text-center text-gray-400">No overdue members found.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
-        <h2 class="text-2xl font-bold text-white mb-6 text-lg">👤 Manage Member Details</h2>
-        <form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="member-form">
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="member-id">Member ID</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-id" name="memberId" placeholder="Unique Member ID" required="" type="text"/>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="name">Member Name</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="name" name="name" placeholder="Full Name" required="" type="text"/>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="phone-number">Phone Number</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="phone-number" name="phoneNumber" placeholder="e.g., 123-456-7890" type="tel"/>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="membershipType">Membership Type</label>
-                <select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="membershipType" name="membershipType" required="">
-                    <option value="Monthly">Monthly</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="HalfYearly">Half Yearly</option>
-                    <option value="Annual">Annual</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="startDate">Start Date</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="startDate" name="startDate" required="" type="date"/>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="dueDate">Calculated Due Date</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="dueDate" name="dueDate" readonly="" required="" type="date"/>
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
-                <div class="flex flex-wrap items-center gap-3 mb-4">
-                    <input accept="image/*" class="hidden w-full mb-3" id="photo-upload" type="file"/>
-                    <button class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="upload-photo-btn" type="button">
+</div>
+<!-- Main Content Tabs -->
+<div class="tab-content" id="content-home">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">🏠 Dashboard Overview</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Total Members</p>
+<p class="text-white text-3xl font-bold" id="total-members-count">0</p>
+</div>
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Active Members</p>
+<p class="text-green-400 text-3xl font-bold" id="total-active-members-count">0</p>
+</div>
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Overdue Members</p>
+<p class="text-red-400 text-3xl font-bold" id="overdue-members-count-summary">0</p>
+</div>
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Inactive Members</p>
+<p class="text-yellow-400 text-3xl font-bold" id="inactive-members-count-summary">0</p>
+</div>
+</div>
+<div class="mt-8 bg-gray-700 p-6 rounded-xl shadow-inner border border-gray-600">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-white">Overdue Members</h3>
+<span class="text-red-400 text-sm font-semibold" id="overdue-members-count-table">0 Overdue</span>
+</div>
+<div class="overflow-x-auto pr-2">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-800 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fee</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="overdue-list">
+<!-- Overdue member rows will be dynamically inserted here -->
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No overdue members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">👤 Manage Member Details</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="member-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-id" name="memberId" placeholder="Unique Member ID" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="name">Member Name</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="name" name="name" placeholder="Full Name" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="phone-number">Phone Number</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="phone-number" name="phoneNumber" placeholder="e.g., 123-456-7890" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="membershipType">Membership Type</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="membershipType" name="membershipType" required="">
+<option value="Monthly">Monthly</option>
+<option value="Quarterly">Quarterly</option>
+<option value="HalfYearly">Half Yearly</option>
+<option value="Annual">Annual</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="startDate">Start Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="startDate" name="startDate" required="" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="dueDate">Calculated Due Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="dueDate" name="dueDate" readonly="" required="" type="date"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
+<div class="flex flex-wrap items-center gap-3 mb-4">
+<input accept="image/*" class="hidden w-full mb-3" id="photo-upload" type="file"/>
+<button class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="upload-photo-btn" type="button">
                         Upload Photo
                     </button>
-                    <button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="take-photo-btn" type="button">
+<button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="take-photo-btn" type="button">
                         Take Photo
                     </button>
-                    <button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="switch-camera-btn" type="button">
+<button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="switch-camera-btn" type="button">
                         Switch Camera
                     </button>
-                    <button class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="clear-photo-btn" type="button">
+<button class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="clear-photo-btn" type="button">
                         Clear Photo
                     </button>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
-                    <video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" id="camera-feed" playsinline=""></video>
-                    <canvas class="hidden" id="camera-canvas"></canvas>
-                </div>
-                <a class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" id="view-photo-link" target="_blank">View Photo Preview</a>
-                <p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Firebase Storage. Deletion from app removes link, not image from storage.</p>
-            </div>
-            <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
-                <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" id="submit-button" type="submit">
+</div>
+<div class="flex items-center space-x-4">
+<img alt="Photo Preview" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm cursor-pointer" id="photo-preview" src="https://placehold.co/112x112/4a5568/cbd5e0?text=No+Photo"/>
+<video autoplay="" class="w-28 h-28 rounded-full object-cover border-2 border-gray-500 shadow-sm hidden" id="camera-feed" playsinline=""></video>
+<canvas class="hidden" id="camera-canvas"></canvas>
+</div>
+<a class="text-indigo-400 hover:underline mt-2 cursor-pointer hidden" id="view-photo-link" target="_blank">View Photo Preview</a>
+<p class="text-xs text-gray-400 mt-2">Note: Photos are uploaded to Firebase Storage. Deletion from app removes link, not image from storage.</p>
+</div>
+<div class="md:col-span-2 flex justify-end space-x-3 pt-4">
+<button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" id="submit-button" type="submit">
                     Add Member
                 </button>
-                <button class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden w-full mb-3" id="cancel-edit-button" type="button">
+<button class="px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg hidden w-full mb-3" id="cancel-edit-button" type="button">
                     Cancel Edit
                 </button>
-            </div>
-        </form>
-
-        <div class="mt-8">
-            <div class="flex items-center space-x-4 mb-4">
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-search" placeholder="Search by ID or Name" type="text"/>
-                <button class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm mb-3" id="clear-search-btn">
+</div>
+</form>
+<div class="mt-8">
+<div class="flex items-center space-x-4 mb-4">
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-search" placeholder="Search by ID or Name" type="text"/>
+<button class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm mb-3" id="clear-search-btn">
                     Clear
                 </button>
-            </div>
-            <div class="flex items-center space-x-4 mb-4">
-                <span class="text-gray-400 text-sm font-medium">Total Active Members: <span class="font-semibold text-gray-200" id="total-active-members-count-list">0</span></span>
-                <button class="text-indigo-400 hover:text-indigo-200 transition duration-150 ease-in-out text-sm" id="toggle-members-btn">
+</div>
+<div class="flex items-center space-x-4 mb-4">
+<span class="text-gray-400 text-sm font-medium">Total Active Members: <span class="font-semibold text-gray-200" id="total-active-members-count-list">0</span></span>
+<button class="text-indigo-400 hover:text-indigo-200 transition duration-150 ease-in-out text-sm" id="toggle-members-btn">
                     Show Current Members
                 </button>
-            </div>
-            <div class="overflow-x-auto overflow-y-auto max-h-96 pr-2 hidden" id="members-list-container">
-                <table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
-                    <thead class="bg-gray-700 sticky top-0">
-                        <tr>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fee</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Left</th>
-                            <th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-gray-800 divide-y divide-gray-700" id="members-list">
-                        <!-- Member rows will be dynamically inserted here -->
-                        <tr>
-                            <td colspan="10" class="px-6 py-4 text-center text-gray-400">No active members found.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-payment">
-        <h2 class="text-2xl font-bold text-white mb-6 text-lg">💳 Add Payment</h2>
-        <form class="space-y-6" id="payment-form">
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="payment-member-search">Search Member</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="payment-member-search" placeholder="Search by ID, Name or Phone" required="" type="text"/>
-                <!-- Hidden input to store the selected member ID -->
-                <input type="hidden" id="payment-member-id" name="memberId" required />
-            </div>
-            <div class="relative max-h-48 overflow-y-auto mb-4 bg-gray-800 rounded-lg border border-gray-600 hidden" id="payment-member-results">
-                <!-- Search results will be dynamically inserted here -->
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="payment-membership-type">Payment for</label>
-                <select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="payment-membership-type" name="membershipType" required="">
-                    <option value="Monthly">Monthly</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="HalfYearly">Half Yearly</option>
-                    <option value="Annual">Annual</option>
-                </select>
-            </div>
-            <div class="flex justify-end pt-4">
-                <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" type="submit">
+</div>
+<div class="overflow-x-auto overflow-y-auto max-h-96 pr-2 hidden" id="members-list-container">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-700 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fee</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Left</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="members-list">
+<!-- Member rows will be dynamically inserted here -->
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No active members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-payment">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">💳 Add Payment</h2>
+<form class="space-y-6" id="payment-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="payment-member-search">Search Member</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="payment-member-search" placeholder="Search by ID, Name or Phone" required="" type="text"/>
+<!-- Hidden input to store the selected member ID -->
+<input id="payment-member-id" name="memberId" required="" type="hidden"/>
+</div>
+<div class="relative max-h-48 overflow-y-auto mb-4 bg-gray-800 rounded-lg border border-gray-600 hidden" id="payment-member-results">
+<!-- Search results will be dynamically inserted here -->
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="payment-membership-type">Payment for</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="payment-membership-type" name="membershipType" required="">
+<option value="Monthly">Monthly</option>
+<option value="Quarterly">Quarterly</option>
+<option value="HalfYearly">Half Yearly</option>
+<option value="Annual">Annual</option>
+</select>
+</div>
+<div class="flex justify-end pt-4">
+<button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" type="submit">
                     Add Payment
                 </button>
-            </div>
-        </form>
-    </div>
-    <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-id-card">
-        <h2 class="text-2xl font-bold text-white mb-6 text-lg">🪪 ID Card View</h2>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-300" for="id-card-member-id">Member ID</label>
-                <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="id-card-member-id" placeholder="Enter Member ID" type="text"/>
-            </div>
-            <div class="flex justify-center pt-2">
-                <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" id="id-card-search-btn">
+</div>
+</form>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-id-card">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">🪪 ID Card View</h2>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="id-card-member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="id-card-member-id" placeholder="Enter Member ID" type="text"/>
+</div>
+<div class="flex justify-center pt-2">
+<button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg w-full mb-3" id="id-card-search-btn">
                     Search
                 </button>
-            </div>
-        </div>
-        <div class="bg-gray-800 rounded-xl shadow-lg mt-6 p-6 hidden text-white border border-gray-700" id="id-card-result">
-            <h3 class="text-xl font-bold text-center mb-4 text-lg" id="id-card-name"></h3>
-            <div class="flex flex-col items-center">
-                <img alt="Member Photo" class="id-card-photo mb-4" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
-                <p class="text-sm text-gray-400">Membership ID: <span class="font-bold text-gray-200" id="id-card-id"></span></p>
-                <p class="text-sm text-gray-400">Phone: <span class="font-bold text-gray-200" id="id-card-phone"></span></p>
-                <p class="text-sm text-gray-400">Status: <span class="font-bold" id="id-card-status"></span></p>
-                <p class="text-sm text-gray-400 mt-2">Due Date: <span class="font-bold text-gray-200" id="id-card-due-date"></span></p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-inactive-member">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-bold text-white">💤 Inactive Members</h3>
-            <span class="text-yellow-400 text-sm font-semibold" id="inactive-members-count-table">0 Inactive</span>
-        </div>
-        <div class="overflow-x-auto overflow-y-auto max-h-96 pr-2">
-            <table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
-                <thead class="bg-gray-800 sticky top-0">
-                    <tr>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fee</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
-                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-gray-800 divide-y divide-gray-700" id="inactive-list">
-                    <!-- Inactive member rows will be dynamically inserted here -->
-                    <tr>
-                        <td colspan="10" class="px-6 py-4 text-center text-gray-400">No inactive members found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
 </div>
-
+</div>
+<div class="bg-gray-800 rounded-xl shadow-lg mt-6 p-6 hidden text-white border border-gray-700" id="id-card-result">
+<h3 class="text-xl font-bold text-center mb-4 text-lg" id="id-card-name"></h3>
+<div class="flex flex-col items-center">
+<img alt="Member Photo" class="id-card-photo mb-4" id="id-card-photo" src="https://placehold.co/120x120/4a5568/cbd5e0?text=No+Photo"/>
+<p class="text-sm text-gray-400">Membership ID: <span class="font-bold text-gray-200" id="id-card-id"></span></p>
+<p class="text-sm text-gray-400">Phone: <span class="font-bold text-gray-200" id="id-card-phone"></span></p>
+<p class="text-sm text-gray-400">Status: <span class="font-bold" id="id-card-status"></span></p>
+<p class="text-sm text-gray-400 mt-2">Due Date: <span class="font-bold text-gray-200" id="id-card-due-date"></span></p>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-inactive-member">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-white">💤 Inactive Members</h3>
+<span class="text-yellow-400 text-sm font-semibold" id="inactive-members-count-table">0 Inactive</span>
+</div>
+<div class="overflow-x-auto overflow-y-auto max-h-96 pr-2">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-800 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Fee</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="inactive-list">
+<!-- Inactive member rows will be dynamically inserted here -->
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No inactive members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
 <div class="fixed inset-0 flex items-center justify-center z-50 hidden" id="photo-view-modal">
-    <div class="bg-gray-900 rounded-lg p-4 max-w-xl mx-auto border border-gray-700" id="photo-view-content">
-        <div class="flex justify-end">
-            <button class="text-gray-400 hover:text-gray-200 transition" id="close-photo-modal">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <div class="flex justify-center mt-2">
-            <img alt="Full size photo" class="max-w-full h-auto rounded-lg shadow-lg" id="full-size-photo"/>
-        </div>
-    </div>
+<div class="bg-gray-900 rounded-lg p-4 max-w-xl mx-auto border border-gray-700" id="photo-view-content">
+<div class="flex justify-end">
+<button class="text-gray-400 hover:text-gray-200 transition" id="close-photo-modal">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
 </div>
-
+<div class="flex justify-center mt-2">
+<img alt="Full size photo" class="max-w-full h-auto rounded-lg shadow-lg" id="full-size-photo"/>
+</div>
+</div>
+</div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -998,7 +958,7 @@
 
     // Initial Authentication and Data Loading
     window.onload = async () => {
-        splashScreen.classList.add('hidden');
+        setTimeout(() => { splashScreen.classList.add('hidden'); }, 2000);
         
         // Initialize Firebase services
         try {
@@ -1155,11 +1115,11 @@
     });
 
     const defaultEmojis = {
-    'nav-home': '🏠 Home',
-    'nav-manage-member': '👤 Manage Member',
-    'nav-add-payment': '💳 Add Payment',
-    'nav-id-card': '🪪 ID Card View',
-    'nav-inactive-member': '💤 Inactive Members'
+  'nav-home': '🏠 Home',
+  'nav-manage-member': '👤 Manage Member',
+  'nav-add-payment': '💳 Add Payment',
+  'nav-id-card': '🪪 ID Card View',
+  'nav-inactive-member': '💤 Inactive Members'
 };
 
 navLinks.forEach(link => {
@@ -1175,7 +1135,7 @@ navLinks.forEach(link => {
         // Mark clicked tab as active and give ✨ emoji
         const activeTab = e.target.closest('.nav-link');
         activeTab.classList.add('active');
-        activeTab.textContent = `✨ ${activeTab.textContent.replace('✨','').trim()}`;
+        activeTab.textContent = `✨ ${defaultEmojis[activeTab.id]}`;
 
         // Switch tab content
         tabContents.forEach(c => c.classList.add('hidden'));
@@ -1552,11 +1512,8 @@ navLinks.forEach(link => {
     setInterval(updateDateTime, 1000);
     updateDateTime();
 </script>
-
 <footer class="fixed bottom-0 w-full bg-gray-900 text-gray-400 text-center py-3 border-t border-gray-700">
     Made with ❤️ by SUSHANT SINGH
 </footer>
 </body>
-
 </html>
- 
