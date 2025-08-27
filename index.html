@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Gym Management Dashboard</title>
-<!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Inter Font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js" type="module"></script>
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -34,6 +36,7 @@
             object-fit: cover;
             border-radius: 50%;
             border: 1px solid #4a5568;
+            cursor: pointer;
         }
         /* ID Card Photo */
         .id-card-photo {
@@ -44,10 +47,10 @@
             border: 2px solid #6366f1;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-        .tab-active {
-            border-color: #6366f1;
-            color: #818cf8;
-            font-weight: 600;
+        .nav-link.active {
+            background-color: #4a5568;
+            border-left: 4px solid #6366f1;
+            color: #e2e8f0;
         }
         #message-display.hidden {
             opacity: 0;
@@ -106,6 +109,1107 @@
             opacity: 0;
         }
         #password-entry-modal.flex #password-entry-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        /* Styles for the sliding sidebar */
+        #sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        .backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 flex flex-col items-center justify-center text-base leading-relaxed">
+<div class="fixed inset-0 bg-black flex items-center justify-center z-50 text-white text-4xl font-bold" id="splash-screen">Made with ❤️ by SUSHANT SINGH</div>
+<div class="fixed inset-0 flex items-center justify-center z-50 hidden" id="password-entry-modal">
+<div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-700" id="password-entry-content">
+<h2 class="text-3xl font-bold text-white mb-6 text-center text-lg">Enter App Password</h2>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-center text-xl mb-3" id="app-password-input" maxlength="4" placeholder="••••" type="password"/>
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-6 mb-3" id="submit-app-password">
+            Unlock App
+        </button>
+</div>
+</div>
+<div class="fixed inset-0 flex items-center justify-center z-[9999] hidden" id="photo-view-modal">
+<div class="relative max-w-5xl mx-auto p-4">
+<button class="absolute top-4 right-4 text-white text-4xl font-bold p-2 z-50 rounded-full bg-gray-900 bg-opacity-50 hover:bg-opacity-70 transition-all duration-200" id="close-photo-view-btn">
+                &times;
+            </button>
+<img alt="Full-screen Member Photo" class="w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" id="full-screen-photo" src=""/>
+</div>
+</div>
+<div class="fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="message-display"></div>
+<div class="fixed top-6 left-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out hidden" id="loading-spinner-modal">
+<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+<span>Loading...</span>
+</div>
+<div class="fixed inset-0 z-40 hidden backdrop" id="backdrop"></div>
+<nav class="fixed top-0 left-0 w-64 h-full bg-gray-900 shadow-xl z-50 flex flex-col pt-6 transform -translate-x-full transition-transform duration-300 ease-in-out" id="sidebar">
+<div class="flex items-center justify-between p-4 mb-8">
+<h2 class="text-2xl font-bold text-white">Navigation</h2>
+<button class="text-gray-400 hover:text-white focus:outline-none" id="close-sidebar-btn">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto">
+            <a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-home">🏠 Home</a>
+        
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-manage-member">👤 Manage Member</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-add-payment">💳 Add Payment</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-id-card">🪪 ID Card View</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" 
+   href="#" id="nav-overdue-member">⏰ Overdue Members</a>
+<a class="nav-link flex items-center p-4 text-gray-400 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out" href="#" id="nav-inactive-member">💤 Inactive Members</a>
+</div>
+</nav>
+<div class="fixed inset-0 z-40 hidden backdrop" id="backdrop"></div>
+<div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-2xl mb-8 hidden transform scale-95 opacity-0 transition-all duration-500 ease-out border border-gray-700" id="main-app-section">
+<div class="flex justify-between items-center mb-8">
+<button class="text-white focus:outline-none" id="hamburger-btn">
+<svg class="h-8 w-8 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<h1 class="text-4xl font-extrabold text-white text-lg">Gym Dashboard</h1>
+<div class="text-right text-gray-400 text-sm font-medium" id="datetime-display">
+<div class="text-xl font-semibold text-gray-200" id="current-time"></div>
+<div id="current-date"></div>
+<div id="current-day"></div>
+</div>
+<button class="px-5 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out w-full mb-3" id="signout-button">
+            Sign Out
+        </button>
+</div>
+<div class="text-sm text-gray-400 mb-6 text-center bg-gray-700 p-3 rounded-lg border border-gray-600" id="user-id-display">
+        Your User ID: <span class="font-mono text-gray-200 font-semibold" id="user-id-value"></span>
+</div>
+<div class="tab-content" id="content-home">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">🏠 Dashboard Overview</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Total Members</p>
+<p class="text-white text-3xl font-bold" id="total-members-count">0</p>
+</div>
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Active Members</p>
+<p class="text-green-400 text-3xl font-bold" id="total-active-members-count">0</p>
+<span class="hidden" id="current-members-count"></span>
+</div>
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Overdue Members</p>
+<p class="text-red-400 text-3xl font-bold" id="overdue-members-count-summary">0</p>
+</div>
+<div class="bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-600">
+<p class="text-gray-400 text-sm">Inactive Members</p>
+<p class="text-yellow-400 text-3xl font-bold" id="inactive-members-count-summary">0</p>
+</div>
+</div>
+<div class="mt-8 bg-gray-700 p-6 rounded-xl shadow-inner border border-gray-600">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-white">Overdue Members</h3>
+<span class="text-red-400 text-sm font-semibold" id="overdue-members-count-table">0 Overdue</span>
+</div>
+<div class="overflow-x-auto pr-2">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-800 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Left</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="overdue-list">
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No overdue members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">👤 Manage Member Details</h2>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="member-form">
+<div>
+<label class="block text-sm font-medium text-gray-300" for="member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="member-id" name="memberId" placeholder="Unique Member ID" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="name">Member Name</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="name" name="name" placeholder="Full Name" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="phone-number">Phone Number</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="phone-number" name="phoneNumber" placeholder="e.g., 123-456-7890" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="membershipType">Membership Type</label>
+<select class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="membershipType" name="membershipType" required="">
+<option value="Monthly">Monthly</option>
+<option value="Quarterly">Quarterly</option>
+<option value="HalfYearly">Half Yearly</option>
+<option value="Annual">Annual</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="startDate">Start Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="startDate" name="startDate" required="" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="dueDate">Calculated Due Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm bg-gray-900 text-gray-400 cursor-not-allowed mb-3" id="dueDate" name="dueDate" readonly="" required="" type="date"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
+<div class="flex flex-wrap items-center gap-3 mb-4">
+<input accept="image/*" class="hidden w-full mb-3" id="photo-upload" type="file"/>
+<button class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="upload-photo-btn" type="button"> Upload Photo </button>
+<button class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm w-full mb-3" id="take-photo-btn" type="button"> Take Photo </button>
+<button class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="switch-camera-btn" type="button"> Switch Camera </button>
+<button class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-150 ease-in-out text-sm hidden w-full mb-3" id="clear-photo-btn" type="button"> Clear Photo </button>
+<video autoplay="" class="rounded-lg shadow-md w-full max-w-xs mx-auto border border-gray-600 hidden mb-3" id="camera-preview"></video>
+<canvas class="rounded-lg shadow-md w-full max-w-xs mx-auto border border-gray-600 hidden mb-3" id="camera-canvas"></canvas>
+<img alt="Member Photo Preview" class="rounded-lg shadow-md w-full max-w-xs mx-auto border border-gray-600 hidden mb-3" id="photo-preview" src=""/>
+</div>
+</div>
+<div class="md:col-span-2 flex justify-between items-center mt-4">
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mr-2" id="save-member-btn" type="submit">
+            Save Member
+        </button>
+<button class="w-full py-3 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg ml-2" id="clear-form-btn" type="button">
+            Clear Form
+        </button>
+</div>
+</form>
+<div class="mt-8 bg-gray-800 p-6 rounded-xl shadow-inner border border-gray-700">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-white">All Members</h3>
+<input class="px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" id="search-member" placeholder="Search by name or ID" type="text"/>
+</div>
+<div class="overflow-x-auto pr-2">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-800 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Left</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="members-list">
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-add-payment">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">💳 Add Payment</h2>
+<form id="payment-form">
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-300" for="payment-member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400" id="payment-member-id" name="memberId" placeholder="Enter Member ID" required="" type="text"/>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-300" for="payment-amount">Amount</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400" id="payment-amount" name="amount" placeholder="Enter Amount" required="" type="number"/>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-300" for="payment-date">Payment Date</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white" id="payment-date" name="paymentDate" required="" type="date"/>
+</div>
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-4" type="submit">
+            Add Payment
+        </button>
+</form>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-id-card">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">🪪 ID Card View</h2>
+<form id="id-card-form">
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-300" for="id-card-member-id">Member ID</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400" id="id-card-member-id" name="memberId" placeholder="Enter Member ID to generate ID card" required="" type="text"/>
+</div>
+<button class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out text-lg mt-4" type="submit">
+            Generate ID Card
+        </button>
+</form>
+<div class="mt-8 hidden bg-gray-800 p-6 rounded-xl shadow-lg flex-col items-center" id="id-card-container">
+<div class="bg-gray-900 p-6 rounded-xl shadow-2xl flex flex-col items-center relative border-4 border-blue-600">
+<div class="absolute top-4 left-4 text-blue-400 font-bold text-lg">GYM ID</div>
+<div class="absolute top-4 right-4 text-gray-500 text-sm" id="id-card-member-since"></div>
+<img alt="Member Photo" class="id-card-photo" id="id-card-photo" src="https://placehold.co/120x120/4a5568/a0aec0?text=No+Photo"/>
+<h3 class="text-white text-2xl font-bold mt-4" id="id-card-name"></h3>
+<p class="text-gray-400 text-sm" id="id-card-id"></p>
+<div class="mt-4 text-center">
+<p class="text-gray-400 text-sm">Membership: <span class="text-white font-medium" id="id-card-type"></span></p>
+<p class="text-gray-400 text-sm">Due Date: <span class="text-white font-medium" id="id-card-due-date"></span></p>
+</div>
+<div class="mt-4 p-2 bg-gray-800 rounded-lg w-full text-center">
+<p class="text-gray-400 text-xs">This card is non-transferable.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-overdue-member">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">⏰ Overdue Members</h2>
+<div class="mt-8 bg-gray-800 p-6 rounded-xl shadow-inner border border-gray-700">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-white">Overdue Members List</h3>
+<span class="text-red-400 text-sm font-semibold" id="overdue-members-count-tab">0 Overdue</span>
+</div>
+<div class="overflow-x-auto pr-2">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-800 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Left</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="overdue-list-tab">
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No overdue members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-inactive-member">
+<h2 class="text-2xl font-bold text-white mb-6 text-lg">💤 Inactive Members</h2>
+<div class="mt-8 bg-gray-800 p-6 rounded-xl shadow-inner border border-gray-700">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-white">Inactive Members List</h3>
+<span class="text-yellow-400 text-sm font-semibold" id="inactive-members-count">0 Inactive</span>
+</div>
+<div class="overflow-x-auto pr-2">
+<table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+<thead class="bg-gray-800 sticky top-0">
+<tr>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Photo</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Phone</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Due Date</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Left</th>
+<th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Days Overdue</th>
+<th class="px-3 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-gray-800 divide-y divide-gray-700" id="inactive-list">
+<tr>
+<td class="px-6 py-4 text-center text-gray-400" colspan="10">No inactive members found.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase and other app data
+        let db, auth, userId, appId;
+        let memberImageBlob = null;
+        let memberImageUrl = null;
+        const password = "2003";
+        const membersCollectionName = "gymMembers";
+        const CLOUDINARY_CLOUD_NAME = "dbm2s6xd2";
+        const CLOUDINARY_UPLOAD_PRESET = "gym_member_photos_preset";
+
+        // DOM elements
+        const splashScreen = document.getElementById("splash-screen");
+        const passwordEntryModal = document.getElementById("password-entry-modal");
+        const appPasswordInput = document.getElementById("app-password-input");
+        const submitAppPasswordBtn = document.getElementById("submit-app-password");
+        const mainAppSection = document.getElementById("main-app-section");
+        const messageDisplay = document.getElementById("message-display");
+        const loadingSpinnerModal = document.getElementById("loading-spinner-modal");
+        const signOutButton = document.getElementById("signout-button");
+        const userIdDisplay = document.getElementById("user-id-value");
+        const datetimeDisplay = document.getElementById("datetime-display");
+        const membersList = document.getElementById("members-list");
+        const memberForm = document.getElementById("member-form");
+        const searchInput = document.getElementById("search-member");
+        const overdueList = document.getElementById("overdue-list");
+        const inactiveList = document.getElementById("inactive-list");
+
+        // Tab and navigation elements
+        const navHome = document.getElementById("nav-home");
+        const navManageMember = document.getElementById("nav-manage-member");
+        const navAddPayment = document.getElementById("nav-add-payment");
+        const navIdCard = document.getElementById("nav-id-card");
+        const navOverdueMember = document.getElementById("nav-overdue-member");
+        const navInactiveMember = document.getElementById("nav-inactive-member");
+        const contentHome = document.getElementById("content-home");
+        const contentManageMember = document.getElementById("content-manage-member");
+        const contentAddPayment = document.getElementById("content-add-payment");
+        const contentIdCard = document.getElementById("content-id-card");
+        const contentOverdueMember = document.getElementById("content-overdue-member");
+        const contentInactiveMember = document.getElementById("content-inactive-member");
+        const hamburgerBtn = document.getElementById("hamburger-btn");
+        const sidebar = document.getElementById("sidebar");
+        const closeSidebarBtn = document.getElementById("close-sidebar-btn");
+        const backdrop = document.getElementById("backdrop");
+        const photoViewModal = document.getElementById('photo-view-modal');
+        const fullScreenPhoto = document.getElementById('full-screen-photo');
+        const closePhotoViewBtn = document.getElementById('close-photo-view-btn');
+
+        // Firebase Initialization and Auth
+        async function initFirebase() {
+            try {
+                appId = "default-app-id";
+                
+                const firebaseConfig = {
+                  apiKey: "AIzaSyA1cOHWVufQV6ruZv3LmgdqfRNPGjyzsEI",
+                  authDomain: "alpha-core-fitness-data.firebaseapp.com",
+                  projectId: "alpha-core-fitness-data",
+                  storageBucket: "alpha-core-fitness-data.appspot.com",
+                  messagingSenderId: "311733734225",
+                  appId: "1:311733734225:web:697ef2dc197ebb2e662170",
+                  measurementId: "G-C5EKPN2K2J"
+                };
+
+                const firebaseApp = initializeApp(firebaseConfig);
+                
+                db = getFirestore(firebaseApp);
+                auth = getAuth(firebaseApp);
+
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = userId;
+                        startApp();
+                        setupRealtimeListeners();
+                    } else {
+                        console.log("No user signed in.");
+                        hideLoadingSpinner();
+                    }
+                });
+            } catch (err) {
+                console.error("Firebase init error:", err);
+                showMessage("Failed to initialize app. Check console for details.", "error");
+                hideLoadingSpinner();
+            }
+        }
+
+        // UI Functions
+        function showLoadingSpinner() {
+            loadingSpinnerModal.classList.remove('hidden');
+        }
+
+        function hideLoadingSpinner() {
+            loadingSpinnerModal.classList.add('hidden');
+        }
+
+        function showMessage(msg, type = 'info') {
+            messageDisplay.textContent = msg;
+            messageDisplay.className = `fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ease-in-out block`;
+            if (type === 'success') {
+                messageDisplay.style.backgroundColor = '#48bb78';
+            } else if (type === 'error') {
+                messageDisplay.style.backgroundColor = '#f56565';
+            } else {
+                messageDisplay.style.backgroundColor = '#4299e1';
+            }
+            setTimeout(() => {
+                messageDisplay.classList.replace('block', 'hidden');
+            }, 3000);
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.getElementById(`nav-${tabId.replace('content-', '')}`).classList.add('active');
+        }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            backdrop.classList.toggle('hidden');
+        }
+
+        // App Logic
+        function startApp() {
+            splashScreen.classList.add("hidden");
+            passwordEntryModal.classList.remove("hidden");
+        }
+
+        function unlockApp() {
+            if (appPasswordInput.value === password) {
+                passwordEntryModal.classList.add("hidden");
+                mainAppSection.classList.remove("hidden");
+                mainAppSection.classList.remove("scale-95", "opacity-0");
+                mainAppSection.classList.add("scale-100", "opacity-100");
+                showTab('content-home');
+                showMessage("Welcome back!", "success");
+            } else {
+                showMessage("Invalid password.", "error");
+            }
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', timeOptions);
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', dateOptions);
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        function calculateDueDate(startDate, type) {
+            const date = new Date(startDate);
+            switch (type) {
+                case 'Monthly':
+                    date.setMonth(date.getMonth() + 1);
+                    break;
+                case 'Quarterly':
+                    date.setMonth(date.getMonth() + 3);
+                    break;
+                case 'HalfYearly':
+                    date.setMonth(date.getMonth() + 6);
+                    break;
+                case 'Annual':
+                    date.setFullYear(date.getFullYear() + 1);
+                    break;
+            }
+            return date.toISOString().split('T')[0];
+        }
+
+        // Member Management
+        async function saveMember(e) {
+            e.preventDefault();
+            showLoadingSpinner();
+
+            const form = e.target;
+            const memberId = form['memberId'].value;
+            const memberData = {
+                memberId: memberId,
+                name: form['name'].value,
+                phoneNumber: form['phoneNumber'].value,
+                membershipType: form['membershipType'].value,
+                startDate: form['startDate'].value,
+                dueDate: form['dueDate'].value,
+                status: 'active',
+                photoUrl: memberImageUrl || null,
+            };
+
+            try {
+                const memberDocRef = doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId);
+                await setDoc(memberDocRef, memberData);
+                showMessage("Member saved successfully!", "success");
+                clearForm();
+            } catch (err) {
+                console.error("Error saving member: ", err);
+                showMessage("Failed to save member.", "error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+        
+        async function renewMember(memberId) {
+            showLoadingSpinner();
+            try {
+                const memberDocRef = doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId);
+                const memberDoc = await getDoc(memberDocRef);
+                if (memberDoc.exists()) {
+                    const memberData = memberDoc.data();
+                    const newDueDate = calculateDueDate(new Date().toISOString().split('T')[0], memberData.membershipType);
+                    await updateDoc(memberDocRef, { dueDate: newDueDate, status: 'active' });
+                    showMessage("Member renewed successfully!", "success");
+                } else {
+                    showMessage("Member not found.", "error");
+                }
+            } catch (err) {
+                console.error("Error renewing member: ", err);
+                showMessage("Failed to renew member.", "error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+        
+        async function updateMember(memberId, data) {
+            try {
+                const memberDocRef = doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId);
+                await updateDoc(memberDocRef, data);
+            } catch (err) {
+                console.error("Error updating member: ", err);
+                showMessage("Failed to update member.", "error");
+            }
+        }
+
+        async function deleteMember(memberId) {
+            showLoadingSpinner();
+            try {
+                const memberDocRef = doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId);
+                await deleteDoc(memberDocRef);
+                showMessage("Member deleted successfully!", "success");
+            } catch (err) {
+                console.error("Error deleting member: ", err);
+                showMessage("Failed to delete member.", "error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+        
+        async function activateMember(memberId, membershipType) {
+            showLoadingSpinner();
+            try {
+                const memberDocRef = doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId);
+                const today = new Date().toISOString().split('T')[0];
+                const newDueDate = calculateDueDate(today, membershipType);
+                await updateDoc(memberDocRef, { 
+                    status: 'active',
+                    startDate: today,
+                    dueDate: newDueDate
+                });
+                showMessage("Member activated and renewed successfully!", "success");
+            } catch (err) {
+                console.error("Error activating member: ", err);
+                showMessage("Failed to activate member.", "error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+
+        function findPhotoUrl(member) {
+          // Try common keys
+          if (member.photoUrl) return member.photoUrl;
+          if (member.imageUrl) return member.imageUrl;
+          if (member.photo) {
+            if (typeof member.photo === "string") return member.photo;
+            if (typeof member.photo.url === "string") return member.photo.url;
+          }
+          // As a fallback: scan all fields for a Cloudinary URL
+          for (const key in member) {
+            if (typeof member[key] === "string" && member[key].includes("res.cloudinary.com")) {
+              return member[key];
+            }
+          }
+          return null;
+        }
+
+        function stripTime(date) {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function renderTableRow(member, listType) {
+            const today = stripTime(new Date());
+            const dueDate = stripTime(new Date(member.dueDate));
+            let daysLeft = 0;
+            let daysOverdue = 0;
+
+            if (dueDate < today) {
+                daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+            } else {
+                daysLeft = Math.floor((dueDate - today) / (1000 * 60 * 60 * 24));
+            }
+
+            let actionsHtml = '';
+            if (listType === "overdue") {
+                actionsHtml = `
+                    <button class="text-green-400 hover:text-green-200 renew-btn mr-4" data-id="${member.memberId}">Renew</button>
+                    <button class="text-yellow-400 hover:text-yellow-200 mark-inactive-btn" data-id="${member.memberId}">💤 Inactive</button>
+                `;
+            } else if (listType === "inactive") {
+                actionsHtml = `
+                    <button class="text-blue-400 hover:text-blue-200 edit-btn mr-4" data-id="${member.memberId}">Edit</button>
+                    <button class="text-green-400 hover:text-green-200 activate-btn mr-4" data-id="${member.memberId}" data-type="${member.membershipType}">Activate</button>
+                    <button class="text-red-400 hover:text-red-200 delete-btn" data-id="${member.memberId}">Delete</button>
+                `;
+            } else { // 'current' members, includes active members in this list
+                 actionsHtml = `
+                    <button class="text-blue-400 hover:text-blue-200 edit-btn mr-4" data-id="${member.memberId}">Edit</button>
+                    <button class="text-red-400 hover:text-red-200 delete-btn mr-4" data-id="${member.memberId}">Delete</button>
+                    <button class="text-yellow-400 hover:text-yellow-200 mark-inactive-btn" data-id="${member.memberId}">💤 Inactive</button>
+                `;
+            }
+
+            return `
+                <tr class="hover:bg-gray-700 transition-colors duration-200">
+                    <td class="px-3 py-2 text-sm text-gray-400">
+                        <img src="${findPhotoUrl(member) || 'https://placehold.co/40x40/4a5568/a0aec0?text=No+Photo'}" 
+                             alt="Member Photo" 
+                             class="member-photo"/>
+                    </td>
+                    <td class="px-3 py-2 text-sm text-gray-400">${member.memberId || 'N/A'}</td>
+                    <td class="px-3 py-2 text-sm text-gray-200 font-semibold">${member.name || 'N/A'}</td>
+                    <td class="px-3 py-2 text-sm text-gray-400">${member.phoneNumber || 'N/A'}</td>
+                    <td class="px-3 py-2 text-sm text-gray-400">${member.membershipType || 'N/A'}</td>
+                    <td class="px-3 py-2 text-sm text-gray-400">${member.startDate || 'N/A'}</td>
+                    <td class="px-3 py-2 text-sm text-red-400">${member.dueDate || 'N/A'}</td>
+                    <td class="px-3 py-2 text-sm text-green-400 font-bold">${daysLeft > 0 ? daysLeft : '0'} left</td>
+                    <td class="px-3 py-2 text-sm text-red-400 font-bold">${daysOverdue > 0 ? daysOverdue : '0'} overdue</td>
+                    <td class="px-3 py-2 text-right text-sm">
+                        ${actionsHtml}
+                    </td>
+                </tr>
+            `;
+        }
+        
+        function clearForm() {
+            memberForm.reset();
+            document.getElementById('member-id').removeAttribute('readonly');
+            document.getElementById('member-id').classList.remove('bg-gray-900', 'text-gray-400', 'cursor-not-allowed');
+            memberImageBlob = null;
+            memberImageUrl = null;
+            document.getElementById('photo-preview').src = '';
+            document.getElementById('photo-preview').classList.add('hidden');
+            document.getElementById('member-id').focus();
+        }
+
+        // Realtime Data Listeners
+        function setupRealtimeListeners() {
+            const q = query(collection(db, `artifacts/${appId}/public/data/gymMembers`));
+            onSnapshot(q, (querySnapshot) => {
+                let members = [];
+                querySnapshot.forEach((doc) => {
+                    const memberData = doc.data();
+                    // Filter out any members that are missing a name or a memberId
+                    if (memberData && memberData.memberId && memberData.name) {
+                        members.push(memberData);
+                    }
+                });
+
+                const now = new Date();
+
+                // Split into groups
+                const overdueMembers = members.filter(m => new Date(m.dueDate) < now && m.status !== "inactive");
+                const inactiveMembers = members.filter(m => m.status === "inactive");
+                const activeMembers = members.filter(m => new Date(m.dueDate) >= now && m.status !== "inactive");
+
+                // 🔹 Sort overdue by days overdue (high → low)
+                overdueMembers.sort((a, b) => {
+                    const daysA = Math.floor((now - new Date(a.dueDate)) / (1000 * 60 * 60 * 24));
+                    const daysB = Math.floor((now - new Date(b.dueDate)) / (1000 * 60 * 60 * 24));
+                    return daysB - daysA; // bigger overdue first
+                });
+
+                // 🔹 Sort active & inactive by dueDate descending
+                activeMembers.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+                inactiveMembers.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+
+                // Clear old tables
+                membersList.innerHTML = '';
+                overdueList.innerHTML = '';
+                inactiveList.innerHTML = '';
+                document.getElementById('overdue-list-tab').innerHTML = '';
+
+                // Render overdue
+                overdueMembers.forEach(member => {
+                    overdueList.innerHTML += renderTableRow(member, "overdue");
+                    document.getElementById("overdue-list-tab").innerHTML += renderTableRow(member, "overdue");
+                });
+
+                // Render active
+                const allCurrentMembers = [...overdueMembers, ...activeMembers];
+                allCurrentMembers.forEach(member => {
+                    membersList.innerHTML += renderTableRow(member, "current");
+                });
+                
+                // Render inactive
+                inactiveMembers.forEach(member => {
+                    inactiveList.innerHTML += renderTableRow(member, "inactive");
+                });
+                
+                if (membersList.innerHTML === '') {
+                    membersList.innerHTML = `<tr><td class="px-6 py-4 text-center text-gray-400" colspan="10">No members found.</td></tr>`;
+                }
+                if (overdueList.innerHTML === '') {
+                    overdueList.innerHTML = `<tr><td class="px-6 py-4 text-center text-gray-400" colspan="10">No overdue members found.</td></tr>`;
+                    document.getElementById("overdue-list-tab").innerHTML = `<tr><td class="px-6 py-4 text-center text-gray-400" colspan="10">No overdue members found.</td></tr>`;
+                }
+                if (inactiveList.innerHTML === '') {
+                    inactiveList.innerHTML = `<tr><td class="px-6 py-4 text-center text-gray-400" colspan="10">No inactive members found.</td></tr>`;
+                }
+
+                // Update counts in the dashboard
+                document.getElementById("total-members-count").textContent = members.length;
+                document.getElementById("total-active-members-count").textContent = activeMembers.length;
+                document.getElementById("overdue-members-count-summary").textContent = overdueMembers.length;
+                document.getElementById("inactive-members-count-summary").textContent = inactiveMembers.length;
+                document.getElementById("overdue-members-count-table").textContent = `${overdueMembers.length} Overdue`;
+                document.getElementById("inactive-members-count").textContent = `${inactiveMembers.length} Inactive`;
+                document.getElementById("overdue-members-count-tab").textContent = `${overdueMembers.length} Overdue`;
+            });
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+        });
+
+        submitAppPasswordBtn.addEventListener('click', unlockApp);
+        appPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                unlockApp();
+            }
+        });
+        signOutButton.addEventListener('click', () => {
+            signOut(auth);
+            location.reload();
+        });
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        backdrop.addEventListener('click', toggleSidebar);
+
+        navHome.addEventListener('click', () => showTab('content-home'));
+        navManageMember.addEventListener('click', () => showTab('content-manage-member'));
+        navAddPayment.addEventListener('click', () => showTab('content-add-payment'));
+        navIdCard.addEventListener('click', () => showTab('content-id-card'));
+        navOverdueMember.addEventListener('click', () => showTab('content-overdue-member'));
+        navInactiveMember.addEventListener('click', () => showTab('content-inactive-member'));
+        
+        // Delegated event listener for photo clicks
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('member-photo')) {
+                const photoSrc = e.target.src;
+                fullScreenPhoto.src = photoSrc;
+                photoViewModal.classList.remove('hidden');
+            }
+        });
+
+        // Close full-screen photo modal
+        closePhotoViewBtn.addEventListener('click', () => {
+            photoViewModal.classList.add('hidden');
+        });
+
+        memberForm.addEventListener('submit', saveMember);
+        document.getElementById('startDate').addEventListener('change', (e) => {
+            const startDate = e.target.value;
+            const membershipType = document.getElementById('membershipType').value;
+            if (startDate && membershipType) {
+                document.getElementById('dueDate').value = calculateDueDate(startDate, membershipType);
+            }
+        });
+        document.getElementById('membershipType').addEventListener('change', (e) => {
+            const startDate = document.getElementById('startDate').value;
+            const membershipType = e.target.value;
+            if (startDate && membershipType) {
+                document.getElementById('dueDate').value = calculateDueDate(startDate, membershipType);
+            }
+        });
+
+        document.getElementById('clear-form-btn').addEventListener('click', clearForm);
+
+        document.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                const memberId = e.target.dataset.id;
+                showTab('content-manage-member');
+                document.getElementById('member-id').value = memberId;
+                document.getElementById('member-id').setAttribute('readonly', true);
+                document.getElementById('member-id').classList.add('bg-gray-900', 'text-gray-400', 'cursor-not-allowed');
+
+                try {
+                    const memberDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId));
+                    if (memberDoc.exists()) {
+                        const memberData = memberDoc.data();
+                        document.getElementById('name').value = memberData.name || '';
+                        document.getElementById('phone-number').value = memberData.phoneNumber || '';
+                        document.getElementById('membershipType').value = memberData.membershipType || 'Monthly';
+                        document.getElementById('startDate').value = memberData.startDate || '';
+                        document.getElementById('dueDate').value = memberData.dueDate || '';
+                        const existingPhoto = findPhotoUrl(memberData);
+                        if (existingPhoto) {
+                            document.getElementById('photo-preview').src = existingPhoto;
+                            document.getElementById('photo-preview').classList.remove('hidden');
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching member for edit: ", err);
+                    showMessage("Failed to load member data for editing.", "error");
+                }
+            } else if (e.target.classList.contains('delete-btn')) {
+                const memberId = e.target.dataset.id;
+                const confirmAction = confirm("Are you sure you want to delete this member?");
+                if (confirmAction) {
+                    await deleteMember(memberId);
+                }
+            } else if (e.target.classList.contains('renew-btn')) {
+                const memberId = e.target.dataset.id;
+                await renewMember(memberId);
+            } else if (e.target.classList.contains('mark-inactive-btn')) {
+                const memberId = e.target.dataset.id;
+                const confirmAction = confirm("Are you sure you want to mark this member as inactive? 💤");
+                if (confirmAction) {
+                    try {
+                        const memberDocRef = doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId);
+                        await setDoc(memberDocRef, { status: 'inactive' }, { merge: true });
+                        showMessage(`Member ${memberId} marked as inactive.`, 'success');
+                    } catch (err) {
+                        console.error("Error marking inactive: ", err);
+                        showMessage("Failed to mark inactive.", "error");
+                    }
+                }
+            } else if (e.target.classList.contains('activate-btn')) {
+                const memberId = e.target.dataset.id;
+                const membershipType = e.target.dataset.type;
+                const confirmAction = confirm("Are you sure you want to activate this member?");
+                if (confirmAction) {
+                    await activateMember(memberId, membershipType);
+                }
+            }
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const memberRows = membersList.querySelectorAll('tr');
+            memberRows.forEach(row => {
+                const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const id = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                if (name.includes(searchTerm) || id.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Photo Upload and Camera
+        const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+        const takePhotoButton = document.getElementById('take-photo-btn');
+        const clearPhotoBtn = document.getElementById('clear-photo-btn');
+        const switchCameraBtn = document.getElementById('switch-camera-btn');
+        const photoUploadInput = document.getElementById('photo-upload');
+        const photoPreview = document.getElementById('photo-preview');
+        const cameraPreview = document.getElementById('camera-preview');
+        const cameraCanvas = document.getElementById('camera-canvas');
+        let stream = null;
+        let videoTrack = null;
+        let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back camera
+
+        uploadPhotoBtn.addEventListener('click', () => {
+            photoUploadInput.click();
+        });
+
+        photoUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                processPhoto(file);
+                if (stream) {
+                    stopCamera();
+                }
+            }
+        });
+
+        takePhotoButton.addEventListener('click', async () => {
+            if (stream) {
+                // Take photo
+                const context = cameraCanvas.getContext('2d');
+                cameraCanvas.width = cameraPreview.videoWidth;
+                cameraCanvas.height = cameraPreview.videoHeight;
+                context.drawImage(cameraPreview, 0, 0, cameraCanvas.width, cameraCanvas.height);
+                cameraCanvas.toBlob(blob => {
+                    processPhoto(blob);
+                }, 'image/jpeg');
+                stopCamera();
+            } else {
+                // Start camera
+                try {
+                    await startCamera();
+                    takePhotoButton.textContent = 'Capture Photo';
+                    clearPhotoBtn.classList.remove('hidden');
+                    switchCameraBtn.classList.remove('hidden');
+                } catch (err) {
+                    console.error("Camera access denied or error: ", err);
+                    showMessage("Camera access failed. Please check permissions.", "error");
+                }
+            }
+        });
+
+        switchCameraBtn.addEventListener('click', async () => {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            stopCamera();
+            await startCamera();
+        });
+
+        clearPhotoBtn.addEventListener('click', () => {
+            memberImageBlob = null;
+            memberImageUrl = null;
+            photoPreview.src = '';
+            photoPreview.classList.add('hidden');
+            cameraCanvas.classList.add('hidden');
+            takePhotoButton.textContent = 'Take Photo';
+            clearPhotoBtn.classList.add('hidden');
+            switchCameraBtn.classList.add('hidden');
+            stopCamera();
+        });
+
+        async function processPhoto(file) {
+            showLoadingSpinner();
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET); // your preset
+
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                memberImageUrl = data.secure_url; // ✅ Cloudinary URL
+
+                photoPreview.src = memberImageUrl;
+                photoPreview.classList.remove("hidden");
+                showMessage("Photo uploaded to Cloudinary!", "success");
+            } catch (err) {
+                console.error("Cloudinary upload error:", err);
+                showMessage("Failed to upload photo.", "error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+
+        async function startCamera() {
+            cameraPreview.classList.remove('hidden');
+            cameraCanvas.classList.remove('hidden');
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode
+                    }
+                };
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                cameraPreview.srcObject = stream;
+                videoTrack = stream.getVideoTracks()[0];
+            } catch (err) {
+                console.error("Error starting camera: ", err);
+                showMessage("Could not access camera. Make sure it is not in use.", "error");
+                cameraPreview.classList.add('hidden');
+                cameraCanvas.classList.add('hidden');
+                throw err;
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            cameraPreview.srcObject = null;
+            cameraPreview.classList.add('hidden');
+            cameraCanvas.classList.add('hidden');
+        }
+
+        // ID Card Generation
+        document.getElementById('id-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoadingSpinner();
+            const memberId = document.getElementById('id-card-member-id').value;
+            const idCardContainer = document.getElementById('id-card-container');
+            const idCardName = document.getElementById('id-card-name');
+            const idCardId = document.getElementById('id-card-id');
+            const idCardPhoto = document.getElementById('id-card-photo');
+            const idCardType = document.getElementById('id-card-type');
+            const idCardDueDate = document.getElementById('id-card-due-date');
+            const idCardMemberSince = document.getElementById('id-card-member-since');
+
+            try {
+                const memberDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/gymMembers`, memberId));
+                if (memberDoc.exists()) {
+                    const memberData = memberDoc.data();
+                    idCardName.textContent = memberData.name || 'N/A';
+                    idCardId.textContent = `ID: ${memberData.memberId || 'N/A'}`;
+                    idCardPhoto.src = findPhotoUrl(memberData) || 'https://placehold.co/120x120/4a5568/a0aec0?text=No+Photo';
+                    idCardType.textContent = memberData.membershipType || 'N/A';
+                    idCardDueDate.textContent = memberData.dueDate || 'N/A';
+                    const startDate = new Date(memberData.startDate);
+                    idCardMemberSince.textContent = `Member Since: ${startDate.getFullYear() || 'N/A'}`;
+                    idCardContainer.classList.remove('hidden');
+                    showMessage("ID Card generated successfully!", "success");
+                } else {
+                    idCardContainer.classList.add('hidden');
+                    showMessage("Member not found.", "error");
+                }
+            } catch (err) {
+                console.error("Error generating ID card: ", err);
+                showMessage("Failed to generate ID card.", "error");
+            } finally {
+                    hideLoadingSpinner();
+            }
+        });
+
+        // Payment form handler
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoadingSpinner();
+            const form = e.target;
+            const paymentData = {
+                memberId: form['payment-member-id'].value,
+                amount: form['payment-amount'].value,
+                paymentDate: form['payment-date'].value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/gymPayments`), paymentData);
+                showMessage("Payment added successfully!", "success");
+                form.reset();
+            } catch (err) {
+                console.error("Error adding payment: ", err);
+                showMessage("Failed to add payment.", "error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        });
+    </script>
+</body>
+</html>        #password-entry-modal.flex #password-entry-content {
             transform: translateY(0);
             opacity: 1;
         }
