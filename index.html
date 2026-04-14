@@ -702,11 +702,9 @@
             }
 
             if (selectedMember && planDays > 0) {
-                if (isOverdue(selectedMember.dueDate)) {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(calculateOverduePaidDueDate(planDays));
-                } else {
-                    addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, planDays));
-                }
+                // Modified per request: ALWAYS calculate based on previous due date, 
+                // regardless of whether the member is currently overdue or not.
+                addPaymentNewDueDateInput.value = formatToDDMMYYYY(addDurationToDate(selectedMember.dueDate, planDays));
             } else {
                 addPaymentNewDueDateInput.value = '';
             }
