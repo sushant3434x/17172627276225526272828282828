@@ -223,6 +223,10 @@
 <label class="block text-sm font-medium text-gray-300" for="dueDate">Calculated Due Date</label>
 <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white mb-3" id="dueDate" name="dueDate" required="" type="date"/>
 </div>
+<div>
+<label class="block text-sm font-medium text-gray-300" for="fingerprint-id">Fingerprint ID (1-127)</label>
+<input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 mb-3" id="fingerprint-id" name="fingerprintId" placeholder="Enter sensor slot ID" min="1" max="127" type="number"/>
+</div>
 
 <div class="md:col-span-2">
 <label class="block text-sm font-medium text-gray-300 mb-2">Member Photo</label>
@@ -377,8 +381,13 @@
 <p class="text-gray-400 text-center p-6 hidden" id="no-overdue-members-message">No members are currently overdue. Great job!</p>
 </div>
 
-<h2 class="text-2xl font-bold text-gray-500 mb-4 mt-8 text-lg" id="inactive-header">Inactive Members</h2>
-<div class="overflow-x-auto rounded-xl shadow-lg border border-gray-600" id="inactive-members-list-container">
+<div class="flex items-center justify-between mb-4 mt-8" id="inactive-header-container">
+    <h2 class="text-2xl font-bold text-gray-500 text-lg" id="inactive-header">Inactive Members</h2>
+    <button id="toggle-inactive-btn" class="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-150 ease-in-out text-sm">
+        Show Inactive Members (<span id="total-inactive-count">0</span>)
+    </button>
+</div>
+<div class="overflow-x-auto rounded-xl shadow-lg border border-gray-600 hidden" id="inactive-members-list-container">
 <table class="min-w-full divide-y divide-gray-600 w-full block overflow-auto text-sm">
 <thead class="bg-gray-700">
 <tr>
@@ -397,7 +406,6 @@
 </table>
 <p class="text-gray-400 text-center p-6 hidden" id="no-inactive-members-message">No inactive members.</p>
 </div>
-
 
 <div class="flex items-center justify-between mb-4 mt-8">
     <h2 class="text-2xl font-bold text-white text-lg">Current Members</h2>
@@ -477,8 +485,7 @@
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables for Firebase instances
         let firebaseAppInstance; 
@@ -558,6 +565,7 @@
         const startDateInput = document.getElementById('startDate');
         const durationDaysInput = document.getElementById('durationDays');
         const dueDateInput = document.getElementById('dueDate');
+        const fingerprintIdInput = document.getElementById('fingerprint-id');
         const submitButton = document.getElementById('submit-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
 
@@ -616,6 +624,9 @@
         const inactiveMembersListContainer = document.getElementById('inactive-members-list-container');
         const noInactiveMembersMessage = document.getElementById('no-inactive-members-message');
         const inactiveHeader = document.getElementById('inactive-header');
+        
+        const toggleInactiveBtn = document.getElementById('toggle-inactive-btn');
+        const totalInactiveCountSpan = document.getElementById('total-inactive-count');
 
         const currentTimeDisplay = document.getElementById('current-time');
         const currentDateDisplay = document.getElementById('current-date');
@@ -645,6 +656,7 @@
         const toggleBtn = document.getElementById('toggle-members-btn');
         const collapsibleMembersSection = document.getElementById('collapsible-members');
         let isCurrentMembersListHiddenByUser = true; 
+        let isInactiveMembersListHiddenByUser = true;
 
         // --- Bidirectional Date Logic Helpers --- //
         function setupBidirectionalDates(startInput, durationInput, dueInput) {
@@ -712,6 +724,19 @@
         
         addPaymentMembershipTypeInput.addEventListener('change', calculateNewPaymentDueDate);
         addPaymentCustomDaysInput.addEventListener('input', calculateNewPaymentDueDate);
+
+
+        // Hardware logic
+        function getMemberStatus(dueDateString) {
+            if (!dueDateString) return "Inactive";
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const due = new Date(dueDateString);
+            due.setHours(0, 0, 0, 0);
+
+            return due >= today ? "Active" : "Expired";
+        }
 
 
         function initializePrimaryFirebase() {
@@ -1014,6 +1039,22 @@
             const activeMembersCount = allMembers.filter(m => !(m.isInactive === true || m.status === 'Inactive')).length;
             const totalMembersCountSpan = document.getElementById('total-members-count');
             if (totalMembersCountSpan) totalMembersCountSpan.textContent = activeMembersCount;
+            
+            const inactiveMembersCount = allMembers.filter(m => (m.isInactive === true || m.status === 'Inactive')).length;
+            if (totalInactiveCountSpan) totalInactiveCountSpan.textContent = inactiveMembersCount;
+
+            if (isSearchActive) {
+                inactiveMembersListContainer.classList.remove('hidden');
+                if(toggleInactiveBtn) toggleInactiveBtn.textContent = `Hide Inactive Members`;
+            } else {
+                if (isInactiveMembersListHiddenByUser) {
+                    inactiveMembersListContainer.classList.add('hidden');
+                    if(toggleInactiveBtn) toggleInactiveBtn.textContent = `Show Inactive Members (${inactiveMembersCount})`;
+                } else {
+                    inactiveMembersListContainer.classList.remove('hidden');
+                    if(toggleInactiveBtn) toggleInactiveBtn.textContent = 'Hide Inactive Members';
+                }
+            }
 
             updateDataUsageDisplay();
 
@@ -1180,13 +1221,10 @@
             if (hasOverdueMembers) noOverdueMembersMessage.classList.add('hidden');
             else noOverdueMembersMessage.classList.remove('hidden');
 
+            document.getElementById('inactive-header-container').classList.remove('hidden');
             if (hasInactiveMembers) {
-                inactiveHeader.classList.remove('hidden');
-                inactiveMembersListContainer.classList.remove('hidden');
                 noInactiveMembersMessage.classList.add('hidden');
             } else {
-                inactiveHeader.classList.remove('hidden');
-                inactiveMembersListContainer.classList.remove('hidden');
                 noInactiveMembersMessage.classList.remove('hidden');
             }
         }
@@ -1200,6 +1238,7 @@
             startDateInput.value = '';
             durationDaysInput.value = planDaysMapping['Monthly'];
             dueDateInput.value = ''; 
+            fingerprintIdInput.value = '';
             editingMemberId = null;
             delete memberForm.dataset.storageSourceId;
             submitButton.textContent = 'Add Member';
@@ -1251,6 +1290,7 @@
             startDateInput.value = member.startDate;
             durationDaysInput.value = member.durationDays || planDaysMapping[member.membershipType] || 30;
             dueDateInput.value = member.dueDate; 
+            fingerprintIdInput.value = member.fingerprintId || '';
             
             editingMemberId = member.id;
             memberForm.dataset.storageSourceId = member.storageSourceId;
@@ -1309,6 +1349,21 @@
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
                 });
+
+                // Also update hardware status
+                const member = allMembers.find(m => m.id === memberId);
+                if (member && member.fingerprintId) {
+                    await setDoc(
+                        doc(firestoreDb, `hardware/finger_${member.fingerprintId}`),
+                        {
+                            name: member.name,
+                            dueDate: member.dueDate,
+                            status: newStatus,
+                            access: newStatus === "Active" && !isInactive
+                        }
+                    );
+                }
+
                 showMessage(`Member manually updated to '${newStatus}' successfully!`, 'success');
             } catch (error) {
                 console.error("Error updating member status:", error);
@@ -1655,6 +1710,7 @@
                 clearAddPaymentForm();
                 clearIdCardDisplay();
                 isCurrentMembersListHiddenByUser = true; 
+                isInactiveMembersListHiddenByUser = true;
             } catch (error) {
                 showMessage(`Sign out failed: ${error.message}`, 'error');
             }
@@ -1684,14 +1740,17 @@
                 durationDays: parseInt(durationDaysInput.value),
                 dueDate: dueDateInput.value,
                 feeAmount: feeAmount, 
+                fingerprintId: fingerprintIdInput.value ? parseInt(fingerprintIdInput.value) : null,
                 updatedAt: serverTimestamp(),
                 createdBy: currentUserId,
             };
             
             if (!editingMemberId) {
                 memberData.isInactive = false;
-                memberData.status = 'Active';
             }
+
+            // set auto status check
+            memberData.status = memberData.isInactive ? "Inactive" : getMemberStatus(memberData.dueDate);
 
             if (!memberData.memberId || !memberData.dueDate) return showMessage('ID and calculated Dates are required.', 'error');
 
@@ -1715,6 +1774,20 @@
                     await addDoc(collection(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
                     showMessage('Member added successfully!', 'success');
                 }
+                
+                // Hardware Sync
+                if (memberData.fingerprintId) {
+                    await setDoc(
+                        doc(targetDb, `hardware/finger_${memberData.fingerprintId}`),
+                        {
+                            name: memberData.name,
+                            dueDate: memberData.dueDate,
+                            status: memberData.status,
+                            access: memberData.status === "Active" && !memberData.isInactive
+                        }
+                    );
+                }
+
                 clearMainForm();
             } catch (error) {
                 showMessage('Failed to save member.', 'error');
@@ -1806,16 +1879,32 @@
 
             try {
                 const memberDocRef = doc(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberId);
+                const newStatus = getMemberStatus(newDueDateForFirestore);
+                
                 await updateDoc(memberDocRef, {
                     dueDate: newDueDateForFirestore, 
                     durationDays: planDays,
                     membershipType: newMembershipType, 
                     feeAmount: feeAmount, 
                     isInactive: false, 
-                    status: 'Active', 
+                    status: newStatus, 
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId,
                 });
+                
+                // Hardware sync after payment
+                if (selectedMember.fingerprintId) {
+                    await setDoc(
+                        doc(firestoreDb, `hardware/finger_${selectedMember.fingerprintId}`),
+                        {
+                            name: selectedMember.name,
+                            dueDate: newDueDateForFirestore,
+                            status: newStatus,
+                            access: newStatus === "Active"
+                        }
+                    );
+                }
+                
                 showMessage('Payment processed and plan renewed!', 'success');
                 clearAddPaymentForm();
             } catch (error) {
@@ -1903,16 +1992,30 @@ document.addEventListener('DOMContentLoaded', function() {
         splash.classList.add('hidden');
     }, 2000);
 
-    const toggleBtn = document.getElementById('toggle-members-btn');
-    const section = document.getElementById('collapsible-members');
-    if (toggleBtn && section) {
-        toggleBtn.addEventListener('click', function() {
-            isCurrentMembersListHiddenByUser = !section.classList.contains('hidden'); 
-            section.classList.toggle('hidden'); 
-            if (section.classList.contains('hidden')) {
+    const toggleBtnElem = document.getElementById('toggle-members-btn');
+    const sectionElem = document.getElementById('collapsible-members');
+    if (toggleBtnElem && sectionElem) {
+        toggleBtnElem.addEventListener('click', function() {
+            isCurrentMembersListHiddenByUser = !sectionElem.classList.contains('hidden'); 
+            sectionElem.classList.toggle('hidden'); 
+            if (sectionElem.classList.contains('hidden')) {
                 this.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
             } else {
                 this.textContent = 'Hide Current Members';
+            }
+        });
+    }
+
+    const toggleInactiveBtnElem = document.getElementById('toggle-inactive-btn');
+    const inactiveSectionElem = document.getElementById('inactive-members-list-container');
+    if (toggleInactiveBtnElem && inactiveSectionElem) {
+        toggleInactiveBtnElem.addEventListener('click', function() {
+            isInactiveMembersListHiddenByUser = !inactiveSectionElem.classList.contains('hidden'); 
+            inactiveSectionElem.classList.toggle('hidden'); 
+            if (inactiveSectionElem.classList.contains('hidden')) {
+                this.textContent = 'Show Inactive Members (' + document.getElementById('total-inactive-count').textContent + ')';
+            } else {
+                this.textContent = 'Hide Inactive Members';
             }
         });
     }
