@@ -6,6 +6,10 @@
 <title>Gym Management Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
 <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -180,6 +184,16 @@
 <button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-id-card">
                 ID Card View
             </button>
+<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3" id="tab-check-in">
+                Gate Check-In
+            </button>
+<button class="py-3 px-6 text-base font-medium text-center text-gray-500 border-b-2 border-transparent hover:text-gray-300 hover:border-gray-600 focus:outline-none transition duration-150 ease-in-out w-full mb-3 relative" id="tab-qr-approvals">
+                QR Approvals
+                <span id="qr-badge" class="absolute top-1 right-1 flex h-3 w-3 hidden">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+            </button>
 </div>
 
 <div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-manage-member">
@@ -339,10 +353,56 @@
 <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Due Date:</span> <span id="id-card-due-date"></span></p>
 <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Fee:</span> <span id="id-card-fee"></span></p>
 <p class="text-gray-300 text-lg mb-1"><span class="font-semibold">Status:</span> <span id="id-card-status"></span></p>
+
+<div class="mt-4 inline-block bg-white p-2 rounded-lg shadow-md border border-gray-300">
+    <canvas id="qr-code"></canvas>
+</div>
+
 </div>
 </div>
 <p class="text-gray-400 text-center p-6" id="no-id-card-selected-message">Select a member to view their ID card.</p>
 </div>
+
+
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-check-in">
+    <h2 class="text-2xl font-bold text-white mb-6 text-lg">Gate Entry Check-In</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-600 flex flex-col items-center">
+            <h3 class="text-xl font-bold text-white mb-4">Scan QR Code</h3>
+            <div id="reader" style="width: 100%; max-width: 350px;" class="mb-4 rounded-lg overflow-hidden bg-black"></div>
+            <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none w-full transition duration-150 ease-in-out text-lg mb-2" id="start-scanner-btn" type="button">
+                Start Scanner
+            </button>
+            <button class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none w-full transition duration-150 ease-in-out text-lg hidden mb-2" id="stop-scanner-btn" type="button">
+                Stop Scanner
+            </button>
+            <div id="checkin-scan-result" class="mt-4 w-full p-4 rounded text-center"></div>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-600 flex flex-col">
+            <h3 class="text-xl font-bold text-white mb-4">Manual Entry (Generate QR)</h3>
+            <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 mb-3" id="checkin-name" placeholder="Enter Exact Name" type="text"/>
+            <input class="mt-1 block w-full p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 mb-3" id="checkin-phone" placeholder="Enter Phone Number" type="tel"/>
+            <button class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none w-full transition duration-150 ease-in-out text-lg" id="checkin-manual-btn" type="button">
+                Verify & Generate QR
+            </button>
+            <div id="checkin-manual-result" class="mt-6 flex flex-col items-center"></div>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content bg-gray-700 p-6 rounded-xl shadow-inner hidden border border-gray-600" id="content-qr-approvals">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-white text-lg">Pending QR Requests</h2>
+        <button onclick="window.cleanupOldRequests()" class="text-sm bg-gray-600 hover:bg-gray-500 text-white py-1 px-3 rounded shadow">Run Cleanup Now</button>
+    </div>
+    
+    <div id="qr-requests-container" class="grid grid-cols-1 gap-4">
+        <p class="text-gray-400 text-center py-4" id="no-qr-requests-msg">No pending requests right now.</p>
+        </div>
+</div>
+
 
 <div class="flex flex-col sm:flex-row gap-4 mb-6 mt-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
 <input class="flex-grow p-3 border border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white placeholder-gray-400 w-full" id="search-input" placeholder="Search by Name or Member ID..." type="text"/>
@@ -482,10 +542,11 @@
 <img alt="Enlarged Member Photo" class="max-w-full max-h-[calc(90vh-60px)] object-contain rounded-lg shadow-md" id="enlarged-photo" src=""/>
 </div>
 </div>
+
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, getDocs, setDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables for Firebase instances
         let firebaseAppInstance; 
@@ -513,6 +574,7 @@
         let memberToDelete = null;
         let memberToInactivate = null;
         let allMembers = []; 
+        let pendingQrRequests = []; // Stores pending QR requests
         let currentPhotoBase64 = null; 
 
         let currentCameraFacingMode = 'user'; 
@@ -548,12 +610,20 @@
         const submitAppPasswordBtn = document.getElementById('submit-app-password');
         const mainAppSection = document.getElementById('main-app-section');
         const signOutButton = document.getElementById('signout-button');
+        
+        // Tabs
         const tabManageMember = document.getElementById('tab-manage-member');
         const tabAddPayment = document.getElementById('tab-add-payment');
         const tabIdCard = document.getElementById('tab-id-card');
+        const tabCheckIn = document.getElementById('tab-check-in'); 
+        const tabQrApprovals = document.getElementById('tab-qr-approvals'); // NEW TAB BUTTON
+        
+        // Tab Contents
         const contentManageMember = document.getElementById('content-manage-member');
         const contentAddPayment = document.getElementById('content-add-payment');
         const contentIdCard = document.getElementById('content-id-card');
+        const contentCheckIn = document.getElementById('content-check-in'); 
+        const contentQrApprovals = document.getElementById('content-qr-approvals'); // NEW TAB CONTENT
 
         // Main Member Form
         const memberForm = document.getElementById('member-form');
@@ -594,6 +664,22 @@
         const idCardFee = document.getElementById('id-card-fee');
         const idCardStatus = document.getElementById('id-card-status');
         const noIdCardSelectedMessage = document.getElementById('no-id-card-selected-message');
+
+        // QR Check-in System Elements
+        const qrCodeCanvas = document.getElementById('qr-code');
+        const startScannerBtn = document.getElementById('start-scanner-btn');
+        const stopScannerBtn = document.getElementById('stop-scanner-btn');
+        const checkinScanResult = document.getElementById('checkin-scan-result');
+        const checkinNameInput = document.getElementById('checkin-name');
+        const checkinPhoneInput = document.getElementById('checkin-phone');
+        const checkinManualBtn = document.getElementById('checkin-manual-btn');
+        const checkinManualResult = document.getElementById('checkin-manual-result');
+        let html5QrcodeScanner = null;
+
+        // QR Approvals Elements
+        const qrRequestsContainer = document.getElementById('qr-requests-container');
+        const noQrRequestsMsg = document.getElementById('no-qr-requests-msg');
+        const qrBadge = document.getElementById('qr-badge');
 
         // Other UI Elements
         const messageDisplay = document.getElementById('message-display');
@@ -657,6 +743,25 @@
         const collapsibleMembersSection = document.getElementById('collapsible-members');
         let isCurrentMembersListHiddenByUser = true; 
         let isInactiveMembersListHiddenByUser = true;
+
+        // --- Notification Sound ---
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // Beep A5
+                gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
+                osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {
+                console.log("Audio not supported or interaction required first.");
+            }
+        }
 
         // --- Monthly Calendar Days Helper --- //
         function getDaysForNextMonth(dateString) {
@@ -781,6 +886,7 @@
         function attachFirebaseListeners() {
             if (window.unsubscribeAuth) window.unsubscribeAuth();
             if (window.unsubscribeMembers) window.unsubscribeMembers();
+            if (window.unsubscribeQrRequests) window.unsubscribeQrRequests();
 
             window.unsubscribeAuth = onAuthStateChanged(firebaseAuth, async (user) => {
                 if (user) {
@@ -792,6 +898,7 @@
                     appPasswordInput.value = ''; 
                     appPasswordInput.focus();
 
+                    // 1. Members Listener
                     const membersCollectionRef = collection(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`);
                     window.unsubscribeMembers = onSnapshot(membersCollectionRef, (snapshot) => {
                         allMembers = snapshot.docs.map(doc => ({
@@ -814,6 +921,41 @@
                         showMessage('Failed to load members.', 'error');
                     });
 
+                    // 2. NEW: QR Requests Listener
+                    const qrRequestsRef = query(collection(firestoreDb, `artifacts/${envAppId}/public/data/qrRequests`), where("status", "==", "pending"));
+                    window.unsubscribeQrRequests = onSnapshot(qrRequestsRef, (snapshot) => {
+                        pendingQrRequests = [];
+                        let isNewRequest = false;
+
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                // Prevent alert on initial load if older than few seconds
+                                const data = change.doc.data();
+                                if(Date.now() - data.createdAt < 5000) { 
+                                    isNewRequest = true;
+                                }
+                            }
+                        });
+
+                        snapshot.forEach((doc) => {
+                            const req = { id: doc.id, ...doc.data() };
+                            // Only keep it if it hasn't expired yet (3 mins)
+                            if (Date.now() < req.expiresAt) {
+                                pendingQrRequests.push(req);
+                            }
+                        });
+
+                        if (isNewRequest && pendingQrRequests.length > 0) {
+                            playNotificationSound();
+                            showMessage("🔔 New QR Code Request!", "info");
+                        }
+
+                        renderQrRequests();
+
+                    }, (error) => {
+                        console.error("Error fetching QR Requests:", error);
+                    });
+
                 } else {
                     currentUserId = null;
                     userIdValue.textContent = ''; 
@@ -821,7 +963,9 @@
                     passwordEntryModal.classList.add('hidden'); 
                     authSection.classList.remove('hidden'); 
                     allMembers = [];
+                    pendingQrRequests = [];
                     renderMembers();
+                    renderQrRequests();
                 }
             });
 
@@ -834,6 +978,26 @@
                 }
             }
         }
+
+        // --- Cleanup Routine (runs every 10 minutes client-side) ---
+        window.cleanupOldRequests = async () => {
+            if(!firestoreDb) return;
+            try {
+                const colRef = collection(firestoreDb, `artifacts/${envAppId}/public/data/qrRequests`);
+                const snap = await getDocs(colRef);
+                snap.forEach(async (document) => {
+                    const data = document.data();
+                    // Delete if older than 30 mins
+                    if(Date.now() - data.createdAt > (30 * 60 * 1000)) {
+                        await deleteDoc(doc(firestoreDb, `artifacts/${envAppId}/public/data/qrRequests`, document.id));
+                    }
+                });
+                console.log("Cleanup complete");
+            } catch (e) {
+                console.error("Cleanup error", e);
+            }
+        }
+        setInterval(window.cleanupOldRequests, 10 * 60 * 1000);
 
         function formatToDDMMYYYY(dateString) {
             if (!dateString) return 'N/A';
@@ -1253,6 +1417,52 @@
             }
         }
 
+        // --- RENDER QR REQUESTS --- //
+        function renderQrRequests() {
+            qrRequestsContainer.innerHTML = '';
+            
+            if (pendingQrRequests.length > 0) {
+                qrBadge.classList.remove('hidden');
+                noQrRequestsMsg.classList.add('hidden');
+            } else {
+                qrBadge.classList.add('hidden');
+                noQrRequestsMsg.classList.remove('hidden');
+                qrRequestsContainer.appendChild(noQrRequestsMsg);
+            }
+
+            pendingQrRequests.forEach(req => {
+                const div = document.createElement('div');
+                div.className = "bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row justify-between items-center border border-gray-600 shadow-sm";
+                
+                div.innerHTML = `
+                    <div class="mb-4 md:mb-0">
+                        <p class="text-white font-bold text-lg">${req.name}</p>
+                        <p class="text-gray-400 text-sm">Phone: ${req.phone}</p>
+                        <p class="text-gray-400 text-xs">Expires at: ${new Date(req.expiresAt).toLocaleTimeString()}</p>
+                    </div>
+                    <div class="flex space-x-3 w-full md:w-auto">
+                        <button onclick="window.handleQrAction('${req.id}', 'rejected')" class="flex-1 md:flex-none px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded shadow transition duration-150">Reject</button>
+                        <button onclick="window.handleQrAction('${req.id}', 'approved')" class="flex-1 md:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded shadow transition duration-150">Approve</button>
+                    </div>
+                `;
+                qrRequestsContainer.appendChild(div);
+            });
+        }
+
+        // --- Handle QR Actions --- //
+        window.handleQrAction = async (id, action) => {
+            if(!firestoreDb) return;
+            try {
+                const docRef = doc(firestoreDb, `artifacts/${envAppId}/public/data/qrRequests`, id);
+                await updateDoc(docRef, { status: action });
+                showMessage(`Request ${action}!`, 'success');
+            } catch (e) {
+                console.error("Action error:", e);
+                showMessage("Failed to update request", "error");
+            }
+        };
+
+
         function clearMainForm() {
             memberIdInput.value = ''; 
             nameInput.value = '';
@@ -1302,6 +1512,14 @@
             idCardDueDate.textContent = '';
             idCardFee.textContent = '';
             idCardStatus.textContent = '';
+        }
+
+        // Generate QR code in ID card tab
+        function generateQRCode(member) {
+            const qrData = JSON.stringify({ id: member.id }); 
+            QRCode.toCanvas(qrCodeCanvas, qrData, { width: 140, margin: 1 }, function (error) {
+                if (error) console.error("QR Generation Error:", error);
+            });
         }
 
         function handleEdit(member) {
@@ -1587,6 +1805,9 @@
                 idCardFee.textContent = `$${(member.feeAmount || 0).toFixed(2)}`;
                 idCardStatus.textContent = member.isInactive ? 'Inactive' : 'Active';
 
+                // Setup the QR code for this selected user
+                generateQRCode(member);
+
                 idCardDisplay.classList.remove('hidden');
                 noIdCardSelectedMessage.classList.add('hidden');
             } else {
@@ -1596,11 +1817,14 @@
         }
 
         function showTab(tabId) {
-            [tabManageMember, tabAddPayment, tabIdCard].forEach(tab => {
+            // Turn off scanner if we switch away from Check-In tab
+            if (tabId !== 'check-in') stopScannerFunction();
+
+            [tabManageMember, tabAddPayment, tabIdCard, tabCheckIn, tabQrApprovals].forEach(tab => {
                 tab.classList.remove('tab-active');
                 tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
             });
-            [contentManageMember, contentAddPayment, contentIdCard].forEach(content => {
+            [contentManageMember, contentAddPayment, contentIdCard, contentCheckIn, contentQrApprovals].forEach(content => {
                 content.classList.add('hidden');
             });
 
@@ -1618,6 +1842,14 @@
                 tabIdCard.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentIdCard.classList.remove('hidden');
                 populateIdCardMemberSelect(idCardMemberSearchInput.value); 
+            } else if (tabId === 'check-in') {
+                tabCheckIn.classList.add('tab-active');
+                tabCheckIn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
+                contentCheckIn.classList.remove('hidden');
+            } else if (tabId === 'qr-approvals') {
+                tabQrApprovals.classList.add('tab-active');
+                tabQrApprovals.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
+                contentQrApprovals.classList.remove('hidden');
             }
         }
 
@@ -1686,6 +1918,8 @@
         tabManageMember.addEventListener('click', () => showTab('manage-member'));
         tabAddPayment.addEventListener('click', () => showTab('add-payment'));
         tabIdCard.addEventListener('click', () => showTab('id-card'));
+        tabCheckIn.addEventListener('click', () => showTab('check-in'));
+        tabQrApprovals.addEventListener('click', () => showTab('qr-approvals'));
 
         addPaymentMemberSearchInput.addEventListener('input', (e) => populateAddPaymentMemberSelect(e.target.value));
         
@@ -1790,6 +2024,113 @@
                 renderMembers();
             });
         }
+
+
+        // -------------------------
+        // QR SCANNER LOGIC
+        // -------------------------
+        function onScanSuccess(decodedText) {
+            try {
+                const data = JSON.parse(decodedText);
+                verifyMember(data.id);
+            } catch (error) {
+                checkinScanResult.innerHTML = `<span class="text-red-500">❌ Invalid QR Format</span>`;
+            }
+        }
+
+        function stopScannerFunction() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    startScannerBtn.classList.remove('hidden');
+                    stopScannerBtn.classList.add('hidden');
+                    html5QrcodeScanner.clear();
+                    html5QrcodeScanner = null;
+                }).catch(err => console.error("Failed to stop scanner", err));
+            }
+        }
+
+        startScannerBtn.addEventListener('click', () => {
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5Qrcode("reader");
+            }
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess
+            ).then(() => {
+                startScannerBtn.classList.add('hidden');
+                stopScannerBtn.classList.remove('hidden');
+                checkinScanResult.innerHTML = '';
+            }).catch(err => {
+                console.error(err);
+                showMessage('Could not start scanner.', 'error');
+            });
+        });
+
+        stopScannerBtn.addEventListener('click', stopScannerFunction);
+
+        function verifyMember(scannedId) {
+            // Find directly from synced allMembers array without an extra DB hit!
+            const member = allMembers.find(m => m.id === scannedId);
+            
+            if (!member) {
+                checkinScanResult.innerHTML = `<span class="text-red-500 block text-2xl mb-2">❌ Invalid QR</span><span class="text-gray-400 text-base">User Not Found</span>`;
+                return;
+            }
+
+            if (isOverdue(member.dueDate)) {
+                checkinScanResult.innerHTML = `<span class="text-red-500 block text-2xl mb-2">❌ Membership Expired</span><span class="text-gray-400 text-base">${member.name}</span>`;
+            } else if (member.isInactive || member.status === 'Inactive') {
+                checkinScanResult.innerHTML = `<span class="text-yellow-500 block text-2xl mb-2">⚠️ Inactive Member</span><span class="text-gray-400 text-base">${member.name}</span>`;
+            } else {
+                checkinScanResult.innerHTML = `<span class="text-green-500 block text-2xl mb-2">✅ Entry Allowed</span><span class="text-gray-300 text-base">${member.name}</span>`;
+            }
+        }
+
+        // -------------------------
+        // MANUAL VERIFY & GENERATE QR LOGIC
+        // -------------------------
+        checkinManualBtn.addEventListener('click', () => {
+            const nameVal = checkinNameInput.value.trim().toLowerCase();
+            const phoneVal = checkinPhoneInput.value.trim();
+            checkinManualResult.innerHTML = '';
+
+            const foundUser = allMembers.find(m => 
+                m.name.toLowerCase() === nameVal && m.phoneNumber === phoneVal
+            );
+
+            if (!foundUser) {
+                checkinManualResult.innerHTML = `<span class="text-red-500 font-bold text-xl">❌ Invalid Name or Number</span>`;
+                return;
+            }
+
+            if (isOverdue(foundUser.dueDate)) {
+                checkinManualResult.innerHTML = `<span class="text-red-500 font-bold text-xl">❌ Membership Expired</span>`;
+                return;
+            }
+
+            if (foundUser.isInactive || foundUser.status === 'Inactive') {
+                checkinManualResult.innerHTML = `<span class="text-yellow-500 font-bold text-xl">⚠️ Account is Inactive</span>`;
+                return;
+            }
+
+            // Valid -> Generate QR locally in the manual entry div
+            const qrData = JSON.stringify({ id: foundUser.id });
+            const canvasWrapper = document.createElement('div');
+            canvasWrapper.className = "p-2 bg-white rounded-lg shadow-md mt-4 border border-gray-300 inline-block";
+            const canvasEl = document.createElement('canvas');
+            canvasWrapper.appendChild(canvasEl);
+
+            QRCode.toCanvas(canvasEl, qrData, { width: 150, margin: 1 }, function (error) {
+                if (!error) {
+                    checkinManualResult.innerHTML = `<div class="text-green-500 font-bold text-xl mb-3">✅ Valid User</div>`;
+                    checkinManualResult.appendChild(canvasWrapper);
+                } else {
+                    console.error("QR Generation Error:", error);
+                }
+            });
+        });
+
 
         // Form Submissions
         memberForm.addEventListener('submit', async (e) => {
@@ -1923,4 +2264,4 @@
         showTab('manage-member');
     </script>
 </body>
-        </html>
+</html>
