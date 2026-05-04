@@ -658,6 +658,15 @@
         let isCurrentMembersListHiddenByUser = true; 
         let isInactiveMembersListHiddenByUser = true;
 
+        // --- Monthly Calendar Days Helper --- //
+        function getDaysForNextMonth(dateString) {
+            let baseDate = dateString ? new Date(dateString + 'T00:00:00') : new Date();
+            let nextMonthDate = new Date(baseDate);
+            nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+            const diffTime = nextMonthDate.getTime() - baseDate.getTime();
+            return Math.round(diffTime / (1000 * 60 * 60 * 24));
+        }
+
         // --- Bidirectional Date Logic Helpers --- //
         function setupBidirectionalDates(startInput, durationInput, dueInput) {
             function updateDue() {
@@ -685,11 +694,21 @@
 
         setupBidirectionalDates(startDateInput, durationDaysInput, dueDateInput);
 
+        startDateInput.addEventListener('change', () => {
+            if (membershipTypeInput.value === 'Monthly') {
+                durationDaysInput.value = getDaysForNextMonth(startDateInput.value);
+                durationDaysInput.dispatchEvent(new Event('input'));
+            }
+        });
+
         membershipTypeInput.addEventListener('change', () => {
             if (membershipTypeInput.value === 'Custom') {
                 durationDaysInput.value = '';
                 feeAmountInput.value = '';
                 dueDateInput.value = '';
+            } else if (membershipTypeInput.value === 'Monthly') {
+                durationDaysInput.value = getDaysForNextMonth(startDateInput.value);
+                feeAmountInput.value = defaultPlanAmounts[membershipTypeInput.value] || 0;
             } else {
                 durationDaysInput.value = planDaysMapping[membershipTypeInput.value] || 30;
                 feeAmountInput.value = defaultPlanAmounts[membershipTypeInput.value] || 0;
@@ -707,9 +726,14 @@
             if (type === 'Custom') {
                 addPaymentCustomDaysContainer.classList.remove('hidden');
                 planDays = parseInt(addPaymentCustomDaysInput.value) || 0;
+            } else if (type === 'Monthly' && selectedMember) {
+                addPaymentCustomDaysContainer.classList.add('hidden');
+                planDays = getDaysForNextMonth(selectedMember.dueDate);
+                addPaymentFeeAmountInput.value = defaultPlanAmounts[type] || 0;
             } else {
                 addPaymentCustomDaysContainer.classList.add('hidden');
                 planDays = planDaysMapping[type] || 0;
+                if (type === 'Monthly') planDays = getDaysForNextMonth(); // fallback
                 addPaymentFeeAmountInput.value = defaultPlanAmounts[type] || 0;
             }
 
@@ -1236,7 +1260,7 @@
             membershipTypeInput.value = 'Monthly';
             feeAmountInput.value = defaultPlanAmounts['Monthly'];
             startDateInput.value = '';
-            durationDaysInput.value = planDaysMapping['Monthly'];
+            durationDaysInput.value = getDaysForNextMonth();
             dueDateInput.value = ''; 
             fingerprintIdInput.value = '';
             editingMemberId = null;
@@ -1288,7 +1312,7 @@
             membershipTypeInput.value = member.membershipType;
             feeAmountInput.value = member.feeAmount || 0;
             startDateInput.value = member.startDate;
-            durationDaysInput.value = member.durationDays || planDaysMapping[member.membershipType] || 30;
+            durationDaysInput.value = member.durationDays || (member.membershipType === 'Monthly' ? getDaysForNextMonth(member.startDate) : planDaysMapping[member.membershipType]) || 30;
             dueDateInput.value = member.dueDate; 
             fingerprintIdInput.value = member.fingerprintId || '';
             
@@ -1584,271 +1608,92 @@
                 tabManageMember.classList.add('tab-active');
                 tabManageMember.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentManageMember.classList.remove('hidden');
-                clearAddPaymentForm();
-                clearIdCardDisplay();
             } else if (tabId === 'add-payment') {
                 tabAddPayment.classList.add('tab-active');
                 tabAddPayment.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentAddPayment.classList.remove('hidden');
-                clearMainForm(); 
-                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value);
-                clearAddPaymentForm(); 
-                clearIdCardDisplay();
-                stopCamera(cameraFeed, cameraStream);
+                populateAddPaymentMemberSelect(addPaymentMemberSearchInput.value); 
             } else if (tabId === 'id-card') {
                 tabIdCard.classList.add('tab-active');
                 tabIdCard.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-300', 'hover:border-gray-600');
                 contentIdCard.classList.remove('hidden');
-                clearMainForm();
-                clearAddPaymentForm();
-                populateIdCardMemberSelect(idCardMemberSearchInput.value);
-                displayIdCard(null); 
-                stopCamera(cameraFeed, cameraStream);
+                populateIdCardMemberSelect(idCardMemberSearchInput.value); 
             }
         }
 
         function updateDateTime() {
             const now = new Date();
             const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-            const timeString = now.toLocaleTimeString('en-US', timeOptions);
+            currentTimeDisplay.textContent = now.toLocaleTimeString('en-US', timeOptions);
             const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-            const dateString = now.toLocaleDateString('en-US', dateOptions);
+            currentDateDisplay.textContent = now.toLocaleDateString('en-US', dateOptions);
             const dayOptions = { weekday: 'long' };
-            const dayString = now.toLocaleDateString('en-US', dayOptions);
-
-            currentTimeDisplay.textContent = timeString;
-            currentDateDisplay.textContent = dateString;
-            currentDayDisplay.textContent = dayString;
+            currentDayDisplay.textContent = now.toLocaleDateString('en-US', dayOptions);
         }
 
-        window.onload = async function() {
-            const savedFirebaseApiKey = localStorage.getItem("customFirebaseApiKey");
-            const savedFirebaseProjectId = localStorage.getItem("customFirebaseProjectId");
-            const savedCloudName = localStorage.getItem("customCloudName");
-            const savedUploadPreset = localStorage.getItem("customUploadPreset");
+        // Initialize App
+        initializePrimaryFirebase();
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
 
-            if (savedFirebaseApiKey && savedFirebaseProjectId) {
-                primaryFirebaseConfig.apiKey = savedFirebaseApiKey;
-                primaryFirebaseConfig.projectId = savedFirebaseProjectId;
-                primaryFirebaseConfig.authDomain = `${savedFirebaseProjectId}.firebaseapp.com`;
-                primaryFirebaseConfig.storageBucket = `${savedFirebaseProjectId}.appspot.com`;
-            }
-            if (savedCloudName && savedUploadPreset) {
-                primaryCloudinaryConfig.cloudName = savedCloudName;
-                primaryCloudinaryConfig.uploadPreset = savedUploadPreset;
-            }
+        setTimeout(() => {
+            const splashScreen = document.getElementById('splash-screen');
+            splashScreen.style.transition = 'opacity 0.5s ease-out';
+            splashScreen.style.opacity = '0';
+            setTimeout(() => splashScreen.remove(), 500);
+        }, 1500);
 
-            initializePrimaryFirebase(); 
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
-            
-            // initialize fields that need default values
-            feeAmountInput.value = defaultPlanAmounts['Monthly'];
-        };
 
-        // Authentication Event Listeners
+        // Event Listeners Registration
         signInButton.addEventListener('click', async () => {
             const email = authEmailInput.value;
             const password = authPasswordInput.value;
-            if (!email || !password) return showMessage('Please enter both email and password.', 'error');
-            try {
-                await signInWithEmailAndPassword(firebaseAuth, email, password);
-                showMessage('Signed in successfully!', 'success');
-            } catch (error) {
-                showMessage(`Sign in failed: ${error.message}`, 'error');
-            }
+            if (!email || !password) return showMessage('Please enter email and password', 'error');
+            try { await signInWithEmailAndPassword(firebaseAuth, email, password); } 
+            catch (error) { showMessage(error.message, 'error'); }
         });
 
         signUpButton.addEventListener('click', async () => {
             const email = authEmailInput.value;
             const password = authPasswordInput.value;
-            if (!email || !password) return showMessage('Please enter both email and password.', 'error');
-            try {
-                await createUserWithEmailAndPassword(firebaseAuth, email, password);
-                showMessage('Account created!', 'success');
-            } catch (error) {
-                showMessage(`Sign up failed: ${error.message}`, 'error');
-            }
+            if (!email || !password) return showMessage('Please enter email and password', 'error');
+            try { await createUserWithEmailAndPassword(firebaseAuth, email, password); } 
+            catch (error) { showMessage(error.message, 'error'); }
         });
 
         anonymousSignInButton.addEventListener('click', async () => {
-            try {
-                await signInAnonymously(firebaseAuth);
-                showMessage('Signed in Anonymously!', 'success');
-            } catch (error) {
-                showMessage(`Anonymous sign in failed: ${error.message}`, 'error');
-            }
+            try { await signInAnonymously(firebaseAuth); } 
+            catch (error) { showMessage(error.message, 'error'); }
         });
 
         submitAppPasswordBtn.addEventListener('click', () => {
-            const enteredPassword = appPasswordInput.value;
-            if (enteredPassword === APP_PASSWORD) {
+            if (appPasswordInput.value === APP_PASSWORD) {
                 passwordEntryModal.classList.remove('flex');
                 passwordEntryModal.classList.add('hidden');
                 mainAppSection.classList.remove('hidden');
-                setTimeout(() => {
-                    mainAppSection.classList.remove('scale-95', 'opacity-0');
-                    mainAppSection.classList.add('scale-100', 'opacity-100');
-                }, 10); 
-                showTab('manage-member'); 
+                setTimeout(() => mainAppSection.classList.remove('scale-95', 'opacity-0'), 10);
             } else {
-                showMessage('Incorrect App Password.', 'error');
+                showMessage('Incorrect App Password', 'error');
                 appPasswordInput.value = '';
-                appPasswordInput.focus();
             }
-        });
-
-        appPasswordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitAppPasswordBtn.click();
         });
 
         signOutButton.addEventListener('click', async () => {
-            try {
-                await signOut(firebaseAuth); 
-                showMessage('Signed out.', 'success');
-                clearMainForm();
-                clearAddPaymentForm();
-                clearIdCardDisplay();
-                isCurrentMembersListHiddenByUser = true; 
-                isInactiveMembersListHiddenByUser = true;
-            } catch (error) {
-                showMessage(`Sign out failed: ${error.message}`, 'error');
-            }
+            try { await signOut(firebaseAuth); } 
+            catch (error) { showMessage('Error signing out', 'error'); }
         });
 
-        // Tab Listeners
         tabManageMember.addEventListener('click', () => showTab('manage-member'));
         tabAddPayment.addEventListener('click', () => showTab('add-payment'));
         tabIdCard.addEventListener('click', () => showTab('id-card'));
 
-        // Main Form Submit
-        memberForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const targetDb = firestoreDb; 
-            if (!targetDb || !currentUserId) return showMessage('Database not ready.', 'error');
-
-            const membershipType = membershipTypeInput.value;
-            const feeAmount = parseFloat(feeAmountInput.value); 
-            if (isNaN(feeAmount)) return showMessage('Valid Fee Amount is required.', 'error');
-
-            let memberData = {
-                memberId: memberIdInput.value.trim(),
-                name: nameInput.value.trim(),
-                phoneNumber: phoneNumberInput.value.trim(),
-                membershipType: membershipType,
-                startDate: startDateInput.value,
-                durationDays: parseInt(durationDaysInput.value),
-                dueDate: dueDateInput.value,
-                feeAmount: feeAmount, 
-                fingerprintId: fingerprintIdInput.value ? parseInt(fingerprintIdInput.value) : null,
-                updatedAt: serverTimestamp(),
-                createdBy: currentUserId,
-            };
-            
-            if (!editingMemberId) {
-                memberData.isInactive = false;
-            }
-
-            // set auto status check
-            memberData.status = memberData.isInactive ? "Inactive" : getMemberStatus(memberData.dueDate);
-
-            if (!memberData.memberId || !memberData.dueDate) return showMessage('ID and calculated Dates are required.', 'error');
-
-            try {
-                let photoURL = null; 
-                if (currentPhotoBase64 && !currentPhotoBase64.startsWith('https://res.cloudinary.com/')) {
-                    photoURL = await uploadImageToCloudinary(currentPhotoBase64);
-                    if (!photoURL) return showMessage('Failed to upload photo.', 'error');
-                    memberData.photoURL = photoURL;
-                } else if (currentPhotoBase64 && currentPhotoBase64.startsWith('https://res.cloudinary.com/')) {
-                    memberData.photoURL = currentPhotoBase64;
-                } else memberData.photoURL = null;
-
-                if (editingMemberId) {
-                    const docRef = doc(targetDb, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId);
-                    await updateDoc(docRef, memberData);
-                    showMessage('Member updated successfully!', 'success');
-                } else {
-                    memberData.createdAt = serverTimestamp(); 
-                    memberData.storageSourceId = 'primary'; 
-                    await addDoc(collection(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
-                    showMessage('Member added successfully!', 'success');
-                }
-                
-                // Hardware Sync
-                if (memberData.fingerprintId) {
-                    await setDoc(
-                        doc(targetDb, `hardware/finger_${memberData.fingerprintId}`),
-                        {
-                            name: memberData.name,
-                            dueDate: memberData.dueDate,
-                            status: memberData.status,
-                            access: memberData.status === "Active" && !memberData.isInactive
-                        }
-                    );
-                }
-
-                clearMainForm();
-            } catch (error) {
-                showMessage('Failed to save member.', 'error');
-            }
-        });
-
-        cancelEditButton.addEventListener('click', clearMainForm);
-        searchInput.addEventListener('input', renderMembers); 
-        filterStatusSelect.addEventListener('change', renderMembers); 
-        clearSearchBtn.addEventListener('click', () => { 
-            searchInput.value = ''; 
-            renderMembers(); 
-        });
-
-        cancelDeleteButton.addEventListener('click', () => {
-            deleteModal.classList.add('hidden');
-            deleteModalContent.classList.add('scale-95', 'opacity-0'); 
-        });
-        confirmDeleteButton.addEventListener('click', handleDelete);
+        addPaymentMemberSearchInput.addEventListener('input', (e) => populateAddPaymentMemberSelect(e.target.value));
         
-        cancelInactivateButton.addEventListener('click', () => {
-            inactiveModal.classList.add('hidden');
-            inactiveModalContent.classList.add('scale-95', 'opacity-0');
-            memberToInactivate = null;
-        });
-        confirmInactivateButton.addEventListener('click', handleInactivateConfirm);
-
-        uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click()); 
-        photoUploadInput.addEventListener('change', (event) => handleFileUpload(event, photoPreview, clearPhotoBtn, switchCameraBtn, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data));
-        takePhotoBtn.addEventListener('click', () => handleTakePhoto(cameraFeed, cameraCanvas, photoPreview, clearPhotoBtn, switchCameraBtn, viewPhotoLink, (data) => currentPhotoBase64 = data, currentCameraFacingMode, (stream) => cameraStream = stream));
-        switchCameraBtn.addEventListener('click', () => handleSwitchCamera(cameraFeed, cameraStream, (stream) => cameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode, photoPreview, viewPhotoLink));
-        cameraFeed.addEventListener('click', () => {
-            const dataUrl = capturePhoto(cameraFeed, cameraCanvas, photoPreview);
-            if (dataUrl) {
-                currentPhotoBase64 = dataUrl;
-                stopCamera(cameraFeed, cameraStream);
-                cameraStream = null;
-                clearPhotoBtn.classList.remove('hidden');
-                switchCameraBtn.classList.add('hidden');
-                viewPhotoLink.href = dataUrl;
-                viewPhotoLink.textContent = 'View Photo Preview';
-                viewPhotoLink.classList.remove('hidden');
-            }
-        });
-        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (data) => currentPhotoBase64 = data, editingMemberId));
-        addPhotoEnlargeListeners(photoPreview);
-
-
-        // Add Payment
-        addPaymentMemberSearchInput.addEventListener('input', (e) => {
-            populateAddPaymentMemberSelect(e.target.value);
-            addPaymentMemberSelect.value = '';
-            addPaymentCurrentDueDateInput.value = '';
-            addPaymentNewDueDateInput.value = '';
-        });
-
-        addPaymentMemberSelect.addEventListener('change', () => {
-            const selectedMemberId = addPaymentMemberSelect.value;
-            const selectedMember = allMembers.find(m => m.id === selectedMemberId);
-            if (selectedMember) {
-                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(selectedMember.dueDate); 
+        addPaymentMemberSelect.addEventListener('change', (e) => {
+            const memberId = e.target.value;
+            const member = allMembers.find(m => m.id === memberId);
+            if (member) {
+                addPaymentCurrentDueDateInput.value = formatToDDMMYYYY(member.dueDate) || 'N/A';
                 calculateNewPaymentDueDate();
             } else {
                 addPaymentCurrentDueDateInput.value = '';
@@ -1856,169 +1701,226 @@
             }
         });
 
-
-        addPaymentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!firestoreDb || !currentUserId) return showMessage('Database error.', 'error');
-
-            const selectedMemberId = addPaymentMemberSelect.value;
-            const newMembershipType = addPaymentMembershipTypeInput.value;
-            let newDueDate = addPaymentNewDueDateInput.value; 
-            const selectedMember = allMembers.find(m => m.id === selectedMemberId);
-
-            if (!selectedMemberId || !newDueDate || !selectedMember) return showMessage('Select member & plan.', 'error');
-            
-            const feeAmount = parseFloat(addPaymentFeeAmountInput.value); 
-            if (isNaN(feeAmount)) return showMessage('Valid Fee Amount is required.', 'error');
-            
-            let planDays = newMembershipType === 'Custom' ? parseInt(addPaymentCustomDaysInput.value) : planDaysMapping[newMembershipType];
-            if (isNaN(planDays) || planDays <= 0) return showMessage('Valid duration required.', 'error');
-
-            const parts = newDueDate.split('-');
-            const newDueDateForFirestore = `${parts[2]}-${parts[1]}-${parts[0]}`;
-
-            try {
-                const memberDocRef = doc(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`, selectedMemberId);
-                const newStatus = getMemberStatus(newDueDateForFirestore);
-                
-                await updateDoc(memberDocRef, {
-                    dueDate: newDueDateForFirestore, 
-                    durationDays: planDays,
-                    membershipType: newMembershipType, 
-                    feeAmount: feeAmount, 
-                    isInactive: false, 
-                    status: newStatus, 
-                    updatedAt: serverTimestamp(),
-                    updatedBy: currentUserId,
-                });
-                
-                // Hardware sync after payment
-                if (selectedMember.fingerprintId) {
-                    await setDoc(
-                        doc(firestoreDb, `hardware/finger_${selectedMember.fingerprintId}`),
-                        {
-                            name: selectedMember.name,
-                            dueDate: newDueDateForFirestore,
-                            status: newStatus,
-                            access: newStatus === "Active"
-                        }
-                    );
-                }
-                
-                showMessage('Payment processed and plan renewed!', 'success');
-                clearAddPaymentForm();
-            } catch (error) {
-                showMessage('Failed to process payment.', 'error');
-            }
-        });
-
-        idCardMemberSearchInput.addEventListener('input', (e) => {
-            populateIdCardMemberSelect(e.target.value);
-            displayIdCard(null); 
-        });
+        idCardMemberSearchInput.addEventListener('input', (e) => populateIdCardMemberSelect(e.target.value));
         idCardMemberSelect.addEventListener('change', (e) => displayIdCard(e.target.value));
 
+        searchInput.addEventListener('input', renderMembers);
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            renderMembers();
+        });
+        filterStatusSelect.addEventListener('change', renderMembers);
+
+        uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click());
+        photoUploadInput.addEventListener('change', (e) => handleFileUpload(e, photoPreview, clearPhotoBtn, switchCameraBtn, cameraFeed, cameraStream, viewPhotoLink, (url) => currentPhotoBase64 = url));
+        takePhotoBtn.addEventListener('click', () => handleTakePhoto(cameraFeed, cameraCanvas, photoPreview, clearPhotoBtn, switchCameraBtn, viewPhotoLink, (url) => currentPhotoBase64 = url, currentCameraFacingMode, (stream) => cameraStream = stream));
+        clearPhotoBtn.addEventListener('click', () => handleClearPhoto(photoPreview, clearPhotoBtn, switchCameraBtn, photoUploadInput, cameraFeed, cameraStream, viewPhotoLink, (url) => currentPhotoBase64 = url, editingMemberId));
+        switchCameraBtn.addEventListener('click', () => handleSwitchCamera(cameraFeed, cameraStream, (stream) => cameraStream = stream, (mode) => currentCameraFacingMode = mode, currentCameraFacingMode, photoPreview, viewPhotoLink));
+
+        cancelEditButton.addEventListener('click', clearMainForm);
+
         closePhotoModalBtn.addEventListener('click', closePhotoModal);
-        photoViewModal.addEventListener('click', (e) => { if (e.target === photoViewModal) closePhotoModal(); });
+        photoViewModal.addEventListener('click', (e) => {
+            if (e.target === photoViewModal) closePhotoModal();
+        });
 
         membersTableBody.addEventListener('click', (e) => {
-            const targetButton = e.target.closest('button[data-action]');
-            if (!targetButton) return; 
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+            const sourceId = btn.dataset.sourceId;
+            const member = allMembers.find(m => m.id === id);
+            
+            if (action === 'edit' && member) handleEdit(member);
+            else if (action === 'delete' && member) confirmDelete(member);
+            else if (action === 'pause' && member) confirmInactivate(member);
+        });
 
-            const memberId = targetButton.dataset.id;
-            const storageSourceId = targetButton.dataset.sourceId; 
-            const action = targetButton.dataset.action;
-            const member = allMembers.find(m => m.id === memberId && m.storageSourceId === storageSourceId);
+        inactiveMembersTableBody.addEventListener('click', async (e) => {
+             const btn = e.target.closest('button');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+            const sourceId = btn.dataset.sourceId;
+            const member = allMembers.find(m => m.id === id);
 
-            if (!member) return;
-
-            switch (action) {
-                case 'edit': handleEdit(member); break;
-                case 'pause': confirmInactivate(member); break;
-                case 'activate': handlePauseToggle(memberId, storageSourceId, 'Active'); break;
-                case 'delete': confirmDelete(member); break;
+            if (action === 'edit' && member) handleEdit(member);
+            else if (action === 'delete' && member) confirmDelete(member);
+            else if (action === 'activate' && member) {
+                await handlePauseToggle(id, sourceId, 'Active');
             }
         });
 
         overdueMembersTableBody.addEventListener('click', (e) => {
-            const targetButton = e.target.closest('button[data-action]');
-            if (!targetButton) return; 
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+            const sourceId = btn.dataset.sourceId;
+            const member = allMembers.find(m => m.id === id);
+            
+            if (action === 'edit' && member) handleEdit(member);
+            else if (action === 'delete' && member) confirmDelete(member);
+            else if (action === 'pause' && member) confirmInactivate(member);
+        });
 
-            const memberId = targetButton.dataset.id;
-            const storageSourceId = targetButton.dataset.sourceId; 
-            const action = targetButton.dataset.action;
-            const member = allMembers.find(m => m.id === memberId && m.storageSourceId === storageSourceId);
+        cancelDeleteButton.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            deleteModalContent.classList.add('scale-95', 'opacity-0'); 
+            memberToDelete = null;
+        });
+        confirmDeleteButton.addEventListener('click', handleDelete);
 
-            if (!member) return;
+        cancelInactivateButton.addEventListener('click', () => {
+            inactiveModal.classList.add('hidden');
+            inactiveModalContent.classList.add('scale-95', 'opacity-0');
+            memberToInactivate = null;
+        });
+        confirmInactivateButton.addEventListener('click', handleInactivateConfirm);
 
-            switch (action) {
-                case 'edit': handleEdit(member); break;
-                case 'pause': confirmInactivate(member); break;
-                case 'activate': handlePauseToggle(memberId, storageSourceId, 'Active'); break;
-                case 'delete': confirmDelete(member); break;
+        toggleBtn.addEventListener('click', () => {
+            isCurrentMembersListHiddenByUser = !isCurrentMembersListHiddenByUser;
+            renderMembers();
+        });
+
+        if(toggleInactiveBtn) {
+            toggleInactiveBtn.addEventListener('click', () => {
+                isInactiveMembersListHiddenByUser = !isInactiveMembersListHiddenByUser;
+                renderMembers();
+            });
+        }
+
+        // Form Submissions
+        memberForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!firestoreDb || !currentUserId) return showMessage('Database not ready or user not authenticated.', 'error');
+            
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Saving...';
+            submitButton.disabled = true;
+
+            try {
+                let finalPhotoURL = null;
+                if (currentPhotoBase64 && !currentPhotoBase64.startsWith('http')) {
+                    finalPhotoURL = await uploadImageToCloudinary(currentPhotoBase64);
+                } else if (currentPhotoBase64) {
+                    finalPhotoURL = currentPhotoBase64; 
+                }
+
+                const rawDuration = durationDaysInput.value;
+                const finalDuration = parseInt(rawDuration) || 0;
+                
+                const memberData = {
+                    memberId: memberIdInput.value.trim(),
+                    name: nameInput.value.trim(),
+                    phoneNumber: phoneNumberInput.value.trim(),
+                    membershipType: membershipTypeInput.value,
+                    feeAmount: parseFloat(feeAmountInput.value) || 0,
+                    startDate: startDateInput.value,
+                    durationDays: finalDuration,
+                    dueDate: dueDateInput.value,
+                    fingerprintId: fingerprintIdInput.value ? parseInt(fingerprintIdInput.value) : null,
+                    updatedAt: serverTimestamp(),
+                    updatedBy: currentUserId,
+                    isInactive: false, 
+                    status: 'Active' 
+                };
+
+                if (finalPhotoURL) memberData.photoURL = finalPhotoURL;
+
+                if (editingMemberId) {
+                    await updateDoc(doc(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`, editingMemberId), memberData);
+                    showMessage('Member updated successfully!', 'success');
+                } else {
+                    memberData.createdAt = serverTimestamp();
+                    memberData.createdBy = currentUserId;
+                    const docRef = await addDoc(collection(firestoreDb, `artifacts/${envAppId}/public/data/gymMembers`), memberData);
+                    editingMemberId = docRef.id; 
+                    showMessage('Member added successfully!', 'success');
+                }
+
+                if (memberData.fingerprintId) {
+                     await setDoc(
+                        doc(firestoreDb, `hardware/finger_${memberData.fingerprintId}`),
+                        {
+                            name: memberData.name,
+                            dueDate: memberData.dueDate,
+                            status: getMemberStatus(memberData.dueDate),
+                            access: getMemberStatus(memberData.dueDate) === "Active"
+                        }
+                    );
+                }
+
+                clearMainForm();
+            } catch (error) {
+                console.error("Error saving member:", error);
+                showMessage('Error saving member. Check console.', 'error');
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
             }
         });
 
-        inactiveMembersTableBody.addEventListener('click', (e) => {
-            const targetButton = e.target.closest('button[data-action]');
-            if (!targetButton) return; 
+        addPaymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const memberId = addPaymentMemberSelect.value;
+            const newDueDate = addPaymentNewDueDateInput.value;
+            const feeAmount = parseFloat(addPaymentFeeAmountInput.value);
+            const planType = addPaymentMembershipTypeInput.value;
 
-            const memberId = targetButton.dataset.id;
-            const storageSourceId = targetButton.dataset.sourceId; 
-            const action = targetButton.dataset.action;
-            const member = allMembers.find(m => m.id === memberId && m.storageSourceId === storageSourceId);
+            if (!memberId || !newDueDate || isNaN(feeAmount)) {
+                return showMessage('Please complete all payment fields.', 'error');
+            }
 
-            if (!member) return;
+            const dbInstance = firestoreDb; 
+            if (!dbInstance || !currentUserId) return showMessage('Database not ready.', 'error');
 
-            switch (action) {
-                case 'edit': handleEdit(member); break;
-                case 'pause': confirmInactivate(member); break;
-                case 'activate': handlePauseToggle(memberId, storageSourceId, 'Active'); break;
-                case 'delete': confirmDelete(member); break;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Processing...';
+            submitBtn.disabled = true;
+
+            try {
+                 const [dd, mm, yyyy] = newDueDate.split('-');
+                 const formattedDbDueDate = `${yyyy}-${mm}-${dd}`;
+
+                 await updateDoc(doc(dbInstance, `artifacts/${envAppId}/public/data/gymMembers`, memberId), {
+                    dueDate: formattedDbDueDate,
+                    membershipType: planType, 
+                    feeAmount: feeAmount, 
+                    status: 'Paid',
+                    isInactive: false,
+                    updatedAt: serverTimestamp(),
+                    updatedBy: currentUserId
+                });
+
+                const member = allMembers.find(m => m.id === memberId);
+                if (member && member.fingerprintId) {
+                    await setDoc(
+                        doc(firestoreDb, `hardware/finger_${member.fingerprintId}`),
+                        {
+                            name: member.name,
+                            dueDate: formattedDbDueDate,
+                            status: "Active",
+                            access: true
+                        }
+                    );
+                }
+
+                showMessage('Payment processed successfully!', 'success');
+                clearAddPaymentForm();
+            } catch (error) {
+                console.error("Payment error:", error);
+                showMessage('Failed to process payment.', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
 
+        // Initialize state
+        showTab('manage-member');
     </script>
-<div class="fixed bottom-0 inset-x-0 bg-gray-900 text-white flex justify-around items-center py-3 border-t border-gray-700 z-50" id="bottom-nav">
-    <button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-manage-member').click()">🏠 Dashboard</button>
-    <button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-add-payment').click()">💳 Payment</button>
-    <button class="flex flex-col items-center text-xs focus:outline-none" onclick="document.getElementById('tab-id-card').click()">🆔 ID Card</button>
-</div>
-<button class="fixed bottom-16 right-4 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-blue-700 z-50 text-sm font-semibold" id="sticky-add-member" onclick="document.getElementById('tab-manage-member').click()">+ Add Member</button>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const splash = document.getElementById('splash-screen');
-    setTimeout(() => {
-        splash.classList.add('hidden');
-    }, 2000);
-
-    const toggleBtnElem = document.getElementById('toggle-members-btn');
-    const sectionElem = document.getElementById('collapsible-members');
-    if (toggleBtnElem && sectionElem) {
-        toggleBtnElem.addEventListener('click', function() {
-            isCurrentMembersListHiddenByUser = !sectionElem.classList.contains('hidden'); 
-            sectionElem.classList.toggle('hidden'); 
-            if (sectionElem.classList.contains('hidden')) {
-                this.textContent = 'Show Current Members (' + document.getElementById('total-members-count').textContent + ')';
-            } else {
-                this.textContent = 'Hide Current Members';
-            }
-        });
-    }
-
-    const toggleInactiveBtnElem = document.getElementById('toggle-inactive-btn');
-    const inactiveSectionElem = document.getElementById('inactive-members-list-container');
-    if (toggleInactiveBtnElem && inactiveSectionElem) {
-        toggleInactiveBtnElem.addEventListener('click', function() {
-            isInactiveMembersListHiddenByUser = !inactiveSectionElem.classList.contains('hidden'); 
-            inactiveSectionElem.classList.toggle('hidden'); 
-            if (inactiveSectionElem.classList.contains('hidden')) {
-                this.textContent = 'Show Inactive Members (' + document.getElementById('total-inactive-count').textContent + ')';
-            } else {
-                this.textContent = 'Hide Inactive Members';
-            }
-        });
-    }
-});
-</script></body>
+</body>
         </html>
