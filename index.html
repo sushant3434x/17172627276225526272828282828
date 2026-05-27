@@ -1034,6 +1034,19 @@
                 return;
             }
 
+            // Calculate overdue days
+            let overdueDays = 0;
+            if (member.dueDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dueDate = new Date(member.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                const diffTime = today.getTime() - dueDate.getTime();
+                if (diffTime > 0) {
+                    overdueDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                }
+            }
+
             // Create WhatsApp message
             const message =
  `🔥*ALPHA CORE FITNESS*🔥
@@ -1045,6 +1058,7 @@
 🏋️ *Plan:* ${member.membershipType}
 📅 *Due Date:* ${formatToDDMMYYYY(member.dueDate)}
 💰 *Amount:* ₹${member.feeAmount || 0}
+⏰ *Overdue By:* ${overdueDays} days
 
 📲 *QUICK PAY (Scan or Copy UPI):*
 ${PAYMENT_QR_IMAGE}
