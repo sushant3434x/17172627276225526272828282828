@@ -1036,29 +1036,29 @@
 
             // Create WhatsApp message
             const message =
-`Hello ${member.name} 👋
+ `🔥*ALPHA CORE FITNESS*🔥
+ Time to lock in your gains, ${member.name}!🔥
 
-This is a reminder from ALPHA CORE FITNESS.
+         Your momentum is everything. Don't let your streak end now! ⚡ This is a quick reminder to secure your membership renewal.
 
-🏋️ Plan:
-${member.membershipType}
+📋 *YOUR DETAILS:*
+🏋️ *Plan:* ${member.membershipType}
+📅 *Due Date:* ${formatToDDMMYYYY(member.dueDate)}
+💰 *Amount:* ₹${member.feeAmount || 0}
 
-📅 Due Date:
-${formatToDDMMYYYY(member.dueDate)}
-
-💰 Amount:
-₹${member.feeAmount || 0}
-
-Please renew your membership to continue your fitness journey 💪
-
-📲 Scan & Pay:
+📲 *QUICK PAY (Scan or Copy UPI):*
 ${PAYMENT_QR_IMAGE}
 
-UPI ID:
-sushantsigh3434@sbi
+*UPI ID:* sushantsigh3434@sbi
 
-📍Review us:
-https://sushant3434x.github.io/Sushant/`;
+💬 _Please send over the receipt / Show us at counter once it is transferred._
+*Let's get after it!*💪
+
+⭐ *Loving the vibe? Review us here:*
+https://sushant3434x.github.io/Sushant/
+
+*See you at the squat rack!* 🏋️‍♂️
+Let's grind together🔥☠️`;
 
             // Convert message into URL format
             const encodedMessage = encodeURIComponent(message);
