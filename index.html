@@ -595,6 +595,8 @@
 
         const APP_PASSWORD = "2003";
 
+        const PAYMENT_QR_IMAGE = "https://res.cloudinary.com/dbm2s6xd2/image/upload/v1779859350/ajr8g8loo0ipool33vwc.jpg";
+
         const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -1025,6 +1027,49 @@
             }, 3000); 
         }
 
+        window.sendWhatsAppReminder = function(member) {
+            // Check phone number exists
+            if (!member.phoneNumber) {
+                showMessage("Phone number missing", "error");
+                return;
+            }
+
+            // Create WhatsApp message
+            const message =
+`Hello ${member.name} 👋
+
+This is a reminder from ALPHA CORE FITNESS.
+
+🏋️ Plan:
+${member.membershipType}
+
+📅 Due Date:
+${formatToDDMMYYYY(member.dueDate)}
+
+💰 Amount:
+₹${member.feeAmount || 0}
+
+Please renew your membership to continue your fitness journey 💪
+
+📲 Scan & Pay:
+${PAYMENT_QR_IMAGE}
+
+UPI ID:
+sushantsigh3434@sbi`;
+
+            // Convert message into URL format
+            const encodedMessage = encodeURIComponent(message);
+
+            // Clean phone number
+            const cleanPhone = member.phoneNumber.replace(/\D/g, '');
+
+            // Create WhatsApp URL
+            const whatsappURL = `https://wa.me/91${cleanPhone}?text=${encodedMessage}`;
+
+            // Open WhatsApp
+            window.open(whatsappURL, '_blank');
+        };
+
         function isOverdue(dueDateString) {
             const today = new Date();
             today.setHours(0, 0, 0, 0); 
@@ -1302,6 +1347,9 @@
                             <button data-action="delete" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" /></svg>
                             </button>
+                            <button onclick='window.sendWhatsAppReminder(${JSON.stringify(member).replace(/'/g, "&#39;")})' class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                WhatsApp
+                            </button>
                         </td>
                     `;
                     const photoElementInRow = row.querySelector('.member-photo');
@@ -1355,6 +1403,9 @@
                             <button data-action="delete" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" /></svg>
                             </button>
+                            <button onclick='window.sendWhatsAppReminder(${JSON.stringify(member).replace(/'/g, "&#39;")})' class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                WhatsApp
+                            </button>
                         </td>
                     `;
                     const photoElementInRow = row.querySelector('.member-photo');
@@ -1396,6 +1447,9 @@
                                 </button>
                                 <button data-action="delete" data-id="${member.id}" data-source-id="${member.storageSourceId}" class="text-red-500 hover:text-red-300" title="Delete Member">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" /></svg>
+                                </button>
+                                <button onclick='window.sendWhatsAppReminder(${JSON.stringify(member).replace(/'/g, "&#39;")})' class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    WhatsApp
                                 </button>
                             </td>
                         `;
@@ -2264,4 +2318,4 @@
         showTab('manage-member');
     </script>
 </body>
-</html>
+        </html>
