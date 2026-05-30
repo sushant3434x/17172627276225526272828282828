@@ -1050,7 +1050,7 @@
             // Create WhatsApp message
             const message =
  `🔥*ALPHA CORE FITNESS*🔥
- Time to lock in your gains, *${member.name}*!🔥
+ Time to lock in your gains, ${member.name}!🔥
 
          Your momentum is everything. Don't let your streak end now! ⚡ This is a quick reminder to secure your membership renewal.
 
@@ -1058,7 +1058,7 @@
 🏋️ *Plan:* ${member.membershipType}
 📅 *Due Date:* ${formatToDDMMYYYY(member.dueDate)}
 💰 *Amount:* ₹${member.feeAmount || 0}
-⏰ *Overdue By:* *_${overdueDays} days_*
+⏰ *Overdue By:* ${overdueDays} days
 
 📲 *QUICK PAY (Scan or Copy UPI):*
 ${PAYMENT_QR_IMAGE}
@@ -1374,7 +1374,7 @@ Let's grind together🔥☠️`;
                 } else {
                     hasCurrentMembers = true;
                     const row = membersTableBody.insertRow();
-                    const overdueClass = (isOverdue(member.dueDate) && member.status !== 'Paid') ? 'bg-red-900' : 'bg-gray-800'; 
+                    const overdueClass = isOverdue(member.dueDate) ? 'bg-red-900' : 'bg-gray-800'; 
                     row.className = `${overdueClass} hover:bg-gray-700 transition-colors duration-150 ease-in-out`; 
                     row.dataset.memberId = member.id; 
                     row.dataset.storageSourceId = member.storageSourceId; 
@@ -1397,7 +1397,7 @@ Let's grind together🔥☠️`;
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${formatToDDMMYYYY(member.startDate) || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                             ${formatToDDMMYYYY(member.dueDate) || 'N/A'}
-                            ${(isOverdue(member.dueDate) && member.status !== 'Paid') ? `
+                            ${isOverdue(member.dueDate) ? `
                                 <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-700 text-red-100">
                                     Expired
                                 </span>` : ''}
@@ -1428,7 +1428,7 @@ Let's grind together🔥☠️`;
                     const photoElementInRow = row.querySelector('.member-photo');
                     if (photoElementInRow) addPhotoEnlargeListeners(photoElementInRow);
 
-                    if ((isOverdue(member.dueDate) || getDaysLeft(member.dueDate) === "Due Today") && member.status !== 'Paid') {
+                    if (isOverdue(member.dueDate) || getDaysLeft(member.dueDate) === "Due Today") {
                         hasOverdueMembers = true;
                         const overdueRow = overdueMembersTableBody.insertRow();
                         overdueRow.dataset.memberId = member.id; 
@@ -2301,7 +2301,7 @@ Let's grind together🔥☠️`;
                     dueDate: formattedDbDueDate,
                     membershipType: planType, 
                     feeAmount: feeAmount, 
-                    status: 'Paid',
+                    status: 'Active',
                     isInactive: false,
                     updatedAt: serverTimestamp(),
                     updatedBy: currentUserId
