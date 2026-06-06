@@ -1819,7 +1819,7 @@
             }
 
             const message =
- `🔥*ALPHA CORE FITNESS*🔥
+`🔥*ALPHA CORE FITNESS*🔥
  Time to lock in your gains, ${member.name}!🔥
 
          Your momentum is everything. Don't let your streak end now! ⚡ This is a quick reminder to secure your membership renewal.
@@ -3532,13 +3532,30 @@ Let's grind together🔥☠️`;
             }
 
             const msg =
-`Hello ${member.name},
+`🔥*ALPHA CORE FITNESS*🔥
+ Time to lock in your gains, ${member.name}!🔥
 
-Your gym membership expires on ${formatToDDMMYYYY(member.dueDate)}.
+         Your momentum is everything. Don't let your streak end now! ⚡ This is a quick reminder to secure your membership renewal.
 
-Please renew your membership.
+📋 *YOUR DETAILS:*
+🏋️ *Plan:* ${member.membershipType}
+📅 *Due Date:* ${formatToDDMMYYYY(member.dueDate)}
+💰 *Amount:* ₹${member.feeAmount || 0}
+⏰ *Overdue By:* ${overdueDays} days
 
-ALPHA CORE FITNESS`;
+📲 *QUICK PAY (Scan or Copy UPI):*
+${PAYMENT_QR_IMAGE}
+
+*UPI ID:* sushantsigh3434@sbi
+
+💬 _Please send over the receipt / Show us at counter once it is transferred._
+*Let's get after it!*💪
+
+⭐ *Loving the vibe? Review us here:*
+https://sushant3434x.github.io/Sushant/
+
+*See you at the squat rack!* 🏋️‍♂️
+Let's grind together🔥☠️`;
 
             const url =
 `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
