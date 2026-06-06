@@ -3530,7 +3530,12 @@ Let's grind together🔥☠️`;
             if (!phone.startsWith("91")) {
                 phone = "91" + phone;
             }
-
+const overdueDays = Math.abs(
+    Math.floor(
+        (new Date() - new Date(member.dueDate)) /
+        (1000 * 60 * 60 * 24)
+    )
+);
             const msg =
 `🔥*ALPHA CORE FITNESS*🔥
  Time to lock in your gains, ${member.name}!🔥
